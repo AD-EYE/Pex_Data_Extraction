@@ -1,7 +1,7 @@
 from lxml import etree
 import math
 import csv
-from bend_road import create_bend_road
+from BendRoad import BendRoad
 from CurvedRoad import CurvedRoad
 
 csv_filepath = './csv/'
@@ -25,7 +25,8 @@ def process_xml():
         rh_rad = rh * math.pi/180
         x = float(segment[0].get('X'))
         y = float(segment[0].get('Y'))
-        coords = create_bend_road(x, y, clr, rh_rad)
+        broad = BendRoad(x, y, clr, rh_rad)
+        coords = broad.get_coords()
 
         save_coords(coords, segment.get('id') + '.csv')
 

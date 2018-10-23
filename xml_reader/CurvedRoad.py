@@ -1,8 +1,9 @@
 import math
 import bezier
 import numpy as np
+from Road import Road
 
-class CurvedRoad(object):
+class CurvedRoad(Road):
 
     def __init__(self, x, y, rh_rad, cp1, cp2, h_rad, x_off, y_off):
         self.x = x
@@ -18,9 +19,6 @@ class CurvedRoad(object):
 
         self.create_points()
         self.calculate_coords()
-
-    def get_coords(self):
-        return self.coords
 
     def calculate_coords(self):
         nodes = np.asfortranarray([

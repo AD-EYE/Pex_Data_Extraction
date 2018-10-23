@@ -1,6 +1,7 @@
 import math
+from Road import Road
 
-class BendRoad(object):
+class BendRoad(Road):
 
     def __init__(self, x, y, radius, angle_rad):
         self.x = x
@@ -11,20 +12,17 @@ class BendRoad(object):
 
         self.create_bend_road()
 
-    def get_coords(self):
-        return self.coords
-
     def calculate_coords(self, angle_rad):
-        'TODO: fix algorithm'
+        'TODO fix algorithm'
         x2 = 0
         y2 = 0
 
         if(angle_rad > 0):
-            x2 = self.x + self.radius * math.cos(-math.pi/2 + self.angle_rad)
-            y2 = self.y + (self.radius + self.radius * math.sin(-math.pi/2 + self.angle_rad))
+            x2 = self.x + self.radius * math.cos(-math.pi/2 + angle_rad)
+            y2 = self.y + (self.radius + self.radius * math.sin(-math.pi/2 + angle_rad))
         else:
-            x2 = self.x + self.radius * math.cos((math.pi/2) + self.angle_rad)
-            y2 = self.y - (self.radius + self.radius * math.sin(-(math.pi/2) + self.angle_rad))
+            x2 = self.x + self.radius * math.cos((math.pi/2) + angle_rad)
+            y2 = self.y - (self.radius + self.radius * math.sin(-(math.pi/2) + angle_rad))
 
         return [x2, y2]
 

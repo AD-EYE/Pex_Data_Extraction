@@ -1,6 +1,7 @@
 import math
+from Road import Road
 
-class StraightRoad(object):
+class StraightRoad(Road):
     def __init__(self, x, y, h_rad, length):
         self.x = x
         self.y = y
@@ -9,9 +10,6 @@ class StraightRoad(object):
         self.length = length
 
         self.create_road()
-
-    def get_coords(self):
-        return self.coords
 
     def create_road(self):
         number_of_points = math.ceil(self.length)

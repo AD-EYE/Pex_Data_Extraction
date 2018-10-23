@@ -110,3 +110,8 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# csv and data
+xml_reader/csv/*
+xml_reader/data/*
+!xml_reader/csv/.gitkeep
+!xml_reader/data/.gitkeep

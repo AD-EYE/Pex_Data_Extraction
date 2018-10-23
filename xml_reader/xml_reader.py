@@ -3,6 +3,7 @@ import math
 import csv
 from BendRoad import BendRoad
 from CurvedRoad import CurvedRoad
+from StraightRoad import StraightRoad
 
 csv_filepath = './csv/'
 data_filepath = './data/'
@@ -41,6 +42,16 @@ def process_xml():
         y_off = float(segment.get('Yoffset'))
         croad = CurvedRoad(x,y,rh_rad,cp1,cp2,h_rad, x_off, y_off)
         coords = croad.get_coords()
+        save_coords(coords, segment.get('id') + '.csv')
+
+    for segment in tree.findall('//RoadSegment[@xsi:type="StraightRoad"]', ns):
+        length = float(segment.get('RoadLength'))
+        x = float(segment[0].get('X'))
+        y = float(segment[0].get('Y'))
+        h_rad = float(segment[1].get('Heading')) * math.pi/180
+
+        sroad = StraightRoad(x, y, h_rad, length)
+        coords = sroad.get_coords()
         save_coords(coords, segment.get('id') + '.csv')
 
 def main():

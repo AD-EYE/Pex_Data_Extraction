@@ -4,6 +4,7 @@ import csv
 from BendRoad import BendRoad
 from CurvedRoad import CurvedRoad
 from StraightRoad import StraightRoad
+from Roundabout import Roundabout
 
 csv_filepath = './csv/'
 data_filepath = './data/'
@@ -33,6 +34,8 @@ class XmlReader(object):
                 self.process_bezier_road(road)
             elif(roadtype == 'StraightRoad'):
                 self.process_straight_road(road)
+            elif(roadtype == 'Roundabout'):
+                self.process_roundabout(road)
 
     def process_bend_road(self, road):
         clr = float(road.get('CenterlineRadius'))
@@ -65,4 +68,15 @@ class XmlReader(object):
         h_rad = float(road[1].get('Heading')) * math.pi/180
         sroad = StraightRoad(x, y, h_rad, length)
         coords = sroad.get_coords()
+        self.save_coords(coords, road.get('id') + '.csv')
+
+    def process_roundabout(self, road):
+        radius = float(road.get('Radius'))
+        lane_width = float(road.get('LaneWidth'))
+        x = float(road[0].get('X'))
+        y = float(road[0].get('Y'))
+        h_rad = float(road[1].get('Heading')) * math.pi/180
+
+        roundabout = Roundabout(x, y, lane_width, radius, h_rad)
+        coords = roundabout.get_coords()
         self.save_coords(coords, road.get('id') + '.csv')

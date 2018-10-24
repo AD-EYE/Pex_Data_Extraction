@@ -30,8 +30,12 @@ class CurvedRoad:
         self.c = Curve([x0, x1, x2, x3], [y0, y1, y2, y3])
 
 class RoundaboutRoad:
-    def __init__(self, x0, y0, r):
-        self.c = Roundabout(x0, y0, r)
+    def __init__(self, x0, y0, r, lw):
+        self.c = Roundabout(x0, y0, r, 0)
+        self.e1 = Roundabout(x0, y0, r, lw)
+        self.e2 = Roundabout(x0, y0, r, -lw)
+        self.l1 = Roundabout(x0, y0, r, lw/2)
+        self.l2 = Roundabout(x0, y0, r, -lw/2)
 
 class StraightRoad:
     def __init__(self, x0, y0, h, l, lw):

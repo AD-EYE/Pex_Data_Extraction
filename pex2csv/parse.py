@@ -5,7 +5,7 @@ import numpy as np
 def get_roads(path='./data/roads.pex'):
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
-    segments = tree.findall('//RoadSegment', ns)
+    segments = tree.findall('//RoadSegment')
     roads = {}
 
     for s in segments:
@@ -47,7 +47,7 @@ def get_roundabout(s):
     y0 = float(s[0].get('Y'))
     r = float(s.get('Radius'))
     lw = float(s.get('LaneWidth'))
-    return RoundaboutRoad(x0, y0, r)
+    return RoundaboutRoad(x0, y0, r, lw)
 
 def get_straight(s):
     x0 = float(s[0].get('X'))

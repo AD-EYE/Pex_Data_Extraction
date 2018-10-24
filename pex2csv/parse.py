@@ -27,7 +27,8 @@ def get_bend(s):
     h = float(s[1].get('Heading')) * np.pi / 180
     rh = float(s.get('RelativeHeading')) * np.pi / 180
     clr = float(s.get('CenterlineRadius'))
-    return BendRoad(x0, y0, h, rh, clr)
+    lw = float(s.get('LaneWidth'))
+    return BendRoad(x0, y0, h, rh, clr, lw)
 
 def get_curved(s):
     x0 = float(s[0].get('X'))
@@ -38,12 +39,14 @@ def get_curved(s):
     cp2 = float(s.get('ControlPoint2Distance'))
     dx = float(s.get('Xoffset'))
     dy = float(s.get('Yoffset'))
+    lw = float(s.get('LaneWidth'))
     return CurvedRoad(x0, y0, h, rh, cp1, cp2, dx, dy)
 
 def get_roundabout(s):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     r = float(s.get('Radius'))
+    lw = float(s.get('LaneWidth'))
     return RoundaboutRoad(x0, y0, r)
 
 def get_straight(s):
@@ -51,4 +54,5 @@ def get_straight(s):
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading')) * np.pi / 180
     l = float(s.get('RoadLength'))
-    return StraightRoad(x0, y0, h, l)
+    lw = float(s.get('LaneWidth'))
+    return StraightRoad(x0, y0, h, l, lw)

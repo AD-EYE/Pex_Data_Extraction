@@ -31,15 +31,38 @@ class Bend(Path):
                 self.y0 + self.r * np.sin(self.a0 + np.sign(self.da) * t))
 
 class Curve(Path):
-    def __init__(self, xs, ys):
+    def __init__(self, xs, ys, offset):
+        self.xs, self.ys = xs, ys
+        self.offset = offset
         nodes = np.asfortranarray([xs, ys])
         self.c = bezier.Curve(nodes, degree = 3)
         dt = 1.0 / np.ceil(self.c.length)
         Path.__init__(self, dt, 1.0)
 
+    def dpdt(self, t):
+        dx =   -3 * self.xs[0] * (1 - t) ** 2 + \
+                3 * self.xs[1] * (1 - t) ** 2 - \
+                6 * self.xs[1] * (1 - t) * t + \
+                6 * self.xs[2] * (1 - t) * t - \
+                3 * self.xs[2] * t ** 2 + \
+                3 * self.xs[3] * t ** 2
+        dy =   -3 * self.ys[0] * (1 - t) ** 2 + \
+                3 * self.ys[1] * (1 - t) ** 2 - \
+                6 * self.ys[1] * (1 - t) * t + \
+                6 * self.ys[2] * (1 - t) * t - \
+                3 * self.ys[2] * t ** 2 + \
+                3 * self.ys[3] * t ** 2
+        return (dx, dy)
+
     def eval(self, t):
         p = self.c.evaluate(t)
-        return (p[0].item(), p[1].item())
+        x, y = p[0].item(), p[1].item()
+        if self.offset == 0: return (x, y)
+        dx, dy = self.dpdt(t)
+        dir = np.arctan2(dy, dx)
+        x += self.offset * np.sin(dir)
+        y -= self.offset * np.cos(dir)
+        return (x, y)
 
 class Roundabout(Path):
     def __init__(self, x0, y0, r, lw):

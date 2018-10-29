@@ -40,7 +40,7 @@ def get_curved(s):
     dx = float(s.get('Xoffset'))
     dy = float(s.get('Yoffset'))
     lw = float(s.get('LaneWidth'))
-    return CurvedRoad(x0, y0, h, rh, cp1, cp2, dx, dy)
+    return CurvedRoad(x0, y0, h, rh, cp1, cp2, dx, dy, lw)
 
 def get_roundabout(s):
     x0 = float(s[0].get('X'))

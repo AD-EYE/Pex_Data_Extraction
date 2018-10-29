@@ -18,7 +18,7 @@ class BendRoad:
                         h, rh, clr + np.sign(rh) * lw / 2)
 
 class CurvedRoad:
-    def __init__(self, x0, y0, h, rh, cp1, cp2, dx, dy):
+    def __init__(self, x0, y0, h, rh, cp1, cp2, dx, dy, lw):
         x_ = dx * np.cos(h) - dy * np.sin(h)
         y_ = dx * np.sin(h) + dy * np.cos(h)
         x1 = x0 + cp1 * np.cos(h)
@@ -27,7 +27,13 @@ class CurvedRoad:
         y2 = y0 + y_ - cp2 * np.sin(h + rh)
         x3 = x0 + dx
         y3 = y0 + dy
-        self.c = Curve([x0, x1, x2, x3], [y0, y1, y2, y3])
+        xs = [x0, x1, x2, x3]
+        ys = [y0, y1, y2, y3]
+        self.c = Curve(xs, ys, 0)
+        self.e1 = Curve(xs, ys, lw)
+        self.e2 = Curve(xs, ys, -lw)
+        self.l1 = Curve(xs, ys, lw / 2)
+        self.l2 = Curve(xs, ys, -lw / 2)
 
 class RoundaboutRoad:
     def __init__(self, x0, y0, r, lw):

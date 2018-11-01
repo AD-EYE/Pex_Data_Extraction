@@ -47,7 +47,11 @@ def get_roundabout(s):
     y0 = float(s[0].get('Y'))
     r = float(s.get('Radius'))
     lw = float(s.get('LaneWidth'))
-    return RoundaboutRoad(x0, y0, r, lw)
+    cs = s.xpath('//CrossSections')[0]
+    chs = []
+    for s in cs:
+        chs.append(float(s.get('Heading')) * np.pi / 180)
+    return RoundaboutRoad(x0, y0, r, lw, chs)
 
 def get_straight(s):
     x0 = float(s[0].get('X'))

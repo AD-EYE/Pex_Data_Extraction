@@ -64,17 +64,6 @@ class Curve(Path):
         y -= self.offset * np.cos(dir)
         return (x, y)
 
-class Roundabout(Path):
-    def __init__(self, x0, y0, r, lw):
-        self.x0 = x0
-        self.y0 = y0
-        self.r = r + lw
-        Path.__init__(self, 1 / r, 2 * np.pi)
-
-    def eval(self, t):
-        return (self.x0 + self.r * np.cos(t),
-                self.y0 + self.r * np.sin(t))
-
 class Straight(Path):
     def __init__(self, x0, y0, h, l):
         self.x0 = x0

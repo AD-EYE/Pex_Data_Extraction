@@ -1,9 +1,9 @@
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from vmap import VectorMap
 import parse
 
 if __name__ == '__main__':
-    roads = parse.get_roads(path='./data/roads.pex')
+    roads = parse.get_roads(path='./data/connected_roads1.pex')
 
     cx, cy = [], []
     ex, ey = [], []
@@ -40,4 +40,4 @@ if __name__ == '__main__':
     vm.make_center(cx, cy)
     vm.make_edge(ex, ey)
     vm.make_lane(lx, ly)
-    vm.save()
+    vm.export()

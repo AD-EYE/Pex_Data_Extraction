@@ -1,8 +1,8 @@
 import numpy as np
 
 # This class is an aggregation of VMList objects which contain all of the data
-# for the entire vector map. The public interfaces convert (x, y) coordinate
-# data to the vector map format.
+# for the entire vector map. The public make_* interfaces convert (x, y)
+# coordinate data to vector map data.
 class VectorMap:
     def __init__(self):
         self.point      = VMList(Point)
@@ -18,8 +18,8 @@ class VectorMap:
         self.point.append(x, y)
         self.node.append(len(self.point))
 
-    # Creates a new Line between the last two points. If the connect keyword arg
-    # is True, the previous Line will be connected to the new Line.
+    # Creates a new Line between the last two points. If the connect keyword
+    # argument is True, the previous Line will be connected to the new Line.
     def __new_line(self, connect=True):
         self.line.append(   point0 = len(self.point) - 1,
                             point1 = len(self.point),
@@ -33,6 +33,18 @@ class VectorMap:
         magnitude = self.point[point0].distance_to(self.point[point1])
         direction = self.point[point0].direction_to(self.point[point1])
         return (magnitude, direction)
+
+    # Returns the ID of the Lane beginning at (x, y).
+    def __get_lane_id(self, x, y):
+        for point_id in range(1, len(self.point) + 1):
+            px, py = self.point[point_id].get_xy()
+            if x == px and y == py:
+                for node_id in range(1, len(self.node) + 1):
+                    if point_id == self.node[node_id].get_point_id():
+                        for lane_id in range(1, len(self.lane) + 1):
+                            if node_id == self.lane[lane_id].get_node_id():
+                                return lane_id
+        raise ValueError('Error: No Lane at ' + str(x) + ', ' + str(y) + '.')
 
     def make_center(self, xs, ys):
         for (x, y) in zip(xs, ys):
@@ -66,7 +78,27 @@ class VectorMap:
                                     lane0     = len(self.lane))
                 if len(self.lane) > 1: self.lane[-2].lane1 = len(self.lane)
 
-    def save(self):
+    # Mark the coordinate at (x, y) as a lane junction. This must be done after
+    # creating a lane at that location. See Lane for options.
+    def mark_junction(self, x, y, type):
+        try: id = self.__get_lane_id(x, y)
+        except ValueError as e:
+            print(e)
+            return
+        try: self.lane[id].set_junction(type)
+        except ValueError as e: print(e)
+
+    # Mark the coordinate at (x, y) as a turn. This must be done after creating
+    # a lane at that location. See Lane for options.
+    def mark_turn(self, x, y, type):
+        try: id = self.__get_lane_id(x, y)
+        except ValueError as e:
+            print(e)
+            return
+        try: self.lane[id].set_turn(type)
+        except ValueError as e: print(e)
+
+    def export(self):
         self.point.to_csv('./csv/point.csv')
         self.node.to_csv('./csv/node.csv')
         self.line.to_csv('./csv/line.csv')
@@ -76,8 +108,8 @@ class VectorMap:
         self.roadedge.to_csv('./csv/roadedge.csv')
 
 # This class is an ordered list of vector map objects with indexing beginning at
-# 1, not 0, to comply with the vector map format. An class must be declared on
-# instantiation. The append() method will instantiate objects of this class and
+# 1, not 0, to comply with the vector map format. A type must be declared on
+# instantiation. The append() method will instantiate objects of this type and
 # add them to the end of the list.
 class VMList:
     def __init__(self, type):
@@ -146,6 +178,9 @@ class Point:
     def direction_to(self, p):
         return np.arctan2(p.Bx - self.Bx, p.Ly - self.Ly)
 
+    def get_xy(self):
+        return (self.Bx, self.Ly)
+
     def __str__(self):
         data = [self.B, self.L, self.H, self.Bx, self.Ly, self.ReF,
                 self.MCODE1, self.MCODE2, self.MCODE3]
@@ -154,6 +189,9 @@ class Point:
 class Node:
     def __init__(self, point):
         self.PID = point        # Corresponding Point ID
+
+    def get_point_id(self):
+        return self.PID
 
     def __str__(self):
         return str(self.PID)
@@ -170,14 +208,13 @@ class Line:
         return ','.join(map(str, data))
 
 class Lane:
-    def __init__(self, dtlane=0, node0=0, node1=0, lane0=0, lane1=0,
-            junction=0, length=0.0, type=0):
+    def __init__(self, dtlane=0, node0=0, node1=0, lane0=0, lane1=0,length=0.0):
         self.DID = dtlane       # Corresponding DTLane ID
         self.BLID = lane0       # Preceding Lane ID
         self.FLID = lane1       # Following Lane ID
         self.BNID = node0       # Starting Node ID
         self.FNID = node1       # Ending Node ID
-        self.JCT = junction     # Road junction type (0-5)
+        self.JCT = 0            # Road junction type (0-5)
         self.BLID2 = 0
         self.BLID3 = 0
         self.BLID4 = 0
@@ -188,11 +225,29 @@ class Lane:
         self.Span = length      # Lane lengh (between Nodes)
         self.LCnt = 1
         self.Lno = 1
-        self.LaneType = type    # Lane type (0-2)
+        self.LaneType = 0       # Lane type (0-2)
         self.LimitVel = 40
         self.RefVel = 40
         self.RoadSecID = 0
         self.LaneChgFG = 0
+
+    def get_node_id(self):
+        return self.BNID
+
+    def set_junction(self, type):
+        if type == 'NORMAL':                self.JCT = 0
+        elif type == 'LEFT_BRANCHING':      self.JCT = 1
+        elif type == 'RIGHT_BRANCHING':     self.JCT = 2
+        elif type == 'LEFT_MERGING':        self.JCT = 3
+        elif type == 'RIGHT_MERGING':       self.JCT = 4
+        elif type == 'COMPOSITION':         self.JCT = 5
+        else: raise ValueError('Error: Invalid junction type.')
+
+    def set_turn(self, type):
+        if type == 'STRIAGHT':              self.LaneType = 0
+        elif type == 'LEFT_TURN':           self.LaneType = 1
+        elif type == 'RIGHT_TURN':          self.LaneType = 2
+        else: raise ValueError('Error: Invalid turn type.')
 
     def __str__(self):
         data = [self.DID, self.BLID, self.FLID, self.BNID, self.FNID,

@@ -81,40 +81,40 @@ class VectorMap:
 # add them to the end of the list.
 class VMList:
     def __init__(self, type):
-        self.type = type
-        self.data = []
+        self.__type = type
+        self.__data = []
 
     # Negative value addressing works as it does with the standard List class.
     def __getitem__(self, key):
-        if key >= 0: return self.data[key - 1]
-        else: return self.data[key]
+        if key >= 0: return self.__data[key - 1]
+        else: return self.__data[key]
 
     def __setitem__(self, key, value):
-        if key >= 0: self.data[key - 1] = value
-        else: self.data[key] = value
+        if key >= 0: self.__data[key - 1] = value
+        else: self.__data[key] = value
 
     def __iter__(self):
-        self.idx = 0
+        self.__idx = 0
         return self
 
     def __next__(self):
-        retval = self.data[self.idx]
-        self.idx += 1
+        retval = self.__data[self.__idx]
+        self.__idx += 1
         return retval
 
     def __len__(self):
-        return len(self.data)
+        return len(self.__data)
 
     # Appends an object of the type declared on instantiation of the VMList
     # object. Arguments passed in here will be used to instantiate that object.
     def append(self, *args, **kwargs):
-        self.data.append(self.type(*args, **kwargs))
+        self.__data.append(self.__type(*args, **kwargs))
 
     # Print all data to a file in the vector map CSV format.
     def to_csv(self, path):
         ofile = open(path, 'w')
-        for i in range(len(self.data)):
-            ofile.write(str(i + 1) + ',' + str(self.data[i]) + '\n')
+        for i in range(len(self.__data)):
+            ofile.write(str(i + 1) + ',' + str(self.__data[i]) + '\n')
         ofile.close()
 
 # The following classes hold one line of information for their respective

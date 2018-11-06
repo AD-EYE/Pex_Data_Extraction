@@ -1,8 +1,9 @@
 from matplotlib import pyplot as plt
+from vmap import VectorMap
 import parse
 
 if __name__ == '__main__':
-    roads = parse.get_roads()
+    roads = parse.get_roads(path='./data/roads.pex')
 
     cx, cy = [], []
     ex, ey = [], []
@@ -27,10 +28,16 @@ if __name__ == '__main__':
                 ly.append(y)
         except: pass
 
-    plt.plot(cx, cy, 'bo')
-    plt.plot(ex, ey, 'ro')
-    plt.plot(lx, ly, 'ko')
-    plt.legend(['center', 'edge', 'lane'])
-    plt.axis('equal')
-    plt.grid(True)
-    plt.show()
+    # plt.plot(cx, cy, 'bo')
+    # plt.plot(ex, ey, 'ro')
+    # plt.plot(lx, ly, 'ko')
+    # plt.legend(['center', 'edge', 'lane'])
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.show()
+
+    vm = VectorMap()
+    vm.make_center(cx, cy)
+    vm.make_edge(ex, ey)
+    vm.make_lane(lx, ly)
+    vm.save()

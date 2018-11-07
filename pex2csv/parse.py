@@ -45,12 +45,13 @@ def get_curved(s):
 def get_roundabout(s):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
+    h = float(s[1].get('Heading'))
     r = float(s.get('Radius'))
     lw = float(s.get('LaneWidth'))
     cs = s.xpath('//CrossSections')[0]
     chs = []
     for s in cs:
-        chs.append(float(s.get('Heading')) * np.pi / 180)
+        chs.append((float(s.get('Heading')) + h) * np.pi / 180)
     return RoundaboutRoad(x0, y0, r, lw, chs)
 
 def get_straight(s):

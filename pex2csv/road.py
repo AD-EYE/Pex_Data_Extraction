@@ -2,8 +2,20 @@ from path import *
 import numpy as np
 from collections import namedtuple
 
-class BendRoad:
+class Road:
+    def __init__(self):
+        self.previous_road = -1
+        self.next_road = -1
+
+    def getstart(self):
+        return self.c.getstart()
+
+    def getend(self):
+        return self.c.getend()
+
+class BendRoad(Road):
     def __init__(self, x0, y0, h, rh, clr, lw):
+        Road.__init__(self)
         self.c =  Bend( x0, y0, h, rh, clr)
         self.e1 = Bend( x0 + lw * np.cos(h + np.pi / 2),
                         y0 + lw * np.sin(h + np.pi / 2),
@@ -18,8 +30,9 @@ class BendRoad:
                         y0 - lw * np.sin(h + np.pi / 2) / 2,
                         h, rh, clr + np.sign(rh) * lw / 2)
 
-class CurvedRoad:
+class CurvedRoad(Road):
     def __init__(self, x0, y0, h, rh, cp1, cp2, dx, dy, lw):
+        Road.__init__(self)
         x_ = dx * np.cos(h) - dy * np.sin(h)
         y_ = dx * np.sin(h) + dy * np.cos(h)
         x1 = x0 + cp1 * np.cos(h)
@@ -36,8 +49,9 @@ class CurvedRoad:
         self.l1 = Curve(xs, ys, lw / 2)
         self.l2 = Curve(xs, ys, -lw / 2)
 
-class RoundaboutRoad:
+class RoundaboutRoad(Road):
     def __init__(self, x0, y0, r, lw, chs):
+        Road.__init__(self)
         self.c  = Bend(x0, y0 - r, 0, 2 * np.pi, r)
         self.e1 = []
         self.e2 = Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))
@@ -117,8 +131,9 @@ class RoundaboutRoad:
         h = np.arctan2(y - y2, x - x2) - sign * np.pi / 2
         return (x2, y2, h, sign * np.pi / 3, rc)
 
-class StraightRoad:
+class StraightRoad(Road):
     def __init__(self, x0, y0, h, l, lw):
+        Road.__init__(self)
         self.c =  Straight( x0, y0, h, l)
         self.e1 = Straight( x0 + lw * np.cos(h + np.pi / 2),
                             y0 + lw * np.sin(h + np.pi / 2), h, l)

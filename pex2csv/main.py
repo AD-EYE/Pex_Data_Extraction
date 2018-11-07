@@ -1,4 +1,4 @@
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from vmap import VectorMap
 import numpy as np
 import parse
@@ -28,13 +28,13 @@ if __name__ == '__main__':
     edges = np.array(edges)
     lanes = np.array(lanes)
 
-    # plt.plot(centers[:,0], centers[:,1], 'bo')
-    # plt.plot(edges[:,0], edges[:,1], 'ro')
-    # plt.plot(lanes[:,0], lanes[:,1], 'ko')
-    # plt.legend(['center', 'edge', 'lane'])
-    # plt.axis('equal')
-    # plt.grid(True)
-    # plt.show()
+    plt.plot(centers[:,0], centers[:,1], 'bo')
+    plt.plot(edges[:,0], edges[:,1], 'ro')
+    plt.plot(lanes[:,0], lanes[:,1], 'ko')
+    plt.legend(['center', 'edge', 'lane'])
+    plt.axis('equal')
+    plt.grid(True)
+    plt.show()
 
     vm = VectorMap()
     vm.make_lane(lanes, junction_end='RIGHT_MERGING')

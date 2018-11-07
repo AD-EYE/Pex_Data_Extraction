@@ -155,7 +155,7 @@ class VectorMap:
             self.lane[-1].set_lane_after(lane_first)
             self.lane[lane_first].set_lane_before(len(self.lane))
 
-    def make_line(self, ps, type='CENTER', closed_loop=False):
+    def make_line(self, ps, type='EDGE', closed_loop=False):
 
         # Generate the first pair of Nodes and first Line.
         x0, y0 = ps[0][0], ps[0][1]
@@ -201,6 +201,17 @@ class VectorMap:
             self.line[-1].set_line_after(line_first)
             self.line[line_first].set_line_before(len(self.lane))
 
+    # Returns the DTLane magnitude/direction data in the format:
+    # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]
+    def get_all_vectors(self):
+        vectors = []
+        for l in self.lane:
+            x,y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+            magnitude = l.get_length()
+            direction = self.dtlane[l.get_dtlane()].get_direction()
+            vectors.append([x, y, magnitude, direction])
+        return np.array(vectors)
+
     def export(self):
         self.point.export('./csv/point.csv')
         self.node.export('./csv/node.csv')
@@ -233,6 +244,7 @@ class VMList:
         return self
 
     def __next__(self):
+        if self.__idx == len(self.__data): raise StopIteration
         retval = self.__data[self.__idx]
         self.__idx += 1
         return retval
@@ -280,7 +292,7 @@ class Point:
     # Compute the direction in radians (-pi to pi) from this Point to Point p.
     # Needed for DTLane.Dir.
     def direction_to(self, p):
-        return np.arctan2(p.Bx - self.Bx, p.Ly - self.Ly)
+        return np.arctan2(p.Ly - self.Ly, p.Bx - self.Bx)
 
     def get_xy(self):
         return (self.Bx, self.Ly)
@@ -343,6 +355,12 @@ class Lane:
         self.set_junction(junction)
         self.set_turn(turn)
 
+    def get_dtlane(self):
+        return self.DID
+
+    def get_length(self):
+        return self.Span
+
     def get_node_start(self):
         return self.BNID
 
@@ -394,6 +412,9 @@ class DTLane:
     # new DTLane must check the previous.
     def get_length(self):
         return self.Dist
+
+    def get_direction(self):
+        return self.Dir
 
     def __str__(self):
         data = [self.Dist, self.PID, self.Dir, self.Apara, self.r, self.slope,

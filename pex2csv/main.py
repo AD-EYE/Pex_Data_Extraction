@@ -1,55 +1,42 @@
 from matplotlib import pyplot as plt
+from vmap import VectorMap
+import numpy as np
 import parse
 import inspect
 
 if __name__ == '__main__':
-    roads = parse.get_roads()
+    roads = parse.get_roads(path='./data/connected_roads1.pex')
 
-    cx, cy = [], []
-    ex, ey = [], []
-    lx, ly = [], []
-    xx, xy = [], []
-    xlx, xly = [], []
+    centers = []
+    edges = []
+    lanes = []
 
     for id in roads.keys():
         for (x, y) in roads[id].c:
-            cx.append(x)
-            cy.append(y)
+            centers.append([x, y])
         try:
-            if(not type(roads[id].e1) is list):
-                for (x, y) in roads[id].e1:
-                    ex.append(x)
-                    ey.append(y)
-            else:
-                for p in roads[id].e1:
-                    for (x, y) in p:
-                        ex.append(x)
-                        ey.append(y)
+            for (x, y) in roads[id].e1:
+                edges.append([x, y])
             for (x, y) in roads[id].e2:
-                ex.append(x)
-                ey.append(y)
+                edges.append([x, y])
             for (x, y) in roads[id].l1:
-                lx.append(x)
-                ly.append(y)
+                lanes.append([x, y])
             for (x, y) in roads[id].l2:
-                lx.append(x)
-                ly.append(y)
-            for exit in roads[id].x:
-                for (x, y) in exit:
-                    xx.append(x)
-                    xy.append(y)
-            for xlane in roads[id].xl:
-                for (x, y) in xlane:
-                    xlx.append(x)
-                    xly.append(y)
-        except Exception as e: print(e)
+                lanes.append([x, y])
+        except: pass
 
-    plt.plot(cx, cy, 'bo')
-    plt.plot(ex, ey, 'ro')
-    plt.plot(lx, ly, 'ko')
-    plt.plot(xx, xy, 'ro')
-    plt.plot(xlx, xly, 'ko')
+    centers = np.array(centers)
+    edges = np.array(edges)
+    lanes = np.array(lanes)
+
+    plt.plot(centers[:,0], centers[:,1], 'bo')
+    plt.plot(edges[:,0], edges[:,1], 'ro')
+    plt.plot(lanes[:,0], lanes[:,1], 'ko')
     plt.legend(['center', 'edge', 'lane'])
     plt.axis('equal')
     plt.grid(True)
     plt.show()
+
+    vm = VectorMap()
+    vm.make_lane(lanes, junction_end='RIGHT_MERGING')
+    vm.export()

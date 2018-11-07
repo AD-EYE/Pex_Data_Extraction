@@ -26,8 +26,8 @@ class CurvedRoad:
         y1 = y0 + cp1 * np.sin(h)
         x2 = x0 + x_ - cp2 * np.cos(h + rh)
         y2 = y0 + y_ - cp2 * np.sin(h + rh)
-        x3 = x0 + dx
-        y3 = y0 + dy
+        x3 = x0 + x_
+        y3 = y0 + y_
         xs = [x0, x1, x2, x3]
         ys = [y0, y1, y2, y3]
         self.c = Curve(xs, ys, 0)

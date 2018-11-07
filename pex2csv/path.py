@@ -17,6 +17,12 @@ class Path:
         self.t += self.dt
         return(ret)
 
+    def getstart(self):
+        return self.eval(0.0)
+
+    def getend(self):
+        return self.eval(int(self.t1 / self.dt) * self.dt)
+
 class Bend(Path):
     def __init__(self, x0, y0, a0, da, r):
         self.a0 = a0 - np.sign(da) * np.pi / 2

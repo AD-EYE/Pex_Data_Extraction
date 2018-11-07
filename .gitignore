@@ -109,12 +109,9 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-<<<<<<< HEAD
 
 # csv and data
-xml_reader/csv/*
-xml_reader/data/*
-!xml_reader/csv/.gitkeep
-!xml_reader/data/.gitkeep
-=======
->>>>>>> sam-wip
+*/csv/*
+*/data/*
+!*/csv/.gitkeep
+!*/data/.gitkeep

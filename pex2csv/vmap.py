@@ -13,193 +13,127 @@ class VectorMap:
         self.whiteline  = VMList(WhiteLine)
         self.roadedge   = VMList(RoadEdge)
 
+        # Mapping of (x, y) coordinate values to Node IDs.
+        self.__xy_node_map = {}
+
     # Creates a new Point with coordinates (x, y) and its corresponding Node.
-    # Returns ID of new Node.
+    # Returns the Node ID of the new Node.
     def __new_node(self, x, y):
+        # Create a new Point and corresponding Node.
         self.point.append(x, y)
         self.node.append(len(self.point))
-        return len(self.node)
+        node_id = len(self.node)
+        # Add entry to hash map.
+        if str(x) in self.__xy_node_map.keys():
+            self.__xy_node_map[str(x)][str(y)] = node_id
+        else: self.__xy_node_map[str(x)] = {str(y): node_id}
+        return node_id
+
+    # Checks if a Node already exists at (x, y). Returns Node ID if one exists,
+    # otherwise returns None.
+    def __find_node(self, x, y):
+        try: return self.__xy_node_map[str(x)][str(y)]
+        except KeyError: return None
+
+    # Returns the Node ID of the Node at (x, y) if one exists, otherwise makes
+    # a new Node and returns its Node ID.
+    def __get_node(self, x, y):
+        node_id = self.__find_node(x, y)
+        if node_id is None: node_id = self.__new_node(x, y)
+        return node_id
 
     # Creates a new Line between the last two points. If the connect keyword
     # argument is True, the previous Line will be connected to the new Line.
     # Returns ID of new Line.
-    def __new_line(self, connect=True):
-        self.line.append(   point_start = len(self.point) - 1,
-                            point_end   = len(self.point),
-                            line_before = len(self.line))
-        if connect and len(self.line) > 1:
-            self.line[-2].set_line_after(len(self.line))
+    def __new_line(self, point_start=0, point_end=0, line_before=None):
+        self.line.append(   point_start = point_start,
+                            point_end   = point_end)
+        if line_before is not None:
+            self.line[-1].set_line_before(line_before)
+            self.line[line_before].set_line_after(len(self.line))
         return len(self.line)
 
-    # Returns the distance and direction between two Points (by default the two
-    # most recent ones).
-    def __compute_vector(self, point_start=-2, point_end=-1):
+    # Returns the distance and direction between two Nodes.
+    def __compute_vector(self, node_start=0, node_end=0):
+        point_start = self.node[node_start].get_point()
+        point_end = self.node[node_end].get_point()
         magnitude = self.point[point_start].distance_to(self.point[point_end])
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    # Returns the ID of the Point at (x, y).
-    def __find_point(self, x, y):
-        for point_id in range(1, len(self.point) + 1):
-            px, py = self.point[point_id].get_xy()
-            if x == px and y == py:
-                return point_id
-        return None
-
-    # Returns the ID of the Node at (x, y).
-    def __find_node(self, x, y):
-        point_id = self.__find_point(x, y)
-        if point_id is not None:
-            for node_id in range(1, len(self.node) + 1):
-                if point_id == self.node[node_id].get_point():
-                    return node_id
-        return None
-
-    # Returns the ID of the Lane beginning at (x, y).
-    def __find_lane_after(self, x, y):
-        node_id = self.__find_node(x, y)
-        if node_id is not None:
-            for lane_id in range(1, len(self.lane) + 1):
-                if node_id == self.lane[lane_id].get_node_start():
-                    return lane_id
-        return None
-
     # Coordinate data ps must be provided as a numpy array in the form:
     # [[x0, y0], [x1, y1], ...]
     def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
-            turn_start='STRAIGHT', turn_end='STRAIGHT', closed_loop=False):
+            turn_start='STRAIGHT', turn_end='STRAIGHT'):
 
-        # Check if Node exists at first coordinate, else make a new one.
-        x0, y0 = ps[0]
-        node_first = self.__find_node(x0, y0)
-        if node_first is None: node_first = self.__new_node(x0, y0)
+        # Create or find the first Node.
+        node_first = self.__get_node(ps[0][0], ps[0][1])
+        lane_first = None
+        distance = 0.0
 
-        # Connect first two Nodes.
-        x1, y1 = ps[1]
-        self.__new_node(x1, y1)
-        (mag, dir) = self.__compute_vector(
-            point_start = self.node[node_first].get_point()
-        )
-        self.dtlane.append(
-            point       = len(self.point) - 1,
-            direction   = dir
-        )
-        self.lane.append(
-            dtlane      = len(self.dtlane),
-            node_start  = node_first,
-            node_end    = len(self.node),
-            length      = mag,
-            junction    = junction_start,
-            turn        = turn_start
-        )
-        lane_first = len(self.lane)
-
-        # Generate Points, Nodes, DTLanes and Lanes except for first, second and
-        # last coordinates.
-        for (x, y) in ps[2:-1,]:
-            self.__new_node(x, y)
-            (mag, dir) = self.__compute_vector()
-            dist = mag + self.dtlane[-1].get_length()
+        # Generate vector map objects.
+        node_previous = node_first
+        for (x, y) in ps[1:,]:
+            node_current = self.__get_node(x, y)
+            mag, dir = self.__compute_vector(
+                node_start  = node_previous,
+                node_end    = node_current
+            )
             self.dtlane.append(
-                point       = len(self.point) - 1,
-                length      = dist,
+                point       = self.node[node_current].get_point(),
+                length      = distance,
                 direction   = dir
             )
             self.lane.append(
                 dtlane      = len(self.dtlane),
-                node_start  = len(self.node) - 1,
-                node_end    = len(self.node),
-                length      = mag,
-                lane_before = len(self.lane)
+                node_start  = node_previous,
+                node_end    = node_current,
+                length      = mag
             )
-            self.lane[-2].set_lane_after(len(self.lane))
 
-        # Save current Point and Node IDs, because new Node may or may not be
-        # created in next step.
-        node_start = len(self.node)
-        point_start = self.node[-1].get_point()
+            # If this is the first Lane, remember the ID. Else, link the
+            # previous Lane to the new one.
+            if lane_first is None: lane_first = len(self.lane)
+            else:
+                self.lane[-1].set_lane_before(len(self.lane) - 1)
+                self.lane[-2].set_lane_after(len(self.lane))
+            node_previous = node_current
+            distance += mag
 
-        # Closed loop: Lane ends where it started.
-        if closed_loop:
-            node_last = node_first
-        else:
-            # Lane merge/turn: Lane ends at existing Node.
-            xn, yn = ps[-1]
-            node_last = self.__find_node(xn, yn)
-            # Dead end: Lane ends where no other Node currently exists.
-            if node_last is None: node_last = self.__new_node(xn, yn)
+        self.lane[lane_first].set_junction(junction_start)
+        self.lane[lane_first].set_turn(turn_start)
+        self.lane[-1].set_junction(junction_end)
+        self.lane[-1].set_turn(turn_end)
 
-        (mag, dir) = self.__compute_vector(
-            point_start = point_start,
-            point_end = self.node[node_last].get_point()
-        )
-        dist = mag + self.dtlane[-1].get_length()
-        self.dtlane.append(
-            point       = point_start,
-            length      = dist,
-            direction   = dir
-        )
-        self.lane.append(
-            dtlane      = len(self.dtlane),
-            node_start  = node_start,
-            node_end    = node_last,
-            length      = mag,
-            lane_before = len(self.lane),
-            junction    = junction_end,
-            turn        = turn_end
-        )
-        self.lane[-2].set_lane_after(len(self.lane))
-
-        # Closed loop: first Lane follows last Lane.
-        if closed_loop:
-            self.lane[-1].set_lane_after(lane_first)
-            self.lane[lane_first].set_lane_before(len(self.lane))
-
-    def make_line(self, ps, type='EDGE', closed_loop=False):
-
-        # Generate the first pair of Nodes and first Line.
-        x0, y0 = ps[0][0], ps[0][1]
-        x1, y1 = ps[1][0], ps[1][1]
-        self.__new_node(x0, y0)
-        self.__new_node(x1, y1)
-        line_first = self.__new_line(connect=False)
-
-        # WhiteLine used to mark the center line, RoadEdge used to mark edges
-        # of the road. Break if invalid option was given.
-        if type == 'CENTER':
-            self.whiteline.append(
-                line = len(self.line),
-                node = len(self.node) - 1
-            )
-        elif type == 'EDGE':
-            self.roadedge.append(
-                line = len(self.line),
-                node = len(self.node) - 1
-            )
-        else:
+    # Coordinate data ps must be provided as a numpy array in the form:
+    # [[x0, y0], [x1, y1], ...]
+    def make_line(self, ps, type='EDGE'):
+        if type == 'CENTER' and type == 'EDGE':
             raise ValueError('Line type ' + type + ' not valid.')
             return
 
-        # Generate Points, Nodes and Lines except for first, second and last
-        # coordinates.
-        for (x, y) in ps[2:,]:
-            self.__new_node(x, y)
-            self.__new_line()
+        node_previous = self.__get_node(ps[0][0], ps[0][1])
+        line_previous = None
+
+        # Generate remaining Points, Nodes and Lines.
+        for (x, y) in ps[1:,]:
+            node_current = self.__get_node(x, y)
+            line_current = self.__new_line(
+                point_start = self.node[node_previous].get_point(),
+                point_end = self.node[node_current].get_point(),
+                line_before = line_previous
+            )
             if type == 'CENTER':
                 self.whiteline.append(
-                    line = len(self.line),
-                    node = len(self.node) - 1
+                    line = line_current,
+                    node = node_previous
                 )
             elif type == 'EDGE':
                 self.roadedge.append(
-                    line = len(self.line),
-                    node = len(self.node) - 1
+                    line = line_current,
+                    node = node_previous
                 )
-
-        # Closed loop: first Line follows last Line.
-        if closed_loop:
-            self.line[-1].set_line_after(line_first)
-            self.line[line_first].set_line_before(len(self.lane))
+            line_previous = line_current
 
     # Returns the DTLane magnitude/direction data in the format:
     # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]

@@ -23,16 +23,14 @@ class VectorMap:
         self.point.append(x, y)
         self.node.append(len(self.point))
         node_id = len(self.node)
-        # Add entry to hash map.
-        if str(x) in self.__xy_node_map.keys():
-            self.__xy_node_map[str(x)][str(y)] = node_id
-        else: self.__xy_node_map[str(x)] = {str(y): node_id}
+        # Add entry to Node map.
+        self.__xy_node_map[(x, y)] = node_id
         return node_id
 
     # Checks if a Node already exists at (x, y). Returns Node ID if one exists,
     # otherwise returns None.
     def __find_node(self, x, y):
-        try: return self.__xy_node_map[str(x)][str(y)]
+        try: return self.__xy_node_map[(x, y)]
         except KeyError: return None
 
     # Returns the Node ID of the Node at (x, y) if one exists, otherwise makes

@@ -40,16 +40,50 @@ class VectorMap:
         if node_id is None: node_id = self.__new_node(x, y)
         return node_id
 
-    # Creates a new Line between the last two points. If the connect keyword
-    # argument is True, the previous Line will be connected to the new Line.
-    # Returns ID of new Line.
-    def __new_line(self, point_start=0, point_end=0, line_before=None):
-        self.line.append(   point_start = point_start,
-                            point_end   = point_end)
+    # Creates a new Lane between the last two points. Returns ID of Lane and
+    # DTLane as a Tuple.
+    def __new_lane(self, node_start=0, node_end=0, lane_before=None,
+            dtlane_before=None):
+        mag, dir = self.__compute_vector(
+            node_start  = node_start,
+            node_end    = node_end
+        )
+        if dtlane_before is not None:
+            distance = self.dtlane[dtlane_before].get_length() + mag
+        else: distance = mag
+        self.dtlane.append(
+            point       = self.node[node_end].get_point(),
+            length      = distance,
+            direction   = dir
+        )
+        self.lane.append(
+            dtlane      = len(self.dtlane),
+            node_start  = node_start,
+            node_end    = node_end,
+            length      = mag
+        )
+        lane_id = len(self.lane)
+        dtlane_id = len(self.dtlane)
+        if lane_before is not None:
+            self.lane[lane_id].set_lane_before(lane_before)
+            self.lane[lane_before].set_lane_after(lane_id)
+        return (lane_id, dtlane_id)
+
+    # Creates a new Line between the last two points. Returns ID of new Line.
+    def __new_line(self, node_start=0, node_end=0, line_before=None,
+            line_type='EDGE'):
+        self.line.append(   point_start = self.node[node_start].get_point(),
+                            point_end   = self.node[node_end].get_point())
+        if line_type == 'CENTER':
+            self.whiteline.append(line = len(self.line), node = node_start)
+        elif line_type == 'EDGE':
+            self.roadedge.append(line = len(self.line), node = node_start)
+        else: raise ValueError('__new_line: line_type=' + str(line_type))
         if line_before is not None:
             self.line[-1].set_line_before(line_before)
             self.line[line_before].set_line_after(len(self.line))
-        return len(self.line)
+        line_id = len(self.line)
+        return line_id
 
     # Returns the distance and direction between two Nodes.
     def __compute_vector(self, node_start=0, node_end=0):
@@ -67,49 +101,35 @@ class VectorMap:
         # Create or find the first Node.
         node_first = self.__get_node(ps[0][0], ps[0][1])
         lane_first = None
-        distance = 0.0
 
         # Generate vector map objects.
         node_previous = node_first
+        lane_previous = None
+        dtlane_previous = None
         for (x, y) in ps[1:,]:
             node_current = self.__get_node(x, y)
-            mag, dir = self.__compute_vector(
-                node_start  = node_previous,
-                node_end    = node_current
-            )
-            self.dtlane.append(
-                point       = self.node[node_current].get_point(),
-                length      = distance,
-                direction   = dir
-            )
-            self.lane.append(
-                dtlane      = len(self.dtlane),
-                node_start  = node_previous,
-                node_end    = node_current,
-                length      = mag
+            lane_previous, dtlane_previous = self.__new_lane(
+                node_start = node_previous,
+                node_end = node_current,
+                lane_before = lane_previous,
+                dtlane_before = dtlane_previous
             )
 
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
-            if lane_first is None: lane_first = len(self.lane)
-            else:
-                self.lane[-1].set_lane_before(len(self.lane) - 1)
-                self.lane[-2].set_lane_after(len(self.lane))
+            if lane_first is None: lane_first = lane_previous
             node_previous = node_current
-            distance += mag
 
+        # Mark junctions and turns provided by caller.
         self.lane[lane_first].set_junction(junction_start)
         self.lane[lane_first].set_turn(turn_start)
-        self.lane[-1].set_junction(junction_end)
-        self.lane[-1].set_turn(turn_end)
+        self.lane[lane_previous].set_junction(junction_end)
+        self.lane[lane_previous].set_turn(turn_end)
 
     # Coordinate data ps must be provided as a numpy array in the form:
     # [[x0, y0], [x1, y1], ...]
-    def make_line(self, ps, type='EDGE'):
-        if type == 'CENTER' and type == 'EDGE':
-            raise ValueError('Line type ' + type + ' not valid.')
-            return
-
+    # Valid opitions for line_type: 'EDGE' or 'CENTER'.
+    def make_line(self, ps, line_type='EDGE'):
         node_previous = self.__get_node(ps[0][0], ps[0][1])
         line_previous = None
 
@@ -117,20 +137,11 @@ class VectorMap:
         for (x, y) in ps[1:,]:
             node_current = self.__get_node(x, y)
             line_current = self.__new_line(
-                point_start = self.node[node_previous].get_point(),
-                point_end = self.node[node_current].get_point(),
-                line_before = line_previous
+                node_start = node_previous,
+                node_end = node_current,
+                line_before = line_previous,
+                line_type = line_type
             )
-            if type == 'CENTER':
-                self.whiteline.append(
-                    line = line_current,
-                    node = node_previous
-                )
-            elif type == 'EDGE':
-                self.roadedge.append(
-                    line = line_current,
-                    node = node_previous
-                )
             line_previous = line_current
 
     # Returns the DTLane magnitude/direction data in the format:

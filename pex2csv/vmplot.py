@@ -5,8 +5,7 @@ import numpy as np
 def vmplot(vm):
 
     # Create the figure.
-    plt.figure()
-    plt.title('Vector Map')
+    plt.figure('Vector Map')
     plt.axis('equal')
     plt.grid(True)
 

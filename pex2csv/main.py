@@ -54,4 +54,5 @@ if __name__ == '__main__':
     vm.make_line(centers, line_type='CENTER')
     vm.export()
 
+    # Blocking function.
     vmplot(vm)

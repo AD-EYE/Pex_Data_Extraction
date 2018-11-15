@@ -73,8 +73,8 @@ if __name__ == '__main__':
 
     vm = VectorMap()
     vm.make_lane(lanes, junction_end='RIGHT_MERGING')
-    vm.make_line(edges, type='EDGE')
-    vm.make_line(centers, type='CENTER')
+    vm.make_line(edges, line_type='EDGE')
+    vm.make_line(centers, line_type='CENTER')
     vm.export()
 
     plt.figure(2)

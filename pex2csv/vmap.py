@@ -142,18 +142,45 @@ class VectorMap:
                 line_before = line_previous,
                 line_type = line_type
             )
+            node_previous = node_current
             line_previous = line_current
 
-    # Returns the DTLane magnitude/direction data in the format:
+    # Returns the DTLane/Lane magnitude/direction data in the format:
     # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]
     def get_all_vectors(self):
-        vectors = []
+        data = []
         for l in self.lane:
-            x,y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+            x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
-            vectors.append([x, y, magnitude, direction])
-        return np.array(vectors)
+            data.append([x, y, magnitude, direction])
+        return np.array(data)
+
+    # Returns the WhiteLine data in the format:
+    # [ [[l0_x0, l0_y0], [l0_x1, l0_y1]],
+    #   [[l1_x0, l1_y0], [l1_x1, l1_y1]], ... ]
+    def get_all_lines(self):
+        data = []
+        for wl in self.whiteline:
+            point0_id = self.line[wl.get_line()].get_point_start()
+            point1_id = self.line[wl.get_line()].get_point_end()
+            x0, y0 = self.point[point0_id].get_xy()
+            x1, y1 = self.point[point1_id].get_xy()
+            data.append([[x0, y0], [x1, y1]])
+        return np.array(data)
+
+    # Returns the RoadEdge data in the format:
+    # [ [[e0_x0, e0_y0], [e0_x1, e0_y1]],
+    #   [[e1_x0, e1_y0], [e1_x1, e1_y1]], ... ]
+    def get_all_edges(self):
+        data = []
+        for re in self.roadedge:
+            point0_id = self.line[re.get_line()].get_point_start()
+            point1_id = self.line[re.get_line()].get_point_end()
+            x0, y0 = self.point[point0_id].get_xy()
+            x1, y1 = self.point[point1_id].get_xy()
+            data.append([[x0, y0], [x1, y1]])
+        return np.array(data)
 
     def export(self):
         self.point.export('./csv/point.csv')
@@ -261,6 +288,12 @@ class Line:
         self.FPID = point_end       # Ending Point ID
         self.BLID = line_before     # Preceding Line ID
         self.FLID = line_after      # Following Line ID
+
+    def get_point_start(self):
+        return self.BPID
+
+    def get_point_end(self):
+        return self.FPID
 
     def set_line_before(self, line_before):
         self.BLID = line_before
@@ -374,6 +407,9 @@ class WhiteLine:
         self.type = 0
         self.LinkID = node       # Corresponding Node ID
 
+    def get_line(self):
+        return self.LID
+
     def __str__(self):
         data = [self.LID, self.Width, self.Color, self.type, self.LinkID]
         return ','.join(map(str, data))
@@ -382,6 +418,9 @@ class RoadEdge:
     def __init__(self, line=0, node=0):
         self.LID = line          # Corresponding Line ID
         self.LinkID = node       # Corresponding Node ID
+
+    def get_line(self):
+        return self.LID
 
     def __str__(self):
         data = [self.LID, self.LinkID]

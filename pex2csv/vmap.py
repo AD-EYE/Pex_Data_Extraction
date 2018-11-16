@@ -145,42 +145,62 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
-    # Returns the DTLane/Lane magnitude/direction data in the format:
+    # Returns the drivable lane data in the format:
     # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]
-    def get_all_vectors(self):
+    def __get_vectors(self):
         data = []
         for l in self.lane:
             x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
             data.append([x, y, magnitude, direction])
-        return np.array(data)
+        return data
 
-    # Returns the WhiteLine data in the format:
-    # [ [[l0_x0, l0_y0], [l0_x1, l0_y1]],
-    #   [[l1_x0, l1_y0], [l1_x1, l1_y1]], ... ]
-    def get_all_lines(self):
-        data = []
+    # Returns the center line data in the format:
+    # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    def __get_lines(self):
+        data = [[]]
         for wl in self.whiteline:
-            point0_id = self.line[wl.get_line()].get_point_start()
-            point1_id = self.line[wl.get_line()].get_point_end()
-            x0, y0 = self.point[point0_id].get_xy()
-            x1, y1 = self.point[point1_id].get_xy()
-            data.append([[x0, y0], [x1, y1]])
+            p0 = self.line[wl.get_line()].get_point_start()
+            p1 = self.line[wl.get_line()].get_point_end()
+            x0, y0 = self.point[p0].get_xy()
+            x1, y1 = self.point[p1].get_xy()
+            if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
+            elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
+            else: data.append([[x0, y0], [x1, y1]])
         return np.array(data)
 
-    # Returns the RoadEdge data in the format:
-    # [ [[e0_x0, e0_y0], [e0_x1, e0_y1]],
-    #   [[e1_x0, e1_y0], [e1_x1, e1_y1]], ... ]
-    def get_all_edges(self):
-        data = []
+    # Returns the road edge data in the format:
+    # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    def __get_edges(self):
+        data = [[]]
         for re in self.roadedge:
-            point0_id = self.line[re.get_line()].get_point_start()
-            point1_id = self.line[re.get_line()].get_point_end()
-            x0, y0 = self.point[point0_id].get_xy()
-            x1, y1 = self.point[point1_id].get_xy()
-            data.append([[x0, y0], [x1, y1]])
+            p0 = self.line[re.get_line()].get_point_start()
+            p1 = self.line[re.get_line()].get_point_end()
+            x0, y0 = self.point[p0].get_xy()
+            x1, y1 = self.point[p1].get_xy()
+            if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
+            elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
+            else: data.append([[x0, y0], [x1, y1]])
         return np.array(data)
+
+    # Displays the vector map as a matplotlib figure. (Blocking function.)
+    def plot(self):
+        from matplotlib import pyplot as plt
+        plt.figure('Vector Map')
+        plt.axis('equal')
+        plt.grid(True)
+        for x, y, m, d in self.__get_vectors():
+            plt.arrow(
+                x, y, m * np.cos(d), m * np.sin(d),
+                head_width=0.25, head_length=0.2, fc='w', ec='k',
+                width=0.1, length_includes_head=True
+            )
+        for line in self.__get_lines():
+            plt.plot(line[:,0], line[:,1], 'y-')
+        for edge in self.__get_edges():
+            plt.plot(edge[:,0], edge[:,1], 'b-')
+        plt.show()
 
     def export(self):
         self.point.export('./csv/point.csv')

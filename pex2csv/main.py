@@ -39,7 +39,9 @@ if __name__ == '__main__':
 
     vm = VectorMap()
     for tlane in tlanes:
-        vm.make_lane(tlane, junction_end='RIGHT_MERGING')
+        # vm.make_lane(tlane, turn_end='RIGHT_TURN', turn_start='LEFT_TURN')
+        # vm.make_lane(tlane, junction_end='RIGHT_BRANCHING', junction_start='RIGHT_MERGING')
+        vm.make_lane(tlane, junction_end='LEFT_BRANCHING', junction_start='LEFT_MERGING')
     vm.make_line(edges, line_type='EDGE')
     vm.make_line(centers, line_type='CENTER')
     vm.export()

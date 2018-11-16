@@ -161,19 +161,38 @@ class VectorMap:
             line_previous = line_current
 
     # Returns the drivable lane data in the format:
-    # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]
-    def __get_vectors(self):
+    # [ [x0, y0, mag0, dir0, edge_color0, face_color0],
+    #   [x1, y1, mag1, dir1, edge_color1, face_color1], ...]
+    # Colors are used in the plot() method to generate graphical arrows.
+    def __aggregate_lanes(self):
         data = []
         for l in self.lane:
             x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
-            data.append([x, y, magnitude, direction])
+            if l.get_turn() == 'RIGHT_TURN':
+                edge_color = 'r'
+                face_color = 'r'
+            elif l.get_turn() == 'LEFT_TURN':
+                edge_color = 'g'
+                face_color = 'g'
+            elif    l.get_junction() == 'RIGHT_BRANCHING' or \
+                    l.get_junction() == 'RIGHT_MERGING':
+                edge_color = 'r'
+                face_color = 'w'
+            elif    l.get_junction() == 'LEFT_BRANCHING' or \
+                    l.get_junction() == 'LEFT_MERGING':
+                edge_color = 'g'
+                face_color = 'w'
+            else:
+                edge_color = 'k'
+                face_color = 'w'
+            data.append([x, y, magnitude, direction, edge_color, face_color])
         return data
 
     # Returns the center line data in the format:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
-    def __get_lines(self):
+    def __aggregate_lines(self):
         data = [[]]
         for wl in self.whiteline:
             p0 = self.line[wl.get_line()].get_point_start()
@@ -187,7 +206,7 @@ class VectorMap:
 
     # Returns the road edge data in the format:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
-    def __get_edges(self):
+    def __aggregate_edges(self):
         data = [[]]
         for re in self.roadedge:
             p0 = self.line[re.get_line()].get_point_start()
@@ -205,15 +224,15 @@ class VectorMap:
         plt.figure('Vector Map')
         plt.axis('equal')
         plt.grid(True)
-        for x, y, m, d in self.__get_vectors():
+        for x, y, m, d, ec, fc in self.__aggregate_lanes():
             plt.arrow(
                 x, y, m * np.cos(d), m * np.sin(d),
-                head_width=0.25, head_length=0.2, fc='w', ec='k',
+                head_width=0.25, head_length=0.2, fc=fc, ec=ec,
                 width=0.1, length_includes_head=True
             )
-        for line in self.__get_lines():
+        for line in self.__aggregate_lines():
             plt.plot(line[:,0], line[:,1], 'y-')
-        for edge in self.__get_edges():
+        for edge in self.__aggregate_edges():
             plt.plot(edge[:,0], edge[:,1], 'b-')
         plt.show()
 
@@ -383,6 +402,21 @@ class Lane:
 
     def set_lane_after(self, lane_after):
         self.FLID = lane_after
+
+    def get_junction(self):
+        if self.JCT == 0: return 'NORMAL'
+        elif self.JCT == 1: return 'LEFT_BRANCHING'
+        elif self.JCT == 2: return 'RIGHT_BRANCHING'
+        elif self.JCT == 3: return 'LEFT_MERGING'
+        elif self.JCT == 4: return 'RIGHT_MERGING'
+        elif self.JCT == 5: return 'COMPOSITION'
+        else: raise ValueError('Junction ' + str(self.JCT) + ' not valid.')
+
+    def get_turn(self):
+        if self.LaneType == 0: return 'STRAIGHT'
+        elif self.LaneType == 1: return 'LEFT_TURN'
+        elif self.LaneType == 2: return 'RIGHT_TURN'
+        else: raise ValueError('Turn ' + self.LaneType + ' not valid.')
 
     def set_junction(self, type):
         if type == 'NORMAL':                self.JCT = 0

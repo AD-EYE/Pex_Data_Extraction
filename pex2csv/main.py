@@ -24,7 +24,7 @@ def process_order(roads):
                 roads[id2].next_road = id1
 
 if __name__ == '__main__':
-    roads = parse.get_roads(path='./data/connected_roads1.pex')
+    roads = parse.get_roads(path='./data/connected_roads.pex')
 
     centers = []
     edges = []

@@ -1,3 +1,18 @@
+'''
+Samuel Tanner Lindemer
+KTH Royal Institute of Technology
+Stockholm, Sweden 2018
+
+The VectorMap class in this file is used as an interface to translate Cartesian
+coordinate data into the vector map format used in autonomous driving
+applications like Autoware.
+
+make_lane:  Translates coordinate data into drivable lanes (i.e., vectors).
+make_line:  Translates coordinate data into center lines and road edges.
+plot:       Generates a visual display of the vector map using matplotlib.
+export:     Saves the vector map data to the appropriate .csv files.
+'''
+
 import numpy as np
 
 # This class is an aggregation of VMList objects which contain all of the data

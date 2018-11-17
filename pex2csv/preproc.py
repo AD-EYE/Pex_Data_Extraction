@@ -49,7 +49,7 @@ class RoadProcessor(object):
     def get_lanes(self):
         roads = self.roads
         roundabouts = self.get_roundabouts()
-        ends = self.get_end_roads()
+        end = self.get_end_roads()
 
         for roundabout in roundabouts:
             self.add_lane(roundabout)
@@ -64,6 +64,12 @@ class RoadProcessor(object):
                     if not "Roundabout" in path.id:
                         road = roads.pop(path.id, None)
                     self.add_lane(road)
+
+        if end:
+            paths = self.get_path_from_end(end.id)
+            for path in paths:
+                self.add_lane(path)
+
         return self.lanes
 
     def add_lane(self, lane):
@@ -73,9 +79,9 @@ class RoadProcessor(object):
         e1 = []
         e2 = []
         if lane.isturned:
-            for (x, y) in lane.l[0]:
-                l1.append([x, y])
             for (x, y) in lane.l[1]:
+                l1.append([x, y])
+            for (x, y) in lane.l[0]:
                 l2.append([x, y])
         else:
             for (x, y) in lane.l[0]:
@@ -119,7 +125,30 @@ class RoadProcessor(object):
                 xl = self.get_exit_lane(nr, road.id)
                 segments.append(xl)
                 break
+            if road.next_road == -1:
+                break
             road = nr
+        return segments
+
+    def get_path_from_end(self, id):
+        roads = self.roads
+        road = roads[id]
+        segments = []
+        segments.append(road)
+
+        while True:
+            if road.next_road == -1: break
+            nr = roads[road.next_road]
+            if "Roundabout" in nr.id: break
+
+            if nr.next_road == road.id:
+                nr.turn_road()
+                nr.next_road = nr.previous_road
+                nr.previous_road = road.id
+
+            segments.append(nr)
+            road = nr
+
         return segments
 
     def get_exit_lane(self, roundabout, roadid):
@@ -134,7 +163,7 @@ class RoadProcessor(object):
         roads = self.roads
         for id in roads.keys():
             if not "Roundabout" in id and roads[id].previous_road == -1:
-                return id
+                return roads[id]
         return None
 
     def get_roundabouts(self):

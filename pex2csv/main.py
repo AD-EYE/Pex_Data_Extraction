@@ -14,6 +14,6 @@ if __name__ == '__main__':
         vm.make_line(edge, line_type='EDGE')
     for center in rproc.centers:
         vm.make_line(center, line_type='CENTER')
-        
+
     vm.export()
     vm.plot()

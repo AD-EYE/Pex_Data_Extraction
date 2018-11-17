@@ -1,3 +1,18 @@
+'''
+Samuel Tanner Lindemer
+KTH Royal Institute of Technology
+Stockholm, Sweden 2018
+
+The VectorMap class in this file is used as an interface to translate Cartesian
+coordinate data into the vector map format used in autonomous driving
+applications like Autoware.
+
+make_lane:  Translates coordinate data into drivable lanes (i.e., vectors).
+make_line:  Translates coordinate data into center lines and road edges.
+plot:       Generates a visual display of the vector map using matplotlib.
+export:     Saves the vector map data to the appropriate .csv files.
+'''
+
 import numpy as np
 
 # This class is an aggregation of VMList objects which contain all of the data
@@ -145,42 +160,81 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
-    # Returns the DTLane/Lane magnitude/direction data in the format:
-    # [[x0, y0, mag0, dir0], [x1, y1, mag1, dir1], ...]
-    def get_all_vectors(self):
+    # Returns the drivable lane data in the format:
+    # [ [x0, y0, mag0, dir0, edge_color0, face_color0],
+    #   [x1, y1, mag1, dir1, edge_color1, face_color1], ...]
+    # Colors are used in the plot() method to generate graphical arrows.
+    def __aggregate_lanes(self):
         data = []
         for l in self.lane:
             x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
-            data.append([x, y, magnitude, direction])
-        return np.array(data)
+            if l.get_turn() == 'RIGHT_TURN':
+                edge_color = 'r'
+                face_color = 'r'
+            elif l.get_turn() == 'LEFT_TURN':
+                edge_color = 'g'
+                face_color = 'g'
+            elif    l.get_junction() == 'RIGHT_BRANCHING' or \
+                    l.get_junction() == 'RIGHT_MERGING':
+                edge_color = 'r'
+                face_color = 'w'
+            elif    l.get_junction() == 'LEFT_BRANCHING' or \
+                    l.get_junction() == 'LEFT_MERGING':
+                edge_color = 'g'
+                face_color = 'w'
+            else:
+                edge_color = 'k'
+                face_color = 'w'
+            data.append([x, y, magnitude, direction, edge_color, face_color])
+        return data
 
-    # Returns the WhiteLine data in the format:
-    # [ [[l0_x0, l0_y0], [l0_x1, l0_y1]],
-    #   [[l1_x0, l1_y0], [l1_x1, l1_y1]], ... ]
-    def get_all_lines(self):
-        data = []
+    # Returns the center line data in the format:
+    # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    def __aggregate_lines(self):
+        data = [[]]
         for wl in self.whiteline:
-            point0_id = self.line[wl.get_line()].get_point_start()
-            point1_id = self.line[wl.get_line()].get_point_end()
-            x0, y0 = self.point[point0_id].get_xy()
-            x1, y1 = self.point[point1_id].get_xy()
-            data.append([[x0, y0], [x1, y1]])
+            p0 = self.line[wl.get_line()].get_point_start()
+            p1 = self.line[wl.get_line()].get_point_end()
+            x0, y0 = self.point[p0].get_xy()
+            x1, y1 = self.point[p1].get_xy()
+            if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
+            elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
+            else: data.append([[x0, y0], [x1, y1]])
         return np.array(data)
 
-    # Returns the RoadEdge data in the format:
-    # [ [[e0_x0, e0_y0], [e0_x1, e0_y1]],
-    #   [[e1_x0, e1_y0], [e1_x1, e1_y1]], ... ]
-    def get_all_edges(self):
-        data = []
+    # Returns the road edge data in the format:
+    # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    def __aggregate_edges(self):
+        data = [[]]
         for re in self.roadedge:
-            point0_id = self.line[re.get_line()].get_point_start()
-            point1_id = self.line[re.get_line()].get_point_end()
-            x0, y0 = self.point[point0_id].get_xy()
-            x1, y1 = self.point[point1_id].get_xy()
-            data.append([[x0, y0], [x1, y1]])
+            p0 = self.line[re.get_line()].get_point_start()
+            p1 = self.line[re.get_line()].get_point_end()
+            x0, y0 = self.point[p0].get_xy()
+            x1, y1 = self.point[p1].get_xy()
+            if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
+            elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
+            else: data.append([[x0, y0], [x1, y1]])
         return np.array(data)
+
+    # Displays the vector map as a matplotlib figure. (Blocking function.)
+    def plot(self):
+        from matplotlib import pyplot as plt
+        plt.figure('Vector Map')
+        plt.axis('equal')
+        plt.grid(True)
+        for x, y, m, d, ec, fc in self.__aggregate_lanes():
+            plt.arrow(
+                x, y, m * np.cos(d), m * np.sin(d),
+                head_width=0.25, head_length=0.2, fc=fc, ec=ec,
+                width=0.1, length_includes_head=True
+            )
+        for line in self.__aggregate_lines():
+            plt.plot(line[:,0], line[:,1], 'y-')
+        for edge in self.__aggregate_edges():
+            plt.plot(edge[:,0], edge[:,1], 'b-')
+        plt.show()
 
     def export(self):
         self.point.export('./csv/point.csv')
@@ -348,6 +402,21 @@ class Lane:
 
     def set_lane_after(self, lane_after):
         self.FLID = lane_after
+
+    def get_junction(self):
+        if self.JCT == 0: return 'NORMAL'
+        elif self.JCT == 1: return 'LEFT_BRANCHING'
+        elif self.JCT == 2: return 'RIGHT_BRANCHING'
+        elif self.JCT == 3: return 'LEFT_MERGING'
+        elif self.JCT == 4: return 'RIGHT_MERGING'
+        elif self.JCT == 5: return 'COMPOSITION'
+        else: raise ValueError('Junction ' + str(self.JCT) + ' not valid.')
+
+    def get_turn(self):
+        if self.LaneType == 0: return 'STRAIGHT'
+        elif self.LaneType == 1: return 'LEFT_TURN'
+        elif self.LaneType == 2: return 'RIGHT_TURN'
+        else: raise ValueError('Turn ' + self.LaneType + ' not valid.')
 
     def set_junction(self, type):
         if type == 'NORMAL':                self.JCT = 0

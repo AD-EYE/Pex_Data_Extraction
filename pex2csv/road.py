@@ -3,9 +3,11 @@ import numpy as np
 from collections import namedtuple
 
 class Road:
-    def __init__(self):
+    def __init__(self, id):
+        self.id = id
         self.previous_road = -1
         self.next_road = -1
+        self.isturned = False
 
     def getstart(self):
         return self.c.getstart()
@@ -13,26 +15,31 @@ class Road:
     def getend(self):
         return self.c.getend()
 
+    def turn_road(self):
+        self.isturned = not self.isturned
+
 class BendRoad(Road):
-    def __init__(self, x0, y0, h, rh, clr, lw):
-        Road.__init__(self)
+    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes):
+        Road.__init__(self, id)
         self.c =  Bend( x0, y0, h, rh, clr)
-        self.e1 = Bend( x0 + lw * np.cos(h + np.pi / 2),
-                        y0 + lw * np.sin(h + np.pi / 2),
-                        h, rh, clr - np.sign(rh) * lw)
-        self.e2 = Bend( x0 - lw * np.cos(h + np.pi / 2),
-                        y0 - lw * np.sin(h + np.pi / 2),
-                        h, rh, clr + np.sign(rh) * lw)
-        self.l1 = Bend( x0 + lw * np.cos(h + np.pi / 2) / 2,
-                        y0 + lw * np.sin(h + np.pi / 2) / 2,
-                        h, rh, clr - np.sign(rh) * lw / 2)
-        self.l2 = Bend( x0 - lw * np.cos(h + np.pi / 2) / 2,
-                        y0 - lw * np.sin(h + np.pi / 2) / 2,
-                        h, rh, clr + np.sign(rh) * lw / 2)
+        self.e1 = Bend( x0 + lw * nbr_of_lanes / 2 * np.cos(h + np.pi / 2),
+                        y0 + lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
+                        h, rh, clr - np.sign(rh) * lw * nbr_of_lanes / 2)
+        self.e2 = Bend( x0 - lw * nbr_of_lanes / 2 * np.cos(h + np.pi / 2),
+                        y0 - lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
+                        h, rh, clr + np.sign(rh) * lw * nbr_of_lanes / 2)
+        self.l = []
+        lwi = -(nbr_of_lanes - 1) * lw
+        for _ in range(nbr_of_lanes):
+            self.l.append(Bend( x0 + lwi * np.cos(h + np.pi / 2) / 2,
+                                y0 + lwi * np.sin(h + np.pi / 2) / 2,
+                               h, rh, clr - np.sign(rh) * lwi / 2))
+            lwi += 2 * lw
+
 
 class CurvedRoad(Road):
-    def __init__(self, x0, y0, h, rh, cp1, cp2, dx, dy, lw):
-        Road.__init__(self)
+    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes):
+        Road.__init__(self, id)
         x_ = dx * np.cos(h) - dy * np.sin(h)
         y_ = dx * np.sin(h) + dy * np.cos(h)
         x1 = x0 + cp1 * np.cos(h)
@@ -44,19 +51,28 @@ class CurvedRoad(Road):
         xs = [x0, x1, x2, x3]
         ys = [y0, y1, y2, y3]
         self.c = Curve(xs, ys, 0)
-        self.e1 = Curve(xs, ys, lw)
-        self.e2 = Curve(xs, ys, -lw)
-        self.l1 = Curve(xs, ys, lw / 2)
-        self.l2 = Curve(xs, ys, -lw / 2)
+        self.e1 = Curve(xs, ys, lw * nbr_of_lanes / 2)
+        self.e2 = Curve(xs, ys, -lw * nbr_of_lanes / 2)
+
+        self.l = []
+        lwi = -(nbr_of_lanes - 1) * lw / 2
+        for _ in range(nbr_of_lanes):
+            self.l.append(Curve(xs, ys, lwi))
+            lwi += lw
 
 class RoundaboutRoad(Road):
-    def __init__(self, x0, y0, r, lw, chs):
-        Road.__init__(self)
+    def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes):
+        Road.__init__(self, id)
         self.c  = Bend(x0, y0 - r, 0, 2 * np.pi, r)
         self.e1 = []
         self.e2 = Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))
-        self.l1 = Bend(x0, y0 - (r - lw / 2), 0, 2 * np.pi, r - lw / 2)
-        self.l2 = Bend(x0, y0 - (r + lw / 2), 0, 2 * np.pi, (r + lw / 2))
+        self.l = []
+        lwi = -(nbr_of_lanes / 2) * lw
+        for _ in range(nbr_of_lanes):
+            self.l.append(Bend( x0,
+                                y0 - (r - lwi / 2),
+                                0, 2 * np.pi, r - lwi / 2))
+            lwi += lw * 2
 
         offset = np.pi / 8
         h = []
@@ -74,18 +90,37 @@ class RoundaboutRoad(Road):
             r1 = r + lw
             self.e1.append(Bend(x1, y1, h[i], rh[i], r1))
 
-        self.x = []
-        self.xl = []
+        self.exit_lanes = []
         for ch in chs:
-            (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw)
-            self.x.append(Bend(x, y, h, a, rc))
-            (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw)
-            self.x.append(Bend(x, y, h, a, rc))
+            self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes))
 
-            (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw/2)
-            self.xl.append(Bend(x, y, h, a, rc))
-            (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw/2)
-            self.xl.append(Bend(x, y, h, a, rc))
+class ExitLane(Road):
+    def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes):
+        Road.__init__(self, id)
+        self.x = x0
+        self.y = y0
+        self.r = r
+        self.ch = ch
+        self.lw = lw
+        (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw)
+        self.e1 = Bend(x, y, h, a, rc)
+        (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw)
+        self.e2 = Bend(x, y, h, a, rc)
+
+        self.l = []
+        (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw/2)
+        self.l.append(Bend(x, y, h, a, rc))
+        (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw/2)
+        self.l.append(Bend(x, y, h, a, rc))
+
+        self.c = []
+
+    def getstart(self):
+        return (self.x, self.y)
+
+    def getend(self):
+        return (self.x + (self.r + 2 * self.lw) * np.cos(self.ch),
+                self.y + (self.r + 2 * self.lw) * np.sin(self.ch))
 
     def circles_from_p1p2r(self, p1, p2, r):
         Circle = Cir = namedtuple('Circle', 'x, y')
@@ -132,14 +167,17 @@ class RoundaboutRoad(Road):
         return (x2, y2, h, sign * np.pi / 3, rc)
 
 class StraightRoad(Road):
-    def __init__(self, x0, y0, h, l, lw):
-        Road.__init__(self)
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes):
+        Road.__init__(self, id)
         self.c =  Straight( x0, y0, h, l)
         self.e1 = Straight( x0 + lw * np.cos(h + np.pi / 2),
                             y0 + lw * np.sin(h + np.pi / 2), h, l)
         self.e2 = Straight( x0 - lw * np.cos(h + np.pi / 2),
                             y0 - lw * np.sin(h + np.pi / 2), h, l)
-        self.l1 = Straight( x0 + lw * np.cos(h + np.pi / 2) / 2,
-                            y0 + lw * np.sin(h + np.pi / 2) / 2, h, l)
-        self.l2 = Straight( x0 - lw * np.cos(h + np.pi / 2) / 2,
-                            y0 - lw * np.sin(h + np.pi / 2) / 2, h, l)
+        self.l = []
+        lwi = -(nbr_of_lanes / 2) * lw
+        for _ in range(nbr_of_lanes):
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) / 2,
+                                    y0 + lwi * np.sin(h + np.pi / 2) / 2,
+                                    h, l))
+            lwi += lw * 2

@@ -10,27 +10,29 @@ def get_roads(path='./data/roads.pex'):
 
     for s in segments:
         type = s.xpath('@xsi:type', namespaces = ns)[0]
+        id = s.get('id')
         if (type == 'BendRoad'):
-            roads[s.get('id')] = get_bend(s)
+            roads[id] = get_bend(s, id)
         elif (type == 'BezierRoad'):
-            roads[s.get('id')] = get_curved(s)
+            roads[id] = get_curved(s, id)
         elif (type == 'StraightRoad'):
-            roads[s.get('id')] = get_straight(s)
+            roads[id] = get_straight(s, id)
         elif (type == 'Roundabout'):
-            roads[s.get('id')] = get_roundabout(s)
+            roads[id] = get_roundabout(s, id)
 
     return roads
 
-def get_bend(s):
+def get_bend(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading')) * np.pi / 180
     rh = float(s.get('RelativeHeading')) * np.pi / 180
     clr = float(s.get('CenterlineRadius'))
     lw = float(s.get('LaneWidth'))
-    return BendRoad(x0, y0, h, rh, clr, lw)
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes)
 
-def get_curved(s):
+def get_curved(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading')) * np.pi / 180
@@ -40,24 +42,27 @@ def get_curved(s):
     dx = float(s.get('Xoffset'))
     dy = float(s.get('Yoffset'))
     lw = float(s.get('LaneWidth'))
-    return CurvedRoad(x0, y0, h, rh, cp1, cp2, dx, dy, lw)
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes)
 
-def get_roundabout(s):
+def get_roundabout(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading'))
     r = float(s.get('Radius'))
     lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
     cs = s.xpath('//CrossSections')[0]
     chs = []
     for s in cs:
         chs.append((float(s.get('Heading')) + h) * np.pi / 180)
-    return RoundaboutRoad(x0, y0, r, lw, chs)
+    return RoundaboutRoad(id, x0, y0, r, lw, chs, nbr_of_lanes)
 
-def get_straight(s):
+def get_straight(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading')) * np.pi / 180
     l = float(s.get('RoadLength'))
     lw = float(s.get('LaneWidth'))
-    return StraightRoad(x0, y0, h, l, lw)
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes)

@@ -29,12 +29,12 @@ class BendRoad(Road):
                         y0 - lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
                         h, rh, clr + np.sign(rh) * lw * nbr_of_lanes / 2)
         self.l = []
-        lwi = -(nbr_of_lanes - 1) * lw
+        lwi = (nbr_of_lanes - 1) * lw
         for _ in range(nbr_of_lanes):
             self.l.append(Bend( x0 + lwi * np.cos(h + np.pi / 2) / 2,
                                 y0 + lwi * np.sin(h + np.pi / 2) / 2,
                                h, rh, clr - np.sign(rh) * lwi / 2))
-            lwi += 2 * lw
+            lwi -= 2 * lw
 
 
 class CurvedRoad(Road):
@@ -67,12 +67,12 @@ class RoundaboutRoad(Road):
         self.e1 = []
         self.e2 = Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))
         self.l = []
-        lwi = -(nbr_of_lanes / 2) * lw
+        lwi = (nbr_of_lanes / 2) * lw
         for _ in range(nbr_of_lanes):
             self.l.append(Bend( x0,
                                 y0 - (r - lwi / 2),
                                 0, 2 * np.pi, r - lwi / 2))
-            lwi += lw * 2
+            lwi -= lw * 2
 
         offset = np.pi / 8
         h = []
@@ -168,16 +168,16 @@ class ExitLane(Road):
 
 class StraightRoad(Road):
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes):
-        Road.__init__(self)
+        Road.__init__(self, id)
         self.c =  Straight( x0, y0, h, l)
         self.e1 = Straight( x0 + lw * np.cos(h + np.pi / 2),
                             y0 + lw * np.sin(h + np.pi / 2), h, l)
         self.e2 = Straight( x0 - lw * np.cos(h + np.pi / 2),
                             y0 - lw * np.sin(h + np.pi / 2), h, l)
         self.l = []
-        lwi = -(nbr_of_lanes / 2) * lw
+        lwi = (nbr_of_lanes / 2) * lw
         for _ in range(nbr_of_lanes):
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) / 2,
                                     y0 + lwi * np.sin(h + np.pi / 2) / 2,
                                     h, l))
-            lwi += lw * 2
+            lwi -= lw * 2

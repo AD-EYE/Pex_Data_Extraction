@@ -77,6 +77,7 @@ class RoadProcessor(object):
         center = []
         e1 = []
         e2 = []
+        edges = []
         if lane.isturned:
             for (x, y) in lane.l[1]:
                 l1.append([x, y])
@@ -91,6 +92,15 @@ class RoadProcessor(object):
             center.append([x, y])
         for (x, y) in lane.e2:
             e2.append([x, y])
+        if type(lane.e1) is list:
+            for path in lane.e1:
+                for (x, y) in path:
+                    edges.append([x, y])
+                e1.append(edges)
+                edges = []
+        else:
+            for (x, y) in lane.e1:
+                e1.append([x, y])
 
         if lane.isturned:
             self.lanes.append(np.array(l1))
@@ -100,7 +110,11 @@ class RoadProcessor(object):
             self.lanes.append(np.array(l2))
 
         self.centers.append(np.array(center))
-        #self.edges.append(np.array(e1))
+        if type(lane.e1) is list:
+            for edge in e1:
+                self.edges.append(np.array(edge))
+        else:
+            self.edges.append(np.array(e1))
         self.edges.append(np.array(e2))
 
     def get_paths(self, id):

@@ -113,6 +113,11 @@ class VectorMap:
     def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
 
+        # Warn for empty input array.
+        if not ps.any():
+            print('make_lane(): Warning - empty input array.')
+            return
+
         # Create or find the first Node.
         node_first = self.__get_node(ps[0][0], ps[0][1])
         lane_first = None
@@ -145,6 +150,12 @@ class VectorMap:
     # [[x0, y0], [x1, y1], ...]
     # Valid opitions for line_type: 'EDGE' or 'CENTER'.
     def make_line(self, ps, line_type='EDGE'):
+        
+        # Warn for empty input array.
+        if not ps.any():
+            print('make_line(): Warning - empty input array.')
+            return
+
         node_previous = self.__get_node(ps[0][0], ps[0][1])
         line_previous = None
 
@@ -202,7 +213,8 @@ class VectorMap:
             if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
             elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
             else: data.append([[x0, y0], [x1, y1]])
-        return np.array(data)
+        if data != [[]]: return data
+        else: return None
 
     # Returns the road edge data in the format:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
@@ -216,7 +228,8 @@ class VectorMap:
             if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
             elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
             else: data.append([[x0, y0], [x1, y1]])
-        return np.array(data)
+        if data != [[]]: return data
+        else: return None
 
     # Displays the vector map as a matplotlib figure. (Blocking function.)
     def plot(self):
@@ -230,10 +243,16 @@ class VectorMap:
                 head_width=0.25, head_length=0.2, fc=fc, ec=ec,
                 width=0.1, length_includes_head=True
             )
-        for line in self.__aggregate_lines():
-            plt.plot(line[:,0], line[:,1], 'y-')
-        for edge in self.__aggregate_edges():
-            plt.plot(edge[:,0], edge[:,1], 'b-')
+        lines = self.__aggregate_lines()
+        if lines is not None:
+            for line in lines:
+                line = np.array(line)
+                plt.plot(line[:,0], line[:,1], 'y-')
+        edges = self.__aggregate_edges()
+        if edges is not None:
+            for edge in edges:
+                edge = np.array(edge)
+                plt.plot(edge[:,0], edge[:,1], 'b-')
         plt.show()
 
     def export(self):

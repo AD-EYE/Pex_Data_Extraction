@@ -7,6 +7,7 @@ class RoadProcessor(object):
         self.edges = []
         self.roads = roads.copy()
         self.process_order()
+        self.create_lanes()
 
     def process_order(self):
         roads = self.roads
@@ -46,7 +47,7 @@ class RoadProcessor(object):
                 roads[nr].previous_road = road
             road = nr
 
-    def get_lanes(self):
+    def create_lanes(self):
         roads = self.roads
         roundabouts = self.get_roundabouts()
         end = self.get_end_roads()
@@ -69,8 +70,6 @@ class RoadProcessor(object):
             paths = self.get_path_from_end(end.id)
             for path in paths:
                 self.add_lane(path)
-
-        return self.lanes
 
     def add_lane(self, lane):
         l1 = []
@@ -101,7 +100,7 @@ class RoadProcessor(object):
             self.lanes.append(np.array(l2))
 
         self.centers.append(np.array(center))
-        self.edges.append(np.array(e1))
+        #self.edges.append(np.array(e1))
         self.edges.append(np.array(e2))
 
     def get_paths(self, id):

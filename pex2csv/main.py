@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     centers = []
     edges = []
-    tlanes = rproc.get_lanes()
+    lanes = rproc.lanes
 
     for id in roads.keys():
         for (x, y) in roads[id].c:
@@ -29,19 +29,14 @@ if __name__ == '__main__':
                     edges.append([x, y])
                 for (x, y) in road.e2:
                     edges.append([x, y])
-                for path in road.l:
-                    for (x, y) in path:
-                        lanes.append([x, y])
         except Exception as e: print(e)
 
     centers = np.array(centers)
     edges = np.array(edges)
 
     vm = VectorMap()
-    for tlane in tlanes:
-        # vm.make_lane(tlane, turn_end='RIGHT_TURN', turn_start='LEFT_TURN')
-        # vm.make_lane(tlane, junction_end='RIGHT_BRANCHING', junction_start='RIGHT_MERGING')
-        vm.make_lane(tlane, junction_end='LEFT_BRANCHING', junction_start='LEFT_MERGING')
+    for lane in lanes:
+        vm.make_lane(lane, junction_end='LEFT_BRANCHING', junction_start='LEFT_MERGING')
     vm.make_line(edges, line_type='EDGE')
     vm.make_line(centers, line_type='CENTER')
     vm.export()

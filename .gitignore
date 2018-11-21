@@ -115,3 +115,9 @@ dmypy.json
 */data/*
 !*/csv/.gitkeep
 !*/data/.gitkeep
+
+# documentation
+*/_build/*
+*/_static/*
+!*/_build/.gitkeep
+!*/_static/.gitkeep

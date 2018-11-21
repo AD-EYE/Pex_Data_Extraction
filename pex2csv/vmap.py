@@ -1,24 +1,14 @@
 '''
-Samuel Tanner Lindemer
-KTH Royal Institute of Technology
-Stockholm, Sweden 2018
-
-The VectorMap class in this file is used as an interface to translate Cartesian
-coordinate data into the vector map format used in autonomous driving
-applications like Autoware.
-
-make_lane:  Translates coordinate data into drivable lanes (i.e., vectors).
-make_line:  Translates coordinate data into center lines and road edges.
-plot:       Generates a visual display of the vector map using matplotlib.
-export:     Saves the vector map data to the appropriate .csv files.
+.. moduleauthor:: Samuel Lindemer <lindemer@kth.se>
 '''
-
 import numpy as np
 
 # This class is an aggregation of VMList objects which contain all of the data
 # for the entire vector map. The public make_* interfaces convert (x, y)
 # coordinate data to vector map data.
-class VectorMap:
+class VectorMap(object):
+    '''
+    '''
     def __init__(self):
         self.point      = VMList(Point)
         self.node       = VMList(Node)
@@ -112,8 +102,11 @@ class VectorMap:
     # [[x0, y0], [x1, y1], ...]
     def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
-
-        # Warn for empty input array.
+        '''
+        .. note::
+           This is a note.
+        '''
+        # Warn for empty input array and return.
         if not ps.any():
             print('make_lane(): Warning - empty input array.')
             return
@@ -150,7 +143,7 @@ class VectorMap:
     # [[x0, y0], [x1, y1], ...]
     # Valid opitions for line_type: 'EDGE' or 'CENTER'.
     def make_line(self, ps, line_type='EDGE'):
-        
+
         # Warn for empty input array.
         if not ps.any():
             print('make_line(): Warning - empty input array.')

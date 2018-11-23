@@ -152,7 +152,7 @@ class VectorMap:
         self.lane[lane_previous].set_turn(turn_end)
 
     def make_line(self, ps, line_type='EDGE'):
-        '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
+        '''This method takes an ordered array of (x, y) coordinates defining a road edge or a center line and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
 
         :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
         :type ps: array
@@ -268,9 +268,9 @@ class VectorMap:
         plt.show()
 
     def export(self):
-        '''Saves the entire vector map to the appropriate .csv files to the directory ../csv.
+        '''Saves the entire vector map to the appropriate .csv files to the directory ./csv.
 
-        .. warning:: This will overwrite the contents of ../csv.
+        .. warning:: This will overwrite the contents of ./csv.
 
         '''
         self.point.export('./csv/point.csv')

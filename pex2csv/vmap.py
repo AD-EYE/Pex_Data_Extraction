@@ -7,7 +7,7 @@ The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class
 '''
 import numpy as np
 
-class VectorMap(object):
+class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
 
     '''
@@ -102,9 +102,9 @@ class VectorMap(object):
 
     def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
-        '''This function takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. In other words, the objects: :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
+        '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
-        .. note:: The distance between points should be 1 meter or less.
+        .. note:: When this method is used multiple times to create connected drivable paths, it is important that both paths contain the exact (x, y) coordinate where the paths intersect. Otherwise, the two paths will not be linked in the vector map.
 
         :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
         :type ps: array
@@ -151,10 +151,15 @@ class VectorMap(object):
         self.lane[lane_previous].set_junction(junction_end)
         self.lane[lane_previous].set_turn(turn_end)
 
-    # Coordinate data ps must be provided as a numpy array in the form:
-    # [[x0, y0], [x1, y1], ...]
-    # Valid opitions for line_type: 'EDGE' or 'CENTER'.
     def make_line(self, ps, line_type='EDGE'):
+        '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
+
+        :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
+        :type ps: array
+        :param line_type: EDGE or CENTER.
+        :type line_type: string
+
+        '''
 
         # Warn for empty input array.
         if not ps.any():
@@ -237,9 +242,7 @@ class VectorMap(object):
         else: return None
 
     def plot(self):
-        '''Displays the vector map as a matplotlib figure. The road edges are shown in blue, the centers in yellow and the lane vectors shown as arrows. Right turns,  branches and merges are shown in red, and the left turns, branches and merges are shown in green.
-
-        .. note:: This is a blocking function.
+        '''Displays the vector map as a matplotlib figure. The road edges are shown in blue, the centers in yellow and the lane vectors shown as arrows. Right turns,  branches and merges are shown in red, and the left turns, branches and merges are shown in green. This is a blocking function.
 
         '''
         from matplotlib import pyplot as plt
@@ -450,9 +453,9 @@ class Lane:
     :param length: The distance between the start and end :class:`Node`.
     :type length: float
     :param junction: NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
-    :type junction: String
+    :type junction: string
     :param turn: STRAIGHT, LEFT_TURN, RIGHT_TURN.
-    :type turn: String
+    :type turn: string
 
     '''
     def __init__(self, dtlane=0, node_start=0, node_end=0, lane_before=0,

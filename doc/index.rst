@@ -28,5 +28,6 @@ road.py
 
 vmap.py
 -------
+
 .. automodule:: vmap
-  :members:
+  :members: VectorMap, VMList, Point, Node, Line, Lane, DTLane, WhiteLine, RoadEdge

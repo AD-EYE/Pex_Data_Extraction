@@ -19,7 +19,8 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_straight(s, id)
         elif (type == 'Roundabout'):
             roads[id] = get_roundabout(s, id)
-
+        elif (type == 'XCrossing'):
+            roads[id] = get_xcross(s, id)
     return roads
 
 def get_bend(s, id):
@@ -66,3 +67,17 @@ def get_straight(s, id):
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes)
+
+def get_xcross(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    h = float(s[1].get('Heading')) * np.pi / 180
+    r = float(s.get('Radius'))
+    cs = s[18]
+    lw = float(cs[0].get('LaneWidth'))
+    nbr_of_lanes = int(cs[0].get('NumberOfLanes'))
+    len_till_stop = float(cs[0].get('RoadLengthTillStopMarker'))
+    chs = []
+    for c in cs:
+        chs.append((float(c.get('Heading')) + h) * np.pi / 180)
+    return XCrossRoad(id, x0, y0, h, r, lw, chs, len_till_stop, nbr_of_lanes)

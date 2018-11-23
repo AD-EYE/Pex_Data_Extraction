@@ -150,7 +150,6 @@ class VectorMap:
     # [[x0, y0], [x1, y1], ...]
     # Valid opitions for line_type: 'EDGE' or 'CENTER'.
     def make_line(self, ps, line_type='EDGE'):
-        
         # Warn for empty input array.
         if not ps.any():
             print('make_line(): Warning - empty input array.')

@@ -16,6 +16,9 @@ class RoadProcessor(object):
                 for exit in roads[id1].exit_lanes:
                     for id2 in roads.keys():
                         if id1 == id2: continue
+                        if "XCrossing" in id2:
+                            for s in roads[id2].segments:
+                                self.set_order(exit, s)
                         self.set_order(exit, roads[id2])
             elif "XCrossing" in id1:
                 for segment in roads[id1].segments:
@@ -27,8 +30,8 @@ class RoadProcessor(object):
                 self.set_order(roads[id1], roads[id2])
 
         for id in roads.keys():
-            if "XCrossing" in id:
-                for exit in roads[id].segments:
+            if "Roundabout" in id:
+                for exit in roads[id].exit_lanes:
                     print("Next road: ", exit.next_road)
 
     def set_order(self, road1, road2):
@@ -73,6 +76,7 @@ class RoadProcessor(object):
 
                 for path in paths:
                     road = path
+                    if "XCrossing" in path.id: break
                     if not "Roundabout" in path.id:
                         road = roads.pop(path.id, None)
                     self.add_lane(road)
@@ -118,6 +122,7 @@ class RoadProcessor(object):
             for (x, y) in path:
                 e1.append([x, y])
             self.edges.append(np.array(e1))
+            e1 = []
         for path in lane.e2:
             for (x, y) in path:
                 e2.append([x, y])

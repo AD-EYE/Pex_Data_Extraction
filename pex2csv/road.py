@@ -1,6 +1,6 @@
 from path import *
 import numpy as np
-from collections import namedtuple
+from utils import *
 
 class Road:
     def __init__(self, id):
@@ -130,20 +130,6 @@ class ExitLane(Road):
         return (self.x + (self.r + 2 * self.lw) * np.cos(self.ch),
                 self.y + (self.r + 2 * self.lw) * np.sin(self.ch))
 
-    def circles_from_p1p2r(self, p1, p2, r):
-        Circle = Cir = namedtuple('Circle', 'x, y')
-
-        if r == 0.0:
-            raise ValueError('radius of zero')
-        (x1, y1), (x2, y2) = p1, p2
-        dx, dy = x2 - x1, y2 - y1
-        q = np.sqrt(dx**2 + dy**2)
-
-        x3, y3 = (x1 + x2)/2, (y1 + y2)/2
-        d = np.sqrt(r**2 - (q / 2)**2)
-        return Cir(x = x3 + d*dy/q,
-                 y = y3 - d*dx/q)
-
     def get_exit_lane(self, x0, y0, lw, r, ch, ld):
         sign = np.sign(ld)
         ld = abs(ld)
@@ -157,18 +143,15 @@ class ExitLane(Road):
         xc1 = x0 + (r + ld) * np.cos(ch - sign * np.pi / 8)
         yc1 = y0 + (r + ld) * np.sin(ch - sign * np.pi / 8)
 
-        a = np.sqrt((x2 - xc1)**2 + (y2 - yc1)**2)
-        rc = 0.5 * a / np.sin(0.5 * np.pi/3)
+        rc = radius_of_circle((x2, y2), (xc1, yc1), np.pi/3)
 
-        Pt = namedtuple('Pt', 'x, y')
-        p1 = Pt(xc1, yc1)
-        p2 = Pt(x2, y2)
+        p1 = (xc1, yc1)
+        p2 = (x2, y2)
 
-        cc1 = 0
         if(sign > 0):
-            cc1 = self.circles_from_p1p2r(p1, p2, rc)
+            cc1 = circles_from_p1p2r(p1, p2, rc)
         else:
-            cc1 = self.circles_from_p1p2r(p2, p1, rc)
+            cc1 = circles_from_p1p2r(p2, p1, rc)
 
         (x, y) = cc1
         h = np.arctan2(y - y2, x - x2) - sign * np.pi / 2
@@ -221,18 +204,31 @@ class XSegment(Road):
         self.e1 = []
         self.e2 = []
         self.l = []
+        self.lturn = []
+        self.rturn = []
+        self.straight = []
 
         x = x0 + r * np.cos(ch + h)
         y = y0 + r * np.sin(ch + h)
         self.c.append(Straight(x, y, ch - np.pi + h, r))
 
         lwi = -(nbr_of_lanes / 2) * lw
+        lturn = self.__get_left_turn(x0, y0, lwi, r, len_till_stop, ch, h)
+        rturn = self.__get_right_turn(x0, y0, lwi, r, len_till_stop, ch, h)
+        straight = self.__get_straight(x0, y0, lwi, r, len_till_stop, ch, h)
+        self.lturn.append(lturn)
+        self.rturn.append(rturn)
+        #self.straight.append(straight)
+
         for _ in range(nbr_of_lanes):
-            self.l.append(Straight(x + lwi * np.cos(ch + h + np.pi / 2) / 2,
-                                   y + lwi * np.sin(ch + h + np.pi / 2) / 2,
+            x1 = x + lwi * np.cos(ch + h + np.pi / 2) / 2
+            y1 = y + lwi * np.sin(ch + h + np.pi / 2) / 2
+            self.l.append(Straight(x1,
+                                   y1,
                                    ch - np.pi + h,
-                                   len_till_stop))
+                                   r))
             lwi += lw * 2
+
 
         self.e1.append(Straight(x + lw * np.cos(ch + h + np.pi / 2),
                               y + lw * np.sin(ch + h + np.pi / 2),
@@ -248,6 +244,52 @@ class XSegment(Road):
         x3 = x2 + len_till_stop * np.cos(ch + h + np.pi)
         y3 = y2 + len_till_stop * np.sin(ch + h + np.pi)
         self.e1.append(Bend(x3, y3, ch + h + np.pi, -np.pi / 2, 2))
+
+    def __get_straight(self, x0, y0, lw, r, len_till_stop, ch, h):
+        x = x0 + lw * np.cos(ch + h + np.pi / 2) / 2
+        y = y0 + lw * np.sin(ch + h + np.pi / 2) / 2
+
+        x1 = x + (r - len_till_stop) * np.cos(ch + h)
+        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+
+        return Straight(x1, y1, ch + h + np.pi, 2 * (r - len_till_stop))
+
+    def __get_right_turn(self, x0, y0, lw, r, len_till_stop, ch, h):
+        x = x0 - lw * np.cos(ch + h + np.pi / 2) / 2
+        y = y0 - lw * np.sin(ch + h + np.pi / 2) / 2
+
+        x1 = x + (r - len_till_stop) * np.cos(ch + h)
+        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+
+        x = x0 - lw * np.cos(ch + h) / 2
+        y = y0 - lw * np.sin(ch + h) / 2
+
+        x2 = x + (r - len_till_stop) * np.cos(ch + h + np.pi / 2)
+        y2 = y + (r - len_till_stop) * np.sin(ch + h + np.pi / 2)
+
+        p1 = (x1, y1)
+        p2 = (x2, y2)
+        rc = radius_of_circle(p1, p2, np.pi / 2)
+        return Bend(x1, y1, ch + h + np.pi, -np.pi / 2, rc)
+
+    def __get_left_turn(self, x0, y0, lw, r, len_till_stop, ch, h):
+        # middle of road
+        x = x0 - lw * np.cos(ch + h + np.pi / 2) / 2
+        y = y0 - lw * np.sin(ch + h + np.pi / 2) / 2
+        # start of turn
+        x1 = x + (r - len_till_stop) * np.cos(ch + h)
+        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+
+        x = x0 + lw * np.cos(ch + h) / 2
+        y = y0 + lw * np.sin(ch + h) / 2
+
+        x2 = x + (r - len_till_stop) * np.cos(ch + h - np.pi / 2)
+        y2 = y + (r - len_till_stop) * np.sin(ch + h - np.pi / 2)
+
+        p1 = (x1, y1)
+        p2 = (x2, y2)
+        rc = radius_of_circle(p1, p2, np.pi / 2)
+        return Bend(x1, y1, ch + h + np.pi, np.pi / 2, rc)
 
     def getstart(self):
         return self.c[0].getend()

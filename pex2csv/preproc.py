@@ -1,10 +1,13 @@
 import numpy as np
 
 class Lane(object):
-    def __init__(self, lanes, junction_end = 'NORMAL', junction_start = 'NORMAL'):
+    def __init__(self, lanes, junction_end='NORMAL', junction_start='NORMAL', reverse=False):
         self.lanes = lanes
         self.junction_end = junction_end
         self.junction_start = junction_start
+
+        if reverse:
+            self.__reverse_lanes()
 
     def get_lanes(self):
         return self.lanes
@@ -14,6 +17,9 @@ class Lane(object):
 
     def get_junction_start(self):
         return self.junction_start
+
+    def __reverse_lanes(self):
+        self.lanes = self.lanes[::-1]
 
 class RoadProcessor(object):
     def __init__(self, roads):
@@ -43,11 +49,6 @@ class RoadProcessor(object):
             for id2 in roads.keys():
                 if id1 == id2: continue
                 self.set_order(roads[id1], roads[id2])
-
-        for id in roads.keys():
-            if "Roundabout" in id:
-                for exit in roads[id].exit_lanes:
-                    print("Next road: ", exit.next_road)
 
     def set_order(self, road1, road2):
         if dist(road1.getstart(), road2.getstart()) <= 1.0:
@@ -82,19 +83,19 @@ class RoadProcessor(object):
         xcrossings = self.get_xcrossings()
 
         for roundabout in roundabouts:
-            self.add_lane(roundabout)
+            self.__add_segment(roundabout)
 
             for exit in roundabout.exit_lanes:
                 paths = self.get_paths(exit.next_road)
                 if not paths: continue
-                self.add_lane(exit)
+                self.__add_roundabout_exit(exit)
 
                 for path in paths:
                     road = path
                     if "XCrossing" in path.id: break
                     if not "Roundabout" in path.id:
                         road = roads.pop(path.id, None)
-                    self.add_lane(road)
+                    self.__add_segment(road)
 
         for xcrossing in xcrossings:
             for s in xcrossing.segments:
@@ -106,101 +107,51 @@ class RoadProcessor(object):
                     road = roads.pop(path.id, None)
                     if not road:
                         break
-                    self.add_lane(road)
+                    self.__add_segment(road)
 
         #if end:
          #   paths = self.get_path_from_end(end.id)
          #   for path in paths:
          #       self.add_lane(path)
-    def __add_xcross(self, lane):
-        l1, l2, c, e1, e2, edges = [], [], [], [], [], []
 
-        if lane.isturned:
-            for (x, y) in lane.l[1]:
-                l1.append([x, y])
-            for (x, y) in lane.l[0]:
-                l2.append([x, y])
-            self.lanes.append(Lane(np.array(l1)))
-            self.lanes.append(Lane(np.array(list(reversed(l2)))))
-            l1, l2 = [], []
-        else:
-            for (x, y) in lane.l[0]:
-                l1.append([x, y])
-            for (x, y) in lane.l[1]:
-                l2.append([x, y])
-            self.lanes.append(Lane(np.array(list(reversed(l1)))))
-            self.lanes.append(Lane(np.array(l2)))
-            l1, l2 = [], []
-        for path in lane.c:
+    def __add_roundabout_exit(self, exit):
+        self.__add_edge(exit.e1)
+        self.__add_edge(exit.e2)
+        self.__add_center(exit.c)
+        self.__add_lane(exit.l[0], True, junction_start = 'LEFT_MERGING')
+        self.__add_lane(exit.l[1], False, junction_end = 'RIGHT_BRANCHING')
+
+    def __add_xcross(self, xcross):
+        self.__add_segment(xcross)
+        self.__add_lane(xcross.rturn[0], False, 'RIGHT_BRANCHING', 'LEFT_MERGING')
+        self.__add_lane(xcross.lturn[0], False, 'LEFT_BRANCHING', 'RIGHT_MERGING')
+
+    def __add_lane(self, lane, reverse, junction_end = 'NORMAL', junction_start = 'NORMAL'):
+        l = []
+        for (x, y) in lane:
+            l.append([x, y])
+        self.lanes.append(Lane(np.array(l), junction_end, junction_start, reverse))
+
+    def __add_center(self, center):
+        for path in center:
+            c = []
             for (x, y) in path:
                 c.append([x, y])
             self.centers.append(Lane(np.array(c)))
-        for path in lane.e1:
-            for (x, y) in path:
-                e1.append([x, y])
-            self.edges.append(Lane(np.array(e1)))
-            e1 = []
-        for path in lane.e2:
-            for (x, y) in path:
-                e2.append([x, y])
-            self.edges.append(Lane(np.array(e2)))
-        for path in lane.rturn:
-            for (x, y) in path:
-                l1.append([x, y])
-            self.lanes.append(Lane(np.array(l1), 'RIGHT_BRANCHING', 'LEFT_MERGING'))
-            l1 = []
-            for path in lane.lturn:
-                for (x, y) in path:
-                    l1.append([x, y])
-            self.lanes.append(Lane(np.array(l1), 'LEFT_BRANCHING', 'RIGHT_MERGING'))
 
-    def add_lane(self, lane):
-        l1 = []
-        l2 = []
-        center = []
-        e1 = []
-        e2 = []
-        edges = []
-        try:
-            if lane.isturned:
-                for (x, y) in lane.l[1]:
-                    l1.append([x, y])
-                for (x, y) in lane.l[0]:
-                    l2.append([x, y])
-                self.lanes.append(Lane(np.array(l1)))
-                self.lanes.append(Lane(np.array(list(reversed(l2)))))
-                l1, l2 = [], []
-            else:
-                for (x, y) in lane.l[0]:
-                    l1.append([x, y])
-                for (x, y) in lane.l[1]:
-                    l2.append([x, y])
-                self.lanes.append(Lane(np.array(list(reversed(l1)))))
-                self.lanes.append(Lane(np.array(l2)))
-                l1, l2 = [], []
-            for path in lane.c:
-                for (x, y) in path:
-                    center.append([x, y])
-                self.centers.append(Lane(np.array(center)))
-            for path in lane.e1:
-                for (x, y) in path:
-                    e1.append([x, y])
-                self.edges.append(Lane(np.array(e1)))
-                e1 = []
-            for path in lane.e2:
-                for (x, y) in path:
-                    e2.append([x, y])
-                self.edges.append(Lane(np.array(e2)))
-            for path in lane.rturn:
-                for (x, y) in path:
-                    l1.append([x, y])
-                self.lanes.append(Lane(np.array(l1)))
-                l1 = []
-            for path in lane.lturn:
-                for (x, y) in path:
-                    l1.append([x, y])
-                self.lanes.append(Lane(np.array(l1)))
-        except Exception as e: print("Exception: ", e)
+    def __add_edge(self, edge):
+        for path in edge:
+            e = []
+            for (x, y) in path:
+                e.append([x, y])
+            self.edges.append(Lane(np.array(e)))
+
+    def __add_segment(self, lane):
+        self.__add_lane(lane.l[0], not lane.isturned)
+        self.__add_lane(lane.l[1], lane.isturned)
+        self.__add_center(lane.c)
+        self.__add_edge(lane.e1)
+        self.__add_edge(lane.e2)
 
     def get_paths(self, id):
         roads = self.roads

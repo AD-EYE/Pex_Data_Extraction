@@ -90,7 +90,6 @@ class RoundaboutRoad(Road):
 
         rh.append(chs[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])
         for i in range(len(h)):
-            print("new edge")
             x1 = x0 + (r + lw) * np.cos(chs[i] + offset)
             y1 = y0 + (r + lw) * np.sin(chs[i] + offset)
             r1 = r + lw

@@ -2,57 +2,63 @@ This is BibTeX, Version 0.99d (TeX Live 2015)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: main.aux
 The style file: myIEEEtran.bst
-I found no \citation commands---while reading file main.aux
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: mybib.bib
+Warning--entry type for "AutowareMaps1" isn't style-file defined
+--line 87 of file mybib.bib
 -- myIEEEtran.bst based upon IEEEtran.bst version 1.13 based upon (2008/09/30) by Michael Shell.
 -- http://www.michaelshell.org/tex/ieeetran/bibtex/
 -- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
+Warning--empty journal in Lanelet3
+Warning--empty author in WGS84
+Warning--missing institution in WGS84
+Too many commas in name 1 of "Bender, J. Ziegler, D. Nienhüser, E. Ward" for entry Lanelet2
+while executing---line 2494 of file myIEEEtran.bst
 
 Done.
-You've used 0 entries,
+You've used 8 entries,
             4183 wiz_defined-function locations,
-            826 strings with 7335 characters,
-and the built_in function-call counts, 103 in all, are:
-= -- 0
-> -- 0
-< -- 0
-+ -- 0
-- -- 0
-* -- 19
-:= -- 26
-add.period$ -- 0
-call.type$ -- 0
-change.case$ -- 0
-chr.to.int$ -- 0
-cite$ -- 0
-duplicate$ -- 0
-empty$ -- 1
-format.name$ -- 0
-if$ -- 3
+            884 strings with 8682 characters,
+and the built_in function-call counts, 4028 in all, are:
+= -- 322
+> -- 55
+< -- 18
++ -- 33
+- -- 9
+* -- 188
+:= -- 708
+add.period$ -- 18
+call.type$ -- 8
+change.case$ -- 7
+chr.to.int$ -- 42
+cite$ -- 11
+duplicate$ -- 302
+empty$ -- 353
+format.name$ -- 11
+if$ -- 872
 int.to.chr$ -- 0
-int.to.str$ -- 0
-missing$ -- 0
-newline$ -- 23
-num.names$ -- 0
-pop$ -- 0
+int.to.str$ -- 8
+missing$ -- 62
+newline$ -- 61
+num.names$ -- 5
+pop$ -- 167
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 1
+skip$ -- 302
 stack$ -- 0
-substring$ -- 0
-swap$ -- 0
-text.length$ -- 0
+substring$ -- 102
+swap$ -- 215
+text.length$ -- 4
 text.prefix$ -- 0
 top$ -- 5
-type$ -- 0
-warning$ -- 0
-while$ -- 0
-width$ -- 0
-write$ -- 22
+type$ -- 8
+warning$ -- 3
+while$ -- 11
+width$ -- 9
+write$ -- 106
 (There was 1 error message)

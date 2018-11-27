@@ -27,9 +27,8 @@ class VectorMap:
     # Returns the Node ID of the new Node.
     def __new_node(self, x, y):
         # Create a new Point and corresponding Node.
-        self.point.append(x, y)
-        self.node.append(len(self.point))
-        node_id = len(self.node)
+        point_id = self.point.create(x, y)
+        node_id = self.node.create(point_id)
         # Add entry to Node map.
         self.__xy_node_map[(x, y)] = node_id
         return node_id
@@ -58,19 +57,17 @@ class VectorMap:
         if dtlane_before is not None:
             distance = self.dtlane[dtlane_before].get_length() + mag
         else: distance = mag
-        self.dtlane.append(
+        dtlane_id = self.dtlane.create(
             point       = self.node[node_end].get_point(),
             length      = distance,
             direction   = dir
         )
-        self.lane.append(
+        lane_id = self.lane.create(
             dtlane      = len(self.dtlane),
             node_start  = node_start,
             node_end    = node_end,
             length      = mag
         )
-        lane_id = len(self.lane)
-        dtlane_id = len(self.dtlane)
         if lane_before is not None:
             self.lane[lane_id].set_lane_before(lane_before)
             self.lane[lane_before].set_lane_after(lane_id)
@@ -79,17 +76,18 @@ class VectorMap:
     # Creates a new Line between the last two points. Returns ID of new Line.
     def __new_line(self, node_start=0, node_end=0, line_before=None,
             line_type='EDGE'):
-        self.line.append(   point_start = self.node[node_start].get_point(),
-                            point_end   = self.node[node_end].get_point())
+        line_id = self.line.create(
+            point_start = self.node[node_start].get_point(),
+            point_end   = self.node[node_end].get_point()
+        )
         if line_type == 'CENTER':
-            self.whiteline.append(line = len(self.line), node = node_start)
+            self.whiteline.create(line = len(self.line), node = node_start)
         elif line_type == 'EDGE':
-            self.roadedge.append(line = len(self.line), node = node_start)
+            self.roadedge.create(line = len(self.line), node = node_start)
         else: raise ValueError('__new_line: line_type=' + str(line_type))
         if line_before is not None:
             self.line[-1].set_line_before(line_before)
             self.line[line_before].set_line_after(len(self.line))
-        line_id = len(self.line)
         return line_id
 
     # Returns the distance and direction between two Nodes.
@@ -282,9 +280,9 @@ class VectorMap:
         self.roadedge.export('./csv/roadedge.csv')
 
 class VMList:
-    '''This class is an ordered list of vector map objects with indexing beginning at 1, not 0, to comply with the vector map format. Iteration, item getting and setting, and element count work the same as Python's default List.
+    '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
 
-    :param type: The class of object to be contained in this list.
+    :param type: The class of object to be aggregated.
     :type type: class
 
     '''
@@ -314,14 +312,17 @@ class VMList:
     def __len__(self):
         return len(self.__data)
 
-    def append(self, *args, **kwargs):
-        '''Appends an object of the type declared on instantiation of the VMList object. Arguments and keyword arguments passed in here will be passed directly to the new object's __init__.
+    def create(self, *args, **kwargs):
+        '''Creates a new object of the class declared on this objects's construction. Arguments and keyword arguments passed in here will be passed directly to the new object's constructor.
+
+        :returns: int -- the ID of the new vector map entry.
 
         '''
         self.__data.append(self.__type(*args, **kwargs))
+        return len(self.__data)
 
     def export(self, path):
-        '''Prints all data to a file in the vector map .csv format. Each vector map object class defined in this file has a __str__ override which returns its data in the correct comma-separated order according to the vector map format. Each line of a vector map .csv file starts with a unique ID. These ID values are the indicies in this :class:`VMList` object.
+        '''Prints all data to a file in the vector map .csv format. Every vector map object in this file should implement __str__() override which returns its data in the correct comma-separated order according to the vector map format. Each line of a vector map .csv file starts with a unique ID. These ID values are the indicies in this :class:`VMList` object.
 
         :param path: The file name to save the data to.
         :type path: string

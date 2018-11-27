@@ -25,7 +25,6 @@
 \usepackage{colortbl}
 \usepackage{multirow}
 \usepackage{bookmark}
-
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 
@@ -231,6 +230,55 @@
 % Remember, in regard to the learning goals this course is not about theory. We know that you know how to properly engineer an embedded system. Here you should offer evidence that you can also apply that knowledge. Of the learning goals in the course these are the ones that we believe will definitely be covered by this chapter:
 % Goal 1. Apply knowledge and skills from earlier courses, as well as learn to acquire new ones on demand: You can for instance indicate which sources are new to you, and which are not; structure their relationships to show what you have learnt during the course; cross-reference to other parts of the report to show how you applied the knowledge you discuss to your problem; etc.
 
+\subsection{Autoware}
+
+\subsection{Geographic Information Systems}
+
+Automated driving systems use a wide range of sensors to sense the environment. However, they also need a map to plan a route to a destination. Current technologies require maps more sophisticated than standard road maps. Information about the shape and arrangement of lanes and road markers are also required. Several map representation schemes exist for this purpose, and each one comes with its advantages and disadvantages.
+
+\subsubsection{OpenStreetMap (OSM)}
+\textit{OpenStreetMap} is a free map world map made entirely of crowdsourced geographic data. OSM represents geographic information using only four data primitives:
+\begin{itemize}
+  \item \textit{Nodes} store all of the coordinate data according to WGS84 (i.e., latitude and longitude, see \cite{WGS84}).
+  \item \textit{Ways} store paths and are represented as a sequence of 2 to 2000 \textit{Nodes}. These can be directional (in the case of a road), undirected or a closed loop to define an area.
+  \item \textit{Relations} are an ordered collection of \textit{Nodes} and \textit{Ways} which share a certain relationship. These can be used to notate an interstate highway or a bus route, for example.
+  \item \textit{Tags} can be used to mark landmarks, such as libraries and coffee shops.
+\end{itemize}
+OSM's data is stored and continuously updated online in a PostgreSQL database, but the data is exported in the OSM XML file format for use in applications. OSM was not designed for autonomous driving applications. Although it is sufficient for trip planning, current automated driving systems require more detailed information about the structure of roadways.
+
+\subsubsection{OpenDRIVE}
+\textit{OpenDRIVE} is an open standard for describing road networks as an XML file, specified in \cite{OpenDRIVE}. It is used by many institutions working with automotive simulations, including Audi and BMW. The \textit{OpenDRIVE} format provides a rich description of driving environments by defining objects with mathematical models. Equations such as arcs, polynomials and clothoids can be used to define the shape of a driving lanes, elevation profiles and road embankments. Nearly every conceivable artifact relevant to an automated vehicle has a specification in \textit{OpenDRIVE}, from parking spaces to railway crossings.
+
+This format can express large geographic areas with a very small amount of information. The XML file only contains the coefficients for equations, and a single polynomial could approximate a road for several meters or kilometers. However, this places a burden on automated driving systems to compute actual coordinates in real time. GIS systems like \textit{OpenStreetMap} approximate curves with discrete values, which makes both collecting real-world map data and processing it much simpler.
+
+\subsubsection{Lanelets}
+Lanelet maps \cite{Lanelet1} are another popular open standard for representing road networks in autonomous driving applications. This data representation describes the same artifacts as \textit{OpenDRIVE}, but curves are approximated with discrete values. A single lanelet is a polygon defined by a few points which create the bounds of a short segment of a drivable area. The lanelet system is interesting because the authors of the standard also produced an open source toolchain \cite{Lanelet2} for editing the maps. This toolchain can parse OSM XML files automatically generate a lanelet map. These automatically generated maps can be manually edited with a graphical tool.
+
+\begin{figure}
+\centering
+\begin{tabular}{cc}
+  \includegraphics[width=85mm]{opendrive.png} & \includegraphics[width=85mm]{lanelet.png}
+\end{tabular}
+\caption{Left: curve primitives used to define objects in the \textit{OpenDRIVE} format. Right: driving lanes represented in the lanelet format. Images from \cite{Lanelet3}, in which the article authors demonstrate that \textit{OpenDRIVE} maps can be discretized to form lanelet maps.}
+\label{fig:lanelet}
+\end{figure}
+
+\subsubsection{Vector Maps}
+For reasons unknown, the Autoware community decided to use an obscure proprietary map format known as a vector map. This format was designed by Aisan Technology Co. \cite{Aisan}, and there exists neither a publicly available specification for this system, nor a software tool to convert from other map formats. Maps are stored in a set of CSV files, so they are not human-readable like the XML-based systems. Despite this, the online Autoware community was able to provide some details about its implementation that had been ascertained through experimentation (see Figure \ref{fig:vmap-uml} for a more detailed overview). Because the specification has not been made public, it is difficult to explain the design decisions made in developing this system. Lanes are defined by discrete coordinates, similar to the lanelet system. However, the precise path that vehicles should follow must also be defined. These paths are represented as vectors (i.e., each coordinate defines the distance and direction to the next coordinate), which makes it a bit more complicated to implement.
+
+\subsubsection{Autoware Maps Format}
+Autoware currently only supports the vector map format, but the drawbacks of this system are apparent. The community is in ongoing discussions about the future of its map support \cite{AutowareMaps1}, and has recently announced that it is developing own system. The plan \cite{AutowareMaps2} states that Autoware intends to support \textit{OpenDRIVE} and lanelet maps in the future, but internally all of these will be translated to the new \textit{Autoware Maps Format}. This format is essentially a simplified version of the vector map format (see Figure \ref{fig:amf}). The release date has not yet been announced.
+
+\begin{figure}
+\centering
+\begin{tabular}{c}
+  \includegraphics[width=120mm]{amf2.png} \\
+  \includegraphics[width=150mm]{amf1.png}
+\end{tabular}
+\caption{Overview of the not-yet-released \textit{Autoware Maps Format} described in \cite{AutowareMaps2}. The new format will reduce some of the redundancies in the vector map system by defining the lane width at each waypoint, rather than defining two parallel lines to represent the edges of the lane.}
+\label{fig:amf}
+\end{figure}
+
 \section{Methodology}
 \label{section:Methodology}
 %Think: Engineering approaches, Tool-chains, Project management, etc.
@@ -249,7 +297,7 @@
 % Goal 10. Apply a requirements management method with consideration taken to the life-cycle concerns of embedded systems based products: As per Goal 6, but specifically keep in mind that you need to provide evidence that you understand the context in which you develop your embedded system. As an example, applying machine learning to a robot could at a first glance seem like a standard problem with a model solution for a software engineer. However, the environmental conditions (fire, cold, dust, etc.) or special requirements (low weight, low power, etc.) of a use case can easily imply special sensing or actuating hardware, which in turn affect the requirements even on software. Furthermore, even if this is not the case, a proper engineering approach involves at least arguing for the non-existence of such requirements.
 
 
-\subsection{Vector Maps}
+\subsection{Map Translation}
 At the outset of the project, the stakeholder's stated requirement was an automated process for generating an Autoware-compatible vector map for any PreScan simulation. The stakeholder was previously using a labor-intensive approximation method which only generated a very small subset of the vector map.
 
 \subsubsection{Requirements Elicitation and Specification}
@@ -280,7 +328,7 @@ Thus, the configuration file approach presented both the highest development ris
     \label{fig:vmap-uml}
 \end{figure}
 
-With the requirements adequately understood, two UML diagrams were drawn: one modeling the PreScan data represenation (see Figure \ref{fig:pex-uml}) and another modeling the vector map represenation (see Figure \ref{fig:vmap-uml}). The vector map data representation relies on coordinate data and the sequential relationships between them. The system of linking and sequncing every data point requires virtually complete knoweldge of the entire road system before the vector map can be generated. Unfortunately, there is no official documentation available for the vector map system.
+With the requirements adequately understood, two UML diagrams were drawn: one modeling the PreScan data represenation (see Figure \ref{fig:pex-uml}) and another modeling the vector map represenation (see Figure \ref{fig:vmap-uml}). The vector map data representation relies on coordinate data and the sequential relationships between them. The system of linking and sequncing every data point requires virtually complete knoweldge of the entire road system before the vector map can be generated.
 
 \subsubsection{Agile and Extreme Programming (XP)}
 
@@ -302,16 +350,16 @@ In XP, large problems are broken into smaller targets defined by a set of tests 
 The choice of XP as a development methodology influenced our decision to use Python instead of MATLAB. Python's third-party packages offer all the same functionality as MATLAB, plus a wider selection of testing and documentation packages. The \textit{pytest} package was chosen over the \textit{unittest} package found in the standard library. \textit{pytest} requires significantly less set-up and tear-down code to achieve the same outcome as \textit{unittest}. The online Python community largely seemed to agree that \textit{unittest} was designed for programmers familiar with JUnit and preferred to keep the same formalities (i.e., it uses camel case naming conventions which is not standard in Python).
 
 \textbf{Summary.}
-The activities in XP allowed the programmers in this project to quickly converge on well-justified design patterns for the software architecture. In the weekly stand-up meetings, the code segments written with the goal of passing unit tests were reviewed and adapted to conventional design patterns with agreed-upon interfaces. The iterator design pattern was used extensively in both the road generation and vector mapping subsystems in order to keep their complicated internal operation opaque to the rest of the system. The facade design pattern was used to isolate the vector mapping subsystem altogether, with only two simple interfaces to generate and link the entire map. Git version control was used throughout development, and the more modularized the code became, the easier it became for the programmers to collaborate without interfering in each others work.
+The activities in XP allowed the programmers in this project to quickly converge on well-justified design patterns for the software architecture. In the weekly stand-up meetings, the code segments written with the goal of passing unit tests were reviewed and adapted to conventional design patterns with agreed-upon interfaces. The Iterator design pattern was used extensively in both the road generation and vector mapping subsystems in order to keep their complicated internal operation opaque to the rest of the system. The facade design pattern was used to isolate the vector mapping subsystem altogether, with only two simple interfaces to generate and link the entire map. Git version control was used throughout development, and the more modularized the code became, the easier it became for the programmers to collaborate without interfering in each others work.
 
 \subsubsection{Documentation}
-Concise documentation was absolutely necessary for the vector mapping code, as the stakeholder intended to expand its functionality over time and ultimately make it available to the public. Three options for Python were considered: \textit{Doxygen}, \textit{pdoc} and \textit{Sphinx}. All of these support automatic HTML and LaTeX documentation generation from comment strings in Python code, with \textit{pdoc} offering by far the simplest interface. \textit{Doxygen} is not Python-exclusive, and it has the most complicated interface, although it is an industry standard for languages like C++ and has been around a long time. Ultimately, \textit{Sphinx} was the best choice because Python itself uses it for documentation, so the resulting HTML docs will look familiar and accessible to any Python programmer (see Figure \ref{fig:doc-sample}). Only public functions are documented in the HTML docs. Other variables, classes and methods are documented with ordinary in-code comments. This way, the information relevant for users of the sofware subsystems is kept separate from those who want to edit them and add functionality.
+Concise documentation was absolutely necessary for the vector mapping code, as the stakeholder intended to expand its functionality over time and ultimately make it available to the public. Three options for Python were considered: \textit{Doxygen}, \textit{pdoc} and \textit{Sphinx}. All of these support automatic HTML and LaTeX documentation generation from comment strings in Python code, with \textit{pdoc} offering by far the simplest interface. \textit{Doxygen} is not Python-exclusive, and it has the most complicated interface, although it is an industry standard for languages like C++ and has been around a long time. Ultimately, \textit{Sphinx} was the best choice because Python itself uses it for documentation, so the resulting HTML docs will look familiar and accessible to any Python programmer (see Figure \ref{fig:doc}). Only public functions are documented in the HTML docs. Other variables, classes and methods are documented with ordinary in-code comments. This way, the information relevant for users of the sofware subsystems is kept separate from those who want to edit them and add functionality.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=16cm,keepaspectratio]{doc.png}
-    \caption{Sample of the HTML documentation generated automatically from comment strings in the Python code using \textit{Sphinx}. This class uses the abstract factory design pattern: objects are created using the same generic interface regardless of their exact type. This class also implements the iterator design pattern, but that code is implemented with private override functions, so it does not appear in the HTML docs.}
-    \label{fig:doc-sample}
+    \caption{Sample of the HTML documentation generated from comment in the source code with \textit{Sphinx}.}
+    \label{fig:doc}
 \end{figure}
 
 \section{Implementation}
@@ -325,10 +373,10 @@ Concise documentation was absolutely necessary for the vector mapping code, as t
 % Goal 2.  Identify, compare and critically assess aspects of an engineering problem, towards making design decisions: You can for instance show you went from requirements to design alternatives for your problem; how you prioritised and chose between design alternatives; how you weighted different aspects of the design alternatives during your choices; how you justified your priorities and weighting in regard to design alternatives; etc.
 % Goal 6. Working through all aspects of an engineering development process: As per Goal 2, but specifically keep in mind not only how your choices during design relate to requiremens but also to the verification and validation of your system.
 
-\subsection{Vector Maps}
+\subsection{Map Translation}
 \subsubsection{Coordinate Generation}
 \label{sec:vmap-coords}
-PreScan uses three basic road types: \textit{StraightRoad} (implemented with a linear equation), \textit{BendRoad} (implemented with a semi circle) and \textit{BezierRoad} (implemented with a cubic Bezier curve). This much could be ascertained from the names of the road segments and their attributes in the configuration file. For the vector map, coordinates no more than 1 meter apart would need to be computed for the center of the roads, the center of the driving lanes, and the edges of the roads. The configuration file \textit{only} defines the center line curves, so algorithms for finding parallel curves for each equation based on the lane width was the next step.
+PreScan uses three basic road types: \texttt{StraightRoad} (implemented with a linear equation), \texttt{BendRoad} (implemented with a semi circle) and \texttt{BezierRoad} (implemented with a cubic Bezier curve). This much could be ascertained from the names of the road segments and their attributes in the configuration file. For the vector map, coordinates no more than 1 meter apart would need to be computed for the center of the roads, the center of the driving lanes, and the edges of the roads. The configuration file \textit{only} defines the center line curves, so algorithms for finding parallel curves for each equation based on the lane width was the next step.
 
 \begin{figure}
 \centering
@@ -348,13 +396,28 @@ Computing parallel linear and circular curves is trivial, because the resulting 
 \REQUIRE $0 \leq t \leq 1$ and $\textbf{P}_n = (P_{xn}, P_{yn})$ and $d \geq 0$
 \STATE $\textbf{B} \leftarrow (1-t)^3\textbf{P}_0+3(1-t)^2t\textbf{P}_1+3(1-t)t^2\textbf{P}_2+t^3\textbf{P}_3$
 \STATE $d\textbf{B} \leftarrow 3(1-t)^2(\textbf{P}_1-\textbf{P}_0)+6(1-t)t(\textbf{P}_2-\textbf{P}_1)+3t^2(\textbf{P}_3-\textbf{P}_2)$
-\STATE $\theta \leftarrow \arctan(dB_x, ~ dB_y)$
+\STATE $\theta \leftarrow \arctan(dB_y, ~ dB_x)$
 \STATE $\textbf{Q} \leftarrow (B_x + d \times \sin\theta, ~ B_y - d \times \cos\theta)$
 \end{algorithmic}
 \label{alg:bezier}
 \end{algorithm}
 
-\subsubsection{Software Design Patterns}
+\subsubsection{Software Architecture and Design Patterns}
+
+Every object in the vector map, except for \texttt{Point}, has a reference to at least one other object (see Figure \ref{fig:vmap-uml}). To further complicate things, the \texttt{DTLane} objects store the \textit{cumulative} distance along the current lane, so the drivable portions of the map must be generated sequentially in the direction of travel. Every single coordinate added to the vector map incurs the creation of four new objects. Each type of object in the vector map system has its own indexing system, and each object of a given type must have a unique ID. These IDs are used as foreign keys when objects of different types reference each other.
+
+To facilitate the creation of this arcane system, the Abstract Factory design pattern (see Figure \ref{fig:factory-uml}) was employed. When a \texttt{VMList} object is instantiated, a class name must be passed to its constructor. This determines what type of object its \texttt{append()} method will create, and thus the type of concrete factory it becomes. The \texttt{append()} method returns a reference to the new object so that the calling \texttt{VectorMap} object can access it directly.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=16cm,keepaspectratio]{factory.png}
+    \caption{UML class diagram of the Abstract Factory design pattern used in the vector mapping subsystem. The \texttt{VectorMap} class instantiates a \texttt{VMList} object for each type of \texttt{VMObject}. The class declared when instantiating \texttt{VMList} determines the behavior of the concrete factory created. The documentation for this class can be seen in Figure \ref{fig:doc}.}
+    \label{fig:factory-uml}
+\end{figure}
+
+The vector map creation subsystem is well over 500 lines of Python code, and its inner workings are entirely irrelevant to external actors. The \texttt{VectorMap} class employs the Facade design pattern to fully isolate the system. The entire interface for generating the vector map is made up of only two methods. Each child of \texttt{VMObject} has a string casting override to write the object data to a line in a CSV file. Writing every entire vector map file at once is achieved with a single call to \texttt{VectorMap.export()}, so the calling process need not concern itself with file formatting.
+
+These abstractions are important for the purposes of the software package as a whole. With a simple interface for creating a vector map from a sequence of coordinates, the vector mapping subsystem can be reused in other packages to convert from other map formats. Similarly, the subsystems for generating coordinates from a PreScan configuration file can be operated independently. Those subsystems can be reused to convert to other map formats.
 
 \section{Verification and Validation}
 \label{section:VerificationAndValidation}
@@ -363,7 +426,7 @@ Computing parallel linear and circular curves is trivial, because the resulting 
 % Goal 6. Working through all aspects of an engineering development process: You can for instance motivate the use of different test processes for different parts of your design; justify and prove the use of different levels of attention to ensuring the completeness, correctness and consistency of different types of requirements (for instance those that are mission-critical or related to safety and security); etc.
 % Goal 9. Apply a fundamental test process: You can for instance provide evidence on the different types of errors, faults and failures logged throughout the project; motivate why the used verification and validation methods are appropriate for the problem at hand; discuss what verification and validation would have been appropriate but were not possible to apply (for instance destructive testing); etc.
 
-\subsection{Vector Maps}
+\subsection{Map Translation}
 
 \section{Results}
 \label{section:Results}

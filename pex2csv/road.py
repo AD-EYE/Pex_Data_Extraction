@@ -207,88 +207,89 @@ class XSegment(Road):
         self.rturn = []
         self.straight = []
 
-        x = x0 + r * np.cos(ch + h)
-        y = y0 + r * np.sin(ch + h)
-        self.c.append(Straight(x, y, ch - np.pi + h, r))
+        self.__create_center(x0, y0, r, ch + h)
+        self.__create_edges(x0, y0, r, lw, ch + h, len_till_stop)
+        self.__create_turns(x0, y0, lw, r - len_till_stop, ch + h, nbr_of_lanes)
+        self.__create_lanes(x0, y0, r, lw, ch + h, nbr_of_lanes)
 
+    def __create_lanes(self, x0, y0, r, lw, h, nbr_of_lanes):
+        x = x0 + r * np.cos(h)
+        y = y0 + r * np.sin(h)
         lwi = -(nbr_of_lanes / 2) * lw
-        lturn = self.__get_left_turn(x0, y0, lwi, r, len_till_stop, ch, h)
-        rturn = self.__get_right_turn(x0, y0, lwi, r, len_till_stop, ch, h)
-        straight = self.__get_straight(x0, y0, lwi, r, len_till_stop, ch, h)
-        self.lturn.append(lturn)
-        self.rturn.append(rturn)
-        #self.straight.append(straight)
 
         for _ in range(nbr_of_lanes):
-            x1 = x + lwi * np.cos(ch + h + np.pi / 2) / 2
-            y1 = y + lwi * np.sin(ch + h + np.pi / 2) / 2
-            self.l.append(Straight(x1,
-                                   y1,
-                                   ch - np.pi + h,
-                                   r))
+            x1 = x + lwi * np.cos(h + np.pi / 2) / 2
+            y1 = y + lwi * np.sin(h + np.pi / 2) / 2
+            self.l.append(Straight(x1, y1, h - np.pi, r))
             lwi += lw * 2
 
+    def __create_edges(self, x0, y0, r, lw, h, len_till_stop):
+        x = x0 + r * np.cos(h)
+        y = y0 + r * np.sin(h)
 
-        self.e1.append(Straight(x + lw * np.cos(ch + h + np.pi / 2),
-                              y + lw * np.sin(ch + h + np.pi / 2),
-                              ch - np.pi + h,
+        self.e1.append(Straight(x + lw * np.cos(h + np.pi / 2),
+                              y + lw * np.sin(h + np.pi / 2),
+                              h - np.pi,
                               len_till_stop))
-        self.e2.append(Straight(x - lw * np.cos(ch + h + np.pi / 2),
-                               y - lw * np.sin(ch + h + np.pi / 2),
-                               ch - np.pi + h,
+        self.e2.append(Straight(x - lw * np.cos(h + np.pi / 2),
+                               y - lw * np.sin(h + np.pi / 2),
+                               h - np.pi,
                                len_till_stop))
 
-        x2 = x + lw * np.cos(ch + h + np.pi / 2)
-        y2 = y + lw * np.sin(ch + h + np.pi / 2)
-        x3 = x2 + len_till_stop * np.cos(ch + h + np.pi)
-        y3 = y2 + len_till_stop * np.sin(ch + h + np.pi)
-        self.e1.append(Bend(x3, y3, ch + h + np.pi, -np.pi / 2, 2))
+        x2 = x + lw * np.cos(h + np.pi / 2)
+        y2 = y + lw * np.sin(h + np.pi / 2)
+        x3 = x2 + len_till_stop * np.cos(h + np.pi)
+        y3 = y2 + len_till_stop * np.sin(h + np.pi)
+        self.e1.append(Bend(x3, y3, h + np.pi, -np.pi / 2, 2))
 
-    def __get_straight(self, x0, y0, lw, r, len_till_stop, ch, h):
-        x = x0 + lw * np.cos(ch + h + np.pi / 2) / 2
-        y = y0 + lw * np.sin(ch + h + np.pi / 2) / 2
+    def __create_turns(self, x0, y0, lw, r, h, nbr_of_lanes):
+        lwi = -(nbr_of_lanes / 2) * lw
+        lturn = self.__get_left_turn(x0, y0, lwi, r, h)
+        rturn = self.__get_right_turn(x0, y0, lwi, r, h)
+        self.lturn.append(lturn)
+        self.rturn.append(rturn)
 
-        x1 = x + (r - len_till_stop) * np.cos(ch + h)
-        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+    def __create_center(self, x0, y0, r, h):
+        x = x0 + r * np.cos(h)
+        y = y0 + r * np.sin(h)
+        self.c.append(Straight(x, y, h - np.pi, r))
 
-        return Straight(x1, y1, ch + h + np.pi, 2 * (r - len_till_stop))
+    def __get_right_turn(self, x0, y0, lw, l, h):
+        x = x0 - lw * np.cos(h + np.pi / 2) / 2
+        y = y0 - lw * np.sin(h + np.pi / 2) / 2
 
-    def __get_right_turn(self, x0, y0, lw, r, len_till_stop, ch, h):
-        x = x0 - lw * np.cos(ch + h + np.pi / 2) / 2
-        y = y0 - lw * np.sin(ch + h + np.pi / 2) / 2
+        x1 = x + l * np.cos(h)
+        y1 = y + l * np.sin(h)
 
-        x1 = x + (r - len_till_stop) * np.cos(ch + h)
-        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+        x = x0 - lw * np.cos(h) / 2
+        y = y0 - lw * np.sin(h) / 2
 
-        x = x0 - lw * np.cos(ch + h) / 2
-        y = y0 - lw * np.sin(ch + h) / 2
-
-        x2 = x + (r - len_till_stop) * np.cos(ch + h + np.pi / 2)
-        y2 = y + (r - len_till_stop) * np.sin(ch + h + np.pi / 2)
+        x2 = x + l * np.cos(h + np.pi / 2)
+        y2 = y + l * np.sin(h + np.pi / 2)
 
         p1 = (x1, y1)
         p2 = (x2, y2)
         rc = radius_of_circle(p1, p2, np.pi / 2)
-        return Bend(x1, y1, ch + h + np.pi, -np.pi / 2, rc)
+        return Bend(x1, y1, h + np.pi, -np.pi / 2, rc)
 
-    def __get_left_turn(self, x0, y0, lw, r, len_till_stop, ch, h):
+    def __get_left_turn(self, x0, y0, lw, l, h):
         # middle of road
-        x = x0 - lw * np.cos(ch + h + np.pi / 2) / 2
-        y = y0 - lw * np.sin(ch + h + np.pi / 2) / 2
+        x = x0 - lw * np.cos(h + np.pi / 2) / 2
+        y = y0 - lw * np.sin(h + np.pi / 2) / 2
         # start of turn
-        x1 = x + (r - len_till_stop) * np.cos(ch + h)
-        y1 = y + (r - len_till_stop) * np.sin(ch + h)
+        x1 = x + l * np.cos(h)
+        y1 = y + l * np.sin(h)
 
-        x = x0 + lw * np.cos(ch + h) / 2
-        y = y0 + lw * np.sin(ch + h) / 2
+        x = x0 + lw * np.cos(h) / 2
+        y = y0 + lw * np.sin(h) / 2
 
-        x2 = x + (r - len_till_stop) * np.cos(ch + h - np.pi / 2)
-        y2 = y + (r - len_till_stop) * np.sin(ch + h - np.pi / 2)
+        x2 = x + l * np.cos(h - np.pi / 2)
+        y2 = y + l * np.sin(h - np.pi / 2)
 
         p1 = (x1, y1)
         p2 = (x2, y2)
         rc = radius_of_circle(p1, p2, np.pi / 2)
-        return Bend(x1, y1, ch + h + np.pi, np.pi / 2, rc)
+        return Bend(x1, y1, h + np.pi, np.pi / 2, rc)
 
     def getstart(self):
         return self.c[0].getend()

@@ -15,3 +15,6 @@ def radius_of_circle(p1, p2, angle):
     (x1, y1), (x2, y2) = p1, p2
     a = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
     return 0.5 * a / np.sin(0.5 * angle)
+
+def dist(p1, p2):
+    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)

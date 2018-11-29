@@ -1,4 +1,5 @@
 import numpy as np
+from utils import dist
 
 class Lane(object):
     def __init__(self, lanes, junction_end='NORMAL', junction_start='NORMAL', reverse=False):
@@ -26,11 +27,16 @@ class RoadProcessor(object):
         self.lanes = []
         self.centers = []
         self.edges = []
-        self.roads = roads
-        self.process_order()
-        self.create_lanes()
+        self.roads = []
 
-    def process_order(self):
+    def add_roads(self, roads):
+        self.roads = roads
+
+    def create_lanes(self):
+        self.__process_order()
+        self.__create_lanes()
+
+    def __process_order(self):
         roads = self.roads
         for id1 in roads.keys():
             if "Roundabout" in id1:
@@ -64,55 +70,47 @@ class RoadProcessor(object):
             road1.next_road = road2.id
             road2.next_road = road1.id
 
-    def fix_order(self):
-        roads = self.roads
-        road = self.getfirst()
-
-        for i in range(self.number_of_roads()):
-            nr = self.getnext(road)
-
-            if (nr != -1 and roads[nr].next_road == road):
-                roads[nr].next_road = roads[nr].previous_road
-                roads[nr].previous_road = road
-            road = nr
-
-    def create_lanes(self):
+    def __create_lanes(self):
         roads = self.roads.copy()
         roundabouts = self.get_roundabouts()
-        end = self.get_end_roads()
         xcrossings = self.get_xcrossings()
 
         for roundabout in roundabouts:
             self.__add_segment(roundabout)
 
             for exit in roundabout.exit_lanes:
-                paths = self.get_paths(exit.next_road)
-                if not paths: continue
+                path = self.__get_path(exit.next_road)
+                if not path: continue
                 self.__add_roundabout_exit(exit)
 
-                for path in paths:
-                    road = path
-                    if "XCrossing" in path.id: break
-                    if not "Roundabout" in path.id:
-                        road = roads.pop(path.id, None)
+                for p in path:
+                    road = p
+                    if "XCrossing" in p.id: break
+                    if not "Roundabout" in p.id:
+                        road = roads.pop(p.id, None)
+                        if road is None: break
                     self.__add_segment(road)
 
         for xcrossing in xcrossings:
             for s in xcrossing.segments:
                 self.__add_xcross(s)
-                paths = self.get_paths(s.next_road)
-                if not paths: continue
+                path = self.__get_path(s.next_road)
+                if not path: continue
 
-                for path in paths:
-                    road = roads.pop(path.id, None)
+                for p in path:
+                    road = roads.pop(p.id, None)
                     if not road:
                         break
                     self.__add_segment(road)
 
-        #if end:
-         #   paths = self.get_path_from_end(end.id)
-         #   for path in paths:
-         #       self.add_lane(path)
+            roads.pop(xcrossing.id, None)
+
+        if roads:
+            end = self.get_end_roads()
+            if end:
+                path = self.__get_path(end.id)
+                for p in path:
+                    self.__add_segment(p)
 
     def __add_roundabout_exit(self, exit):
         self.__add_edge(exit.e1)
@@ -153,7 +151,7 @@ class RoadProcessor(object):
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
 
-    def get_paths(self, id):
+    def __get_path(self, id):
         roads = self.roads
         segments = []
         if id in roads:
@@ -167,40 +165,14 @@ class RoadProcessor(object):
             nr = roads[road.next_road]
 
             if nr.next_road == road.id:
-                nr.turn_road()
-                nr.next_road = nr.previous_road
-                nr.previous_road = road.id
+                self.__turn_road(nr, road.id)
             if "Roundabout" in nr.id:
-                xl = self.get_exit_lane(nr, road.id)
-                segments.append(xl)
+                segments.append(self.get_exit_lane(nr, road.id))
                 break
             elif "XCrossing" in nr.id:
                 break
-            elif road.next_road == -1:
-                break
             road = nr
             segments.append(road)
-        return segments
-
-    def get_path_from_end(self, id):
-        roads = self.roads
-        road = roads[id]
-        segments = []
-        segments.append(road)
-
-        while True:
-            if road.next_road == -1: break
-            nr = roads[road.next_road]
-            if "Roundabout" in nr.id: break
-
-            if nr.next_road == road.id:
-                nr.turn_road()
-                nr.next_road = nr.previous_road
-                nr.previous_road = road.id
-
-            segments.append(nr)
-            road = nr
-
         return segments
 
     def get_exit_lane(self, roundabout, roadid):
@@ -234,5 +206,7 @@ class RoadProcessor(object):
                 xcross.append(roads[id])
         return xcross
 
-def dist(p1, p2):
-    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+    def __turn_road(self, road, previous_road_id):
+        road.turn_road()
+        road.next_road = road.previous_road
+        road.previous_road = previous_road_id

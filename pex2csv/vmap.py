@@ -1,13 +1,15 @@
-'''
+'''This module contains all of the code defining the structure of the output .csv files for the vector map. The :class:`VectorMap` class is the only one which should be accessed externally. Its public methods provide the interfaces to generate a 2D vector map from (x, y) coordinate data and export the data to the appropriate files.
+
+The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class:`Lane`, :class:`DTLane`, :class:`WhiteLine` and :class:`RoadEdge` use the same private member names that are used in the vector map documentation circulated in the Autoware community. Some of these fields are given default values for unknown reasons or have a completely unknown purpose. This is because the vector map format is not officially documented.
+
 .. moduleauthor:: Samuel Lindemer <lindemer@kth.se>
+
 '''
 import numpy as np
 
-# This class is an aggregation of VMList objects which contain all of the data
-# for the entire vector map. The public make_* interfaces convert (x, y)
-# coordinate data to vector map data.
-class VectorMap(object):
-    '''
+class VectorMap:
+    '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
+
     '''
     def __init__(self):
         self.point      = VMList(Point)
@@ -98,13 +100,23 @@ class VectorMap(object):
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    # Coordinate data ps must be provided as a numpy array in the form:
-    # [[x0, y0], [x1, y1], ...]
     def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
-        '''
-        .. note::
-           This is a note.
+        '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
+
+        .. note:: When this method is used multiple times to create connected drivable paths, it is important that both paths contain the exact (x, y) coordinate where the paths intersect. Otherwise, the two paths will not be linked in the vector map.
+
+        :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
+        :type ps: array
+        :param junction_start: The :class:`Lane` junction type at the start of the path.
+        :type junction_start: string
+        :param junction_end: The :class:`Lane` junction type at the end of the path.
+        :type junction_end: string
+        :param turn_start: The :class:`Lane` turn type at the start of the path.
+        :type turn_start: string
+        :param turn_end: The :class:`Lane` turn type at the end of the path.
+        :type turn_end: string
+
         '''
         # Warn for empty input array and return.
         if not ps.any():
@@ -139,10 +151,15 @@ class VectorMap(object):
         self.lane[lane_previous].set_junction(junction_end)
         self.lane[lane_previous].set_turn(turn_end)
 
-    # Coordinate data ps must be provided as a numpy array in the form:
-    # [[x0, y0], [x1, y1], ...]
-    # Valid opitions for line_type: 'EDGE' or 'CENTER'.
     def make_line(self, ps, line_type='EDGE'):
+        '''This method takes an ordered array of (x, y) coordinates defining a road edge or a center line and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
+
+        :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
+        :type ps: array
+        :param line_type: EDGE or CENTER.
+        :type line_type: string
+
+        '''
 
         # Warn for empty input array.
         if not ps.any():
@@ -224,8 +241,10 @@ class VectorMap(object):
         if data != [[]]: return data
         else: return None
 
-    # Displays the vector map as a matplotlib figure. (Blocking function.)
     def plot(self):
+        '''Displays the vector map as a matplotlib figure. The road edges are shown in blue, the centers in yellow and the lane vectors shown as arrows. Right turns,  branches and merges are shown in red, and the left turns, branches and merges are shown in green. This is a blocking function.
+
+        '''
         from matplotlib import pyplot as plt
         plt.figure('Vector Map')
         plt.axis('equal')
@@ -249,6 +268,11 @@ class VectorMap(object):
         plt.show()
 
     def export(self):
+        '''Saves the entire vector map to the appropriate .csv files to the directory ./csv.
+
+        .. warning:: This will overwrite the contents of ./csv.
+
+        '''
         self.point.export('./csv/point.csv')
         self.node.export('./csv/node.csv')
         self.line.export('./csv/line.csv')
@@ -257,11 +281,13 @@ class VectorMap(object):
         self.whiteline.export('./csv/whiteline.csv')
         self.roadedge.export('./csv/roadedge.csv')
 
-# This class is an ordered list of vector map objects with indexing beginning at
-# 1, not 0, to comply with the vector map format. A type must be declared on
-# instantiation. The append() method will instantiate objects of this type and
-# add them to the end of the list.
 class VMList:
+    '''This class is an ordered list of vector map objects with indexing beginning at 1, not 0, to comply with the vector map format. Iteration, item getting and setting, and element count work the same as Python's default List.
+
+    :param type: The class of object to be contained in this list.
+    :type type: class
+
+    '''
     def __init__(self, type):
         self.__type = type
         self.__data = []
@@ -288,13 +314,19 @@ class VMList:
     def __len__(self):
         return len(self.__data)
 
-    # Appends an object of the type declared on instantiation of the VMList
-    # object. Arguments passed in here will be used to instantiate that object.
     def append(self, *args, **kwargs):
+        '''Appends an object of the type declared on instantiation of the VMList object. Arguments and keyword arguments passed in here will be passed directly to the new object's __init__.
+
+        '''
         self.__data.append(self.__type(*args, **kwargs))
 
-    # Print all data to a file in the vector map CSV format.
     def export(self, path):
+        '''Prints all data to a file in the vector map .csv format. Each vector map object class defined in this file has a __str__ override which returns its data in the correct comma-separated order according to the vector map format. Each line of a vector map .csv file starts with a unique ID. These ID values are the indicies in this :class:`VMList` object.
+
+        :param path: The file name to save the data to.
+        :type path: string
+
+        '''
         ofile = open(path, 'w')
         ofile.write('\n')
         for i in range(len(self.__data)):
@@ -308,7 +340,16 @@ class VMList:
 
 # NOTE: The attributes of these objects follow the naming conventions used by
 # the vector map format, not the standard Python conventions.
+
 class Point:
+    '''Vector map data saved to point.csv. Contains ALL of the coordinate data for the entire map.
+
+    :param x: Global X coordinate.
+    :type x: float
+    :param y: Global Y coordinate.
+    :type y: float
+
+    '''
     def __init__(self, x, y):
         self.B = 0.0        # Latitude
         self.L = 0.0        # Longitude
@@ -320,14 +361,21 @@ class Point:
         self.MCODE2 = 0
         self.MCODE3 = 0
 
-    # Compute the distance from this Point to Point p. Needed for Lane.Span and
-    # DTLane.Dist.
     def distance_to(self, p):
+        '''
+        :param p: The target for distance measurment.
+        :type p: Point
+        :returns: float -- The distance between this :class:`Point` and :class:`Point` p.
+
+        '''
         return np.sqrt((p.Bx - self.Bx)**2 + (p.Ly - self.Ly)**2)
 
-    # Compute the direction in radians (-pi to pi) from this Point to Point p.
-    # Needed for DTLane.Dir.
     def direction_to(self, p):
+        '''
+        :param p: The target for angle measurment.
+        :type p: Point
+        :returns: float -- The direction in radians (-pi to pi) from this :class:`Point` to :class:`Point` p.
+        '''
         return np.arctan2(p.Ly - self.Ly, p.Bx - self.Bx)
 
     def get_xy(self):
@@ -339,6 +387,12 @@ class Point:
         return ','.join(map(str, data))
 
 class Node:
+    '''Vector map data saved to node.csv. This class is merely a reference to a single :class:`Point`.
+
+    :param point: The corresponding :class:`Point` ID.
+    :type point: int
+
+    '''
     def __init__(self, point):
         self.PID = point            # Corresponding Point ID
 
@@ -349,6 +403,18 @@ class Node:
         return str(self.PID)
 
 class Line:
+    '''Vector map data saved to line.csv. This class defines the edges of roads and painted lines on roads.
+
+    :param point_start: The ID of the :class:`Point` that starts the line.
+    :type point_start: int
+    :param point_end: The ID of the :class:`Point` that ends the line.
+    :type point_end: int
+    :param line_before: The ID of the :class:`Line` connected to the start of this one.
+    :type line_before: int
+    :param line_afer: The ID of the :class:`Line` connected to the end of this one.
+    :type line_afer: int
+
+    '''
     def __init__(self, point_start=0, point_end=0, line_before=0, line_after=0):
         self.BPID = point_start     # Starting Point ID
         self.FPID = point_end       # Ending Point ID
@@ -372,6 +438,26 @@ class Line:
         return ','.join(map(str, data))
 
 class Lane:
+    '''Vector map data saved to lane.csv. This class partially defines the drivable paths in the world.
+
+    :param dtlane: The corresponding :class:`DTLane` ID.
+    :type dtlane: int
+    :param node_start: The ID of the :class:`Node` that starts the lane.
+    :type node_start: int
+    :param node_end: The ID of the :class:`Node` that ends the lane.
+    :type node_end: int
+    :param lane_before: The ID of the :class:`Lane` connected to the start of this one.
+    :type lane_before: int
+    :param lane_after: The ID of the :class:`Lane` connected to the end of this one.
+    :type lane_after: int
+    :param length: The distance between the start and end :class:`Node`.
+    :type length: float
+    :param junction: NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
+    :type junction: string
+    :param turn: STRAIGHT, LEFT_TURN, RIGHT_TURN.
+    :type turn: string
+
+    '''
     def __init__(self, dtlane=0, node_start=0, node_end=0, lane_before=0,
             lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT'):
         self.DID = dtlane           # Corresponding DTLane ID
@@ -454,6 +540,16 @@ class Lane:
         return ','.join(map(str, data))
 
 class DTLane:
+    '''Vector map data saved to dtlane.csv. This class partially defines the drivable paths in the world.
+
+    :param point: The corresponding :class:`Point` ID.
+    :type point: int
+    :param length: The distance from the very start of the entire drivable path to here. NOT the same as length as defined in :class:`Lane`.
+    :type length: float
+    :param direction: The direction, in radians, from this :class:`DTLane` to the next one.
+    :type direction: float
+
+    '''
     def __init__(self, point=0, length=0.0, direction=0.0):
         self.PID = point             # Corresponding Point ID
         self.Dist = length           # TOTAL distance to path start
@@ -481,6 +577,16 @@ class DTLane:
 # NOTE: It is not clear whether the Node associated with the following two
 # classes is the start or the end of the WhiteLine/RoadEdge segment.
 class WhiteLine:
+    '''Vector map data saved to whiteline.csv. This class is merely a reference to a single :class:`Node` and a single :class:`Line`, and a color option.
+
+    :param line: The corresponding :class:`Line` ID.
+    :type line: int
+    :param node: The corresponding :class:`Node` ID.
+    :type node: int
+    :param color: 'W' for white, 'Y' for yellow.
+    :type color: char
+
+    '''
     def __init__(self, line=0, node=0, color='W'):
         self.LID = line          # Corresponding Line ID
         self.Width = 0.2
@@ -496,6 +602,14 @@ class WhiteLine:
         return ','.join(map(str, data))
 
 class RoadEdge:
+    '''Vector map data saved to roadedge.csv. This class is merely a reference to a single :class:`Node` and a single :class:`Line`.
+
+    :param line: The corresponding :class:`Line` ID.
+    :type line: int
+    :param node: The corresponding :class:`Node` ID.
+    :type node: int
+
+    '''
     def __init__(self, line=0, node=0):
         self.LID = line          # Corresponding Line ID
         self.LinkID = node       # Corresponding Node ID

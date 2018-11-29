@@ -1,4 +1,3 @@
-from matplotlib import pyplot as plt
 from preproc import RoadProcessor
 from vmap import VectorMap
 import numpy as np
@@ -8,6 +7,8 @@ import parse
 if __name__ == '__main__':
     roads = parse.get_roads(path='./data/base_experiment.pex')
     rproc = RoadProcessor(roads)
+    rproc.add_roads(roads)
+    rproc.create_lanes()
     vm = VectorMap()
 
     for lane in rproc.lanes:

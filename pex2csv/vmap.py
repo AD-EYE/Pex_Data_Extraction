@@ -354,8 +354,8 @@ class Point:
         self.B = 0.0        # Latitude
         self.L = 0.0        # Longitude
         self.H = 0.0        # Altitude
-        self.Bx = x         # Global X
-        self.Ly = y         # Global Y
+        self.Ly = x         # Global Y, values are swapped for Autoware, does not work swapping the lines
+        self.Bx = y         # Global X
         self.ReF = 7
         self.MCODE1 = 0
         self.MCODE2 = 0
@@ -558,8 +558,8 @@ class DTLane:
         self.r = 90000000000.0
         self.slope = 0.0
         self.cant = 0.0
-        self.LW = 2.0
-        self.RW = 2.0
+        self.LW = 1.75
+        self.RW = 1.75
 
     # DTLane records the cumulative distance to the start of the lane, so each
     # new DTLane must check the previous.

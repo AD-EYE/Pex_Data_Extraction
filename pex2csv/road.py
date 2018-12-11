@@ -1,36 +1,76 @@
+'''This module contains all of the code defining the structure of different road segments. By taking initial values from the parser the classes calculate a mathematical definition of the road type.
+
+The road classes :class:'BendRoad', :class:'CurvedRoad', :class:'StraightRoad', :class:'RoundaboutRoad', and :class:'XCrossing' all have class variables that represent roads.
+
+'''
 from path import *
 import numpy as np
 from utils import *
 
 class Road:
+    '''This is the interface class for all the road types. Every road has certain things in common such as a center, edges and lanes.
+
+    '''
     def __init__(self, id):
         self.id = id
+        self.c = []
+        self.e1 = []
+        self.e2 = []
+        self.l = []
         self.previous_road = -1
         self.next_road = -1
         self.isturned = False
 
     def getstart(self):
+        '''This method returns the starting coordinates of the road's center path.
+        .. note:: Some road segments might not have a starting point, for example the roundabout road. Those segments will have to override this function accordingly.
+        :returns (Float, Float)
+        '''
         return self.c[0].getstart()
 
     def getend(self):
+        '''This method returns the last coordinates of the road's center path.
+        .. note:: Some road segments might not have an endpoint, for example the roundabout road. Those segments will have to override this function accordingly.
+        :returns (Float, Float)
+        '''
         return self.c[0].getend()
 
     def turn_road(self):
+        '''This method marks the road segment as turned in order for the road processor to know on which endpoint it should start.
+        '''
         self.isturned = not self.isturned
 
 class BendRoad(Road):
+    '''
+    This a representation of the bend road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the starting point of the segment
+    :type x0: Float
+    :param y0: The y coordinate of the starting point of the segment
+    :type y0: Float
+    :param h: Global heading of the segment at the starting point
+    :type h: Float
+    :param rh: Heading of the segment relative to its heading
+    :type rh: Float
+    :param clr: Center line radius.
+    :type clr: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes):
         Road.__init__(self, id)
-        self.c = [Bend( x0, y0, h, rh, clr)]
-        self.e1 = []
-        self.e2 = []
+        self.c.append(Bend( x0, y0, h, rh, clr))
         self.e1.append(Bend( x0 + lw * nbr_of_lanes / 2 * np.cos(h + np.pi / 2),
                         y0 + lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
                         h, rh, clr - np.sign(rh) * lw * nbr_of_lanes / 2))
         self.e2.append(Bend( x0 - lw * nbr_of_lanes / 2 * np.cos(h + np.pi / 2),
                         y0 - lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
                         h, rh, clr + np.sign(rh) * lw * nbr_of_lanes / 2))
-        self.l = []
         lwi = (nbr_of_lanes - 1) * lw
         for _ in range(nbr_of_lanes):
             self.l.append(Bend( x0 + lwi * np.cos(h + np.pi / 2) / 2,
@@ -40,6 +80,33 @@ class BendRoad(Road):
 
 
 class CurvedRoad(Road):
+    '''
+    This a representation of the curved road in Prescan. A beezier curve is used to represent it.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the starting point of the bezier curve
+    :type x0: Float
+    :param y0: The y coordinate of the starting point of the bezier curve
+    :type y0: Float
+    :param h: Global heading of the bezier curve at its starting point
+    :type h: Float
+    :param rh: Heading of the bezier curve relative to its starting point
+    :type rh: Float
+    :param cp1: Represents the distance between the first control point and the starting point at an angle that's equal to the heading.
+    :type cp1: Float
+    :param cp2: Represents the distance between the second control point and the endpoint at an angle that's equal to the heading plus the relative heading.
+    :type cp2: Float
+    :param dx: Relative x offset of the endpoint from the starting point
+    :type dx: Float
+    :param dy: Relative y offset of the endpoint from the starting point
+    :type dy: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes):
         Road.__init__(self, id)
         x_ = dx * np.cos(h) - dy * np.sin(h)
@@ -52,32 +119,43 @@ class CurvedRoad(Road):
         y3 = y0 + y_
         xs = [x0, x1, x2, x3]
         ys = [y0, y1, y2, y3]
-        self.c = [Curve(xs, ys, 0)]
-        self.e1 = []
-        self.e2 = []
+        self.c.append(Curve(xs, ys, 0))
         self.e1.append(Curve(xs, ys, lw * nbr_of_lanes / 2))
         self.e2.append(Curve(xs, ys, -lw * nbr_of_lanes / 2))
 
-        self.l = []
         lwi = -(nbr_of_lanes - 1) * lw / 2
         for _ in range(nbr_of_lanes):
             self.l.append(Curve(xs, ys, lwi))
             lwi += lw
 
 class RoundaboutRoad(Road):
+    '''
+    This a representation of the roundabout. Each roundabout contains road cross sections that represent the exits and entries to the segment.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the roundabout.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the roundabout.
+    :type y0: Float
+    :param r: Distance from the center of the roundabout to the center lane.
+    :type r: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param chs: List of headings for each road cross section.
+    :type chs: [Float]
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes):
         Road.__init__(self, id)
-        self.c  = [Bend(x0, y0 - r, 0, 2 * np.pi, r)]
-        self.e1 = []
-        self.e2 = []
+        r = r - lw
+        self.c.append(Bend(x0, y0 - r, 0, 2 * np.pi, r))
         self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw)))
-        self.l = []
-        lwi = (nbr_of_lanes / 2) * lw
-        for _ in range(nbr_of_lanes):
-            self.l.append(Bend( x0,
-                                y0 - (r - lwi / 2),
-                                0, 2 * np.pi, r - lwi / 2))
-            lwi -= lw * 2
+
+        self.l.append(Bend( x0, y0 - (r - lw / 2), 0, 2 * np.pi, r - lw / 2))
+        self.l.append(Bend( x0, y0 - (r + lw / 2), 0, 2 * np.pi, r + lw / 2))
 
         offset = np.pi / 8
         h = []
@@ -100,17 +178,33 @@ class RoundaboutRoad(Road):
             self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes))
 
 class ExitLane(Road):
+    '''
+    This a representation of a roundabout cross section.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the endpoint of the exit lane.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the endpoint of the exit lane.
+    :type y0: Float
+    :param r: Distance from the center of the roundabout to the center lane.
+    :type r: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param ch: Heading of the road end relative to the heading of the roundabout.
+    :type ch: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes):
         Road.__init__(self, id)
+        r += lw
         self.x = x0
         self.y = y0
         self.r = r
         self.ch = ch
         self.lw = lw
-        self.c = []
-        self.e1 = []
-        self.e2 = []
-        self.l = []
 
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw)
         self.e1.append(Bend(x, y, h, a, rc))
@@ -139,8 +233,8 @@ class ExitLane(Road):
         x2 = x1 + ld * np.cos(ch - sign * np.pi / 2)
         y2 = y1 + ld * np.sin(ch - sign * np.pi / 2)
 
-        xc1 = x0 + (r + ld) * np.cos(ch - sign * np.pi / 8)
-        yc1 = y0 + (r + ld) * np.sin(ch - sign * np.pi / 8)
+        xc1 = x0 + (r - lw + ld) * np.cos(ch - sign * np.pi / 8)
+        yc1 = y0 + (r - lw + ld) * np.sin(ch - sign * np.pi / 8)
 
         rc = radius_of_circle((x2, y2), (xc1, yc1), np.pi/3)
 
@@ -157,18 +251,32 @@ class ExitLane(Road):
         return (x2, y2, h, sign * np.pi / 3, rc)
 
 class StraightRoad(Road):
+    '''
+    This a representation of a straight road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the start of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the start of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the start point.
+    :type h: Float
+    :param l: Length of the road segment
+    :type l: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes):
         Road.__init__(self, id)
-        self.c = []
-        self.e1 = []
-        self.e2 = []
-        self.l = []
         self.c.append(Straight( x0, y0, h, l))
         self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
                                 y0 + lw * np.sin(h + np.pi / 2), h, l))
         self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
                                 y0 - lw * np.sin(h + np.pi / 2), h, l))
-        self.l = []
         lwi = (nbr_of_lanes / 2) * lw
         for _ in range(nbr_of_lanes):
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) / 2,
@@ -177,12 +285,31 @@ class StraightRoad(Road):
             lwi -= lw * 2
 
 class XCrossRoad(Road):
+    '''
+    This a representation of an xcrossing road in Prescan. Each road contains one segment for each arm of the xcrossing.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the starting point.
+    :type h: Float
+    :param r: Distance from the starting point to furthest center point of one of the lanes.
+    :type r: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param chs: List of headings for each arm of the xcrossing.
+    :type chs: [Float]
+    :param len_till_stop: Distance from endpoint of the arms to the arms' stop line.
+    :type len_till_stop: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, h, r, lw, chs, len_till_stop, nbr_of_lanes):
         Road.__init__(self, id)
-        self.c = []
-        self.e1 = []
-        self.e2 = []
-        self.l = []
         self.segments = []
         self.x = x0
         self.y = y0
@@ -197,12 +324,31 @@ class XCrossRoad(Road):
         return (self.x, self.y)
 
 class XSegment(Road):
+    '''
+    This a representation of one arm of the xcrossing road segment.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the starting point.
+    :type h: Float
+    :param r: Distance from the starting point to furthest center point of one of the lanes.
+    :type r: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param ch: The heading of the arm relative to the heading of the xcrossing segment
+    :type ch: Float
+    :param len_till_stop: Number of lanes.
+    :type len_till_stop: Integer
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
     def __init__(self, id, x0, y0, h, r, lw, ch, len_till_stop, nbr_of_lanes):
         Road.__init__(self, id)
-        self.c = []
-        self.e1 = []
-        self.e2 = []
-        self.l = []
         self.lturn = []
         self.rturn = []
         self.straight = []
@@ -212,6 +358,7 @@ class XSegment(Road):
         self.__create_turns(x0, y0, lw, r - len_till_stop, ch + h, nbr_of_lanes)
         self.__create_lanes(x0, y0, r, lw, ch + h, nbr_of_lanes)
 
+    # Calculates the lanes for the xcrossing arm
     def __create_lanes(self, x0, y0, r, lw, h, nbr_of_lanes):
         x = x0 + r * np.cos(h)
         y = y0 + r * np.sin(h)
@@ -223,6 +370,7 @@ class XSegment(Road):
             self.l.append(Straight(x1, y1, h - np.pi, r))
             lwi += lw * 2
 
+    # Calculates the edges of the xcrossing arm
     def __create_edges(self, x0, y0, r, lw, h, len_till_stop):
         x = x0 + r * np.cos(h)
         y = y0 + r * np.sin(h)
@@ -242,6 +390,7 @@ class XSegment(Road):
         y3 = y2 + len_till_stop * np.sin(h + np.pi)
         self.e1.append(Bend(x3, y3, h + np.pi, -np.pi / 2, 2))
 
+    # Calculates the turns from one arm to another on the xcrossing segment.
     def __create_turns(self, x0, y0, lw, r, h, nbr_of_lanes):
         lwi = -(nbr_of_lanes / 2) * lw
         lturn = self.__get_left_turn(x0, y0, lwi, r, h)
@@ -249,11 +398,13 @@ class XSegment(Road):
         self.lturn.append(lturn)
         self.rturn.append(rturn)
 
+    # Calculates the center line for the arm.
     def __create_center(self, x0, y0, r, h):
         x = x0 + r * np.cos(h)
         y = y0 + r * np.sin(h)
         self.c.append(Straight(x, y, h - np.pi, r))
 
+    # Calculates the right junction turn.
     def __get_right_turn(self, x0, y0, lw, l, h):
         x = x0 - lw * np.cos(h + np.pi / 2) / 2
         y = y0 - lw * np.sin(h + np.pi / 2) / 2
@@ -272,11 +423,11 @@ class XSegment(Road):
         rc = radius_of_circle(p1, p2, np.pi / 2)
         return Bend(x1, y1, h + np.pi, -np.pi / 2, rc)
 
+    # Calculates the left junction turn.
     def __get_left_turn(self, x0, y0, lw, l, h):
-        # middle of road
         x = x0 - lw * np.cos(h + np.pi / 2) / 2
         y = y0 - lw * np.sin(h + np.pi / 2) / 2
-        # start of turn
+
         x1 = x + l * np.cos(h)
         y1 = y + l * np.sin(h)
 

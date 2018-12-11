@@ -1,3 +1,7 @@
+'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates.
+
+The road classes are :class:'Bend', :class:'Curved', and :class:'Straight'.
+'''
 import numpy as np
 import bezier
 
@@ -24,6 +28,21 @@ class Path:
         return self.eval(int(self.t1 / self.dt) * self.dt)
 
 class Bend(Path):
+    '''
+    This path is represented with a part of a circle.
+
+    :param x0: The x coordinate of the starting point of the curve.
+    :type x0: Float
+    :param y0: The y coordinate of the starting point of the curve
+    :type y0: Float
+    :param a0: Global heading of the starting point.
+    :type a0: Float
+    :param da: Heading of the endpoint relative to the curves' heading.
+    :type da: Float
+    :param r: Distance of the curve from the center of the circle used to represent the curve.
+    :type r: Float
+
+    '''
     def __init__(self, x0, y0, a0, da, r):
         self.a0 = a0 - np.sign(da) * np.pi / 2
         self.x0 = x0 - r * np.cos(self.a0)
@@ -37,6 +56,17 @@ class Bend(Path):
                 self.y0 + self.r * np.sin(self.a0 + np.sign(self.da) * t))
 
 class Curve(Path):
+    '''
+    This path is represented with a bezier curve.
+
+    :param xs: The x ??
+    :type xs: Float
+    :param ys: The y ??
+    :type ys: Float
+    :param offset: ??
+    :type offset: Float
+
+    '''
     def __init__(self, xs, ys, offset):
         self.xs, self.ys = xs, ys
         self.offset = offset
@@ -71,6 +101,19 @@ class Curve(Path):
         return (x, y)
 
 class Straight(Path):
+    '''
+    This path is represented with a straight line.
+
+    :param x0: The x coordinate of the starting point of the line.
+    :type x0: Float
+    :param y0: The y coordinate of the starting point of the line.
+    :type y0: Float
+    :param h: Global heading of the starting point.
+    :type  h: Float
+    :param l: Length of the line.
+    :type l: Float
+
+    '''
     def __init__(self, x0, y0, h, l):
         self.x0 = x0
         self.y0 = y0

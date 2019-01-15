@@ -147,6 +147,7 @@ class RoadProcessor(object):
                 rturns.append(s.rturn[0].getstart())
                 rturns.append(s.rturn[0].getend())
                 lturns.append(s.lturn[0].getend())
+                lturns.append(s.lturn[0].getstart())
 
             for s in xcrossing.segments:
                 self.__add_xcross(s, rturns, lturns)
@@ -186,8 +187,8 @@ class RoadProcessor(object):
     # lanes for them
     def __add_xcross(self, xcross, rturns, lturns):
         self.__add_segment(xcross, rturns = rturns, lturns = lturns)
-        self.__add_lane(xcross.rturn[0], False, 'RIGHT_BRANCHING', 'LEFT_MERGING')
         self.__add_lane(xcross.lturn[0], False, 'LEFT_BRANCHING', 'RIGHT_MERGING')
+        self.__add_lane(xcross.rturn[0], False, 'RIGHT_BRANCHING', 'LEFT_MERGING')
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start

@@ -409,8 +409,8 @@ class XSegment(Road):
         x = x0 - lw * np.cos(h + np.pi / 2) / 2
         y = y0 - lw * np.sin(h + np.pi / 2) / 2
 
-        x1 = x + l * np.cos(h)
-        y1 = y + l * np.sin(h)
+        x1 = x + (l - 1.35) * np.cos(h)
+        y1 = y + (l - 1.35) * np.sin(h)
 
         x = x0 - lw * np.cos(h) / 2
         y = y0 - lw * np.sin(h) / 2
@@ -421,15 +421,16 @@ class XSegment(Road):
         p1 = (x1, y1)
         p2 = (x2, y2)
         rc = radius_of_circle(p1, p2, np.pi / 2)
-        return Bend(x1, y1, h + np.pi, -np.pi / 2, rc)
+        #return Bend(x1, y1, h + np.pi, -np.pi / 2, rc)
+        return Straight(x1, y1, h - 1.27 * np.pi , 4.0)
 
     # Calculates the left junction turn.
     def __get_left_turn(self, x0, y0, lw, l, h):
         x = x0 - lw * np.cos(h + np.pi / 2) / 2
         y = y0 - lw * np.sin(h + np.pi / 2) / 2
 
-        x1 = x + l * np.cos(h)
-        y1 = y + l * np.sin(h)
+        x1 = x + (l - 3) * np.cos(h)
+        y1 = y + (l - 3) * np.sin(h)
 
         x = x0 + lw * np.cos(h) / 2
         y = y0 + lw * np.sin(h) / 2
@@ -440,7 +441,9 @@ class XSegment(Road):
         p1 = (x1, y1)
         p2 = (x2, y2)
         rc = radius_of_circle(p1, p2, np.pi / 2)
-        return Bend(x1, y1, h + np.pi, np.pi / 2, rc)
+        #return Bend(x1, y1, h + np.pi, np.pi / 2, rc)
+        #return Straight(x1, y1, h - 0.72 * np.pi , 8.0)
+        return Straight(x1, y1, h - 0.72 * np.pi , 7.0)
 
     def getstart(self):
         return self.c[0].getend()

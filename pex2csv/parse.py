@@ -53,7 +53,7 @@ def get_roundabout(s, id):
     r = float(s.get('Radius'))
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
-    cs = s.xpath('//CrossSections')[0]
+    cs = s[18]
     chs = []
     for s in cs:
         chs.append((float(s.get('Heading')) + h) * np.pi / 180)

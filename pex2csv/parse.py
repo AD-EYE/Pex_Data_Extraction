@@ -79,5 +79,5 @@ def get_xcross(s, id):
     len_till_stop = float(cs[0].get('RoadLengthTillStopMarker'))
     chs = []
     for c in cs:
-        chs.append((float(c.get('Heading')) + h) * np.pi / 180)
+        chs.append((float(c.get('Heading'))) * np.pi / 180)
     return XCrossRoad(id, x0, y0, h, r, lw, chs, len_till_stop, nbr_of_lanes)

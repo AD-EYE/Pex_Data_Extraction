@@ -3,9 +3,11 @@ from vmap import VectorMap
 import numpy as np
 import parse
 
+# config
+PEX_FILE_LOCATION = './data/base_experiment.pex'
 
 if __name__ == '__main__':
-    roads = parse.get_roads(path='./data/base_experiment.pex')
+    roads = parse.get_roads(path=PEX_FILE_LOCATION)
     rproc = RoadProcessor()
     rproc.add_roads(roads)
     rproc.create_lanes()

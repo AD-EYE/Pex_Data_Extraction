@@ -21,6 +21,12 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_roundabout(s, id)
         elif (type == 'XCrossing'):
             roads[id] = get_xcross(s, id)
+        elif (type == 'EntryLaneRoad'):
+            roads[id] = get_entry(s, id)
+        elif (type == 'ExitLaneRoad'):
+            roads[id] = get_exit(s, id)
+        elif (type == 'LaneAdapterRoad'):
+            roads[id] = get_adapter(s, id)
     return roads
 
 def get_bend(s, id):
@@ -31,7 +37,8 @@ def get_bend(s, id):
     clr = float(s.get('CenterlineRadius'))
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
-    return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes)
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir)
 
 def get_curved(s, id):
     x0 = float(s[0].get('X'))
@@ -44,7 +51,8 @@ def get_curved(s, id):
     dy = float(s.get('Yoffset'))
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
-    return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes)
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir)
 
 def get_roundabout(s, id):
     x0 = float(s[0].get('X'))
@@ -66,18 +74,62 @@ def get_straight(s, id):
     l = float(s.get('RoadLength'))
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
-    return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes)
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir)
+
+def get_entry(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    h = float(s[1].get('Heading')) * np.pi / 180
+    l = float(s.get('RoadLength'))
+    lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    entry_road_angle=float(s.get('EntryRoadAngle')) * np.pi / 180
+    apron_length=float(s.get('ApronLength'))
+    side_road_length=float(s.get('SideRoadLength'))
+    return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length)
+
+def get_exit(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    h = float(s[1].get('Heading')) * np.pi / 180
+    l = float(s.get('RoadLength'))
+    lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    exit_road_angle=float(s.get('ExitRoadAngle')) * np.pi / 180
+    apron_length=float(s.get('ApronLength'))
+    side_road_length=float(s.get('SideRoadLength'))
+    return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length)
+
+def get_adapter(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    h = float(s[1].get('Heading')) * np.pi / 180
+    l = float(s.get('RoadLength'))
+    lw = float(s.get('LaneWidthAtStart'))
+    nbr_of_lanes_start = int(s.get('NumberOfLanesAtStart'))
+    nbr_of_lanes_end = int(s.get('NumberOfLanesAtEnd'))
+    lanes_in_x_dir_start = int(s.get('DirectionChangeAfterLane'))
+    lanes_in_x_dir_end = int(s.get('DirectionChangeAfterLaneAtEnd'))
+    return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end)
 
 def get_xcross(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     h = float(s[1].get('Heading')) * np.pi / 180
-    r = float(s.get('Radius'))
     cs = s[18]
     lw = float(cs[0].get('LaneWidth'))
-    nbr_of_lanes = int(cs[0].get('NumberOfLanes'))
-    len_till_stop = float(cs[0].get('RoadLengthTillStopMarker'))
-    chs = []
+    cs_h = []
+    cs_len_till_stop = []
+    cs_nbr_of_lanes = []
+    cs_lanes_in_x_dir = []
+    cs_l = []
     for c in cs:
-        chs.append((float(c.get('Heading')) + h) * np.pi / 180)
-    return XCrossRoad(id, x0, y0, h, r, lw, chs, len_till_stop, nbr_of_lanes)
+        cs_h.append((float(c.get('Heading'))) * np.pi / 180)
+        cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
+        cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
+        cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
+        cs_l.append(float(c.get('RoadEndLength')))
+    return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l)

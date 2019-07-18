@@ -48,7 +48,7 @@ class VectorMap:
 
     # Creates a new Lane between the last two points. Returns ID of Lane and
     # DTLane as a Tuple.
-    def __new_lane(self, node_start=0, node_end=0, lane_before=None,
+    def __new_lane(self, SpeedLimit, RefSpeed, node_start=0, node_end=0, lane_before=None,
             dtlane_before=None):
         mag, dir = self.__compute_vector(
             node_start  = node_start,
@@ -63,6 +63,8 @@ class VectorMap:
             direction   = dir
         )
         lane_id = self.lane.create(
+            SpeedLimit,
+            RefSpeed,
             dtlane      = len(self.dtlane),
             node_start  = node_start,
             node_end    = node_end,
@@ -98,7 +100,7 @@ class VectorMap:
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    def make_lane(self, ps, junction_start='NORMAL', junction_end='NORMAL',
+    def make_lane(self, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
         '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
@@ -131,7 +133,7 @@ class VectorMap:
         dtlane_previous = None
         for (x, y) in ps[1:,]:
             node_current = self.__get_node(x, y)
-            lane_previous, dtlane_previous = self.__new_lane(
+            lane_previous, dtlane_previous = self.__new_lane(SpeedLimit, RefSpeed,
                 node_start = node_previous,
                 node_end = node_current,
                 lane_before = lane_previous,
@@ -143,11 +145,18 @@ class VectorMap:
             if lane_first is None: lane_first = lane_previous
             node_previous = node_current
 
+        # Pass on the speed of the road
+        # self.lane.set_LimitVel(SpeedLimit)
+        # self.lane.set_RefVel(RefSpeed)
+        # self.lane.set_LimitVel(SpeedLimit)
+        # self.lane.set_RefVel(RefSpeed)
+
         # Mark junctions and turns provided by caller.
         self.lane[lane_first].set_junction(junction_start)
         self.lane[lane_first].set_turn(turn_start)
         self.lane[lane_previous].set_junction(junction_end)
         self.lane[lane_previous].set_turn(turn_end)
+
 
     def make_line(self, ps, line_type='EDGE'):
         '''This method takes an ordered array of (x, y) coordinates defining a road edge or a center line and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
@@ -459,7 +468,7 @@ class Lane:
     :type turn: string
 
     '''
-    def __init__(self, dtlane=0, node_start=0, node_end=0, lane_before=0,
+    def __init__(self, SpeedLimit, RefSpeed, dtlane=0, node_start=0, node_end=0, lane_before=0,
             lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT'):
         self.DID = dtlane           # Corresponding DTLane ID
         self.BLID = lane_before     # Preceding Lane ID
@@ -476,8 +485,8 @@ class Lane:
         self.Span = length          # Lane lengh (between Nodes)
         self.LCnt = 1
         self.Lno = 1
-        self.LimitVel = 40
-        self.RefVel = 40
+        self.LimitVel = SpeedLimit
+        self.RefVel = RefSpeed
         self.RoadSecID = 0
         self.LaneChgFG = 0
 
@@ -486,6 +495,12 @@ class Lane:
 
     def get_dtlane(self):
         return self.DID
+
+    def get_LimitVel(self):
+        return self.LimitVel
+
+    def get_RefVel(self):
+        return self.RefVel
 
     def get_length(self):
         return self.Span
@@ -501,6 +516,12 @@ class Lane:
 
     def set_lane_after(self, lane_after):
         self.FLID = lane_after
+
+    def set_LimitVel(self, Value):
+        self.LimitVel = Value
+
+    def set_RefVel(self, Value):
+        self.RefVel = Value
 
     def get_junction(self):
         if self.JCT == 0: return 'NORMAL'

@@ -8,7 +8,18 @@ import numpy as np
 from utils import *
 
 class Road:
-    '''This is the interface class for all the road types. Every road has certain things in common such as a center, edges and lanes.
+    '''This is the interface class for all the road types. Every road has certain things in common such as a center, edges, lanes and SpeedLimit/RefSpeed.
+
+        :param id: represent the ID of the road (Bendroad, StraightRoad...).The exact ID can be found in the pex file.
+        :type ps: string
+        :param c: Tab of points defining the center of the road.
+        :type c: Tab
+        :param e1/e2: Tab of points defining the edges of the road.
+        :type e1/e2: Tab
+        :param l: Tab of points defining a lane of the road.
+        :type l: Tab
+        :param SpeedLimit/RefSpeed: Define the speed limit / the speed reference on the road.
+        :type SpeedLimit/RefSpeed: Int
 
     '''
     def __init__(self, id):
@@ -20,6 +31,8 @@ class Road:
         self.previous_road = -1
         self.next_road = -1
         self.isturned = False
+        self.SpeedLimit = 1 #########
+        self.RefSpeed = 1   #########
 
     def getstart(self):
         '''This method returns the starting coordinates of the road's center path.
@@ -62,8 +75,10 @@ class BendRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes):
+    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS): #########
         Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
         self.c.append(Bend( x0, y0, h, rh, clr))
         self.e1.append(Bend( x0 + lw * nbr_of_lanes / 2 * np.cos(h + np.pi / 2),
                         y0 + lw * nbr_of_lanes / 2 * np.sin(h + np.pi / 2),
@@ -77,6 +92,14 @@ class BendRoad(Road):
                                 y0 + lwi * np.sin(h + np.pi / 2) / 2,
                                h, rh, clr - np.sign(rh) * lwi / 2))
             lwi -= 2 * lw
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
 
 
 class CurvedRoad(Road):
@@ -107,8 +130,10 @@ class CurvedRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes):
+    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS): #########
         Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
         x_ = dx * np.cos(h) - dy * np.sin(h)
         y_ = dx * np.sin(h) + dy * np.cos(h)
         x1 = x0 + cp1 * np.cos(h)
@@ -127,6 +152,14 @@ class CurvedRoad(Road):
         for _ in range(nbr_of_lanes):
             self.l.append(Curve(xs, ys, lwi))
             lwi += lw
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
 
 class RoundaboutRoad(Road):
     '''
@@ -148,8 +181,10 @@ class RoundaboutRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes):
+    def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes, SpeedL, RefS): #########
         Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
         r = r - lw
         self.c.append(Bend(x0, y0 - r, 0, 2 * np.pi, r))
         self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw)))
@@ -175,7 +210,7 @@ class RoundaboutRoad(Road):
 
         self.exit_lanes = []
         for ch in chs:
-            self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes))
+            self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS))     #########
 
 class ExitLane(Road):
     '''
@@ -197,8 +232,10 @@ class ExitLane(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes):
+    def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS): #########
         Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
         r += lw
         self.x = x0
         self.y = y0
@@ -270,19 +307,233 @@ class StraightRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS): #########
         Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
         self.c.append(Straight( x0, y0, h, l))
         self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
                                 y0 + lw * np.sin(h + np.pi / 2), h, l))
         self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
                                 y0 - lw * np.sin(h + np.pi / 2), h, l))
-        lwi = (nbr_of_lanes / 2) * lw
+        lwi = (nbr_of_lanes -1) * lw/2
         for _ in range(nbr_of_lanes):
-            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) / 2,
-                                    y0 + lwi * np.sin(h + np.pi / 2) / 2,
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
                                     h, l))
-            lwi -= lw * 2
+            lwi -= lw
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
+
+class AdapterRoad(Road):
+    '''
+    This a representation of an adapter road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the start of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the start of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the start point.
+    :type h: Float
+    :param l: Length of the road segment
+    :type l: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes_start: Number of lanes.
+    :type nbr_of_lanes_start: Integer
+    :param nbr_of_lanes_end: Number of lanes.
+    :type nbr_of_lanes_end: Integer
+    :param lanes_in_x_dir_start: Number of lanes.
+    :type lanes_in_x_dir_start: Integer
+    :param lanes_in_x_dir_end: Number of lanes.
+    :type lanes_in_x_dir_end: Integer
+
+    '''
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS): #########
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
+        self.c.append(Straight( x0, y0, h, l))
+        self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
+                                y0 + lw * np.sin(h + np.pi / 2), h, l))
+        self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
+                                y0 - lw * np.sin(h + np.pi / 2), h, l))
+        lwi = (nbr_of_lanes_start -1) * lw/2
+        for _ in range(min(nbr_of_lanes_start, nbr_of_lanes_end)-1):
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l))
+            lwi -= lw
+
+        if nbr_of_lanes_start>nbr_of_lanes_end:
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l/2))
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + l*np.cos(h)/2,
+                                    y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
+                                    h, l/2))
+            lwi -= lw
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h+np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2)))
+
+        if nbr_of_lanes_start<nbr_of_lanes_end:
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l/2))
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + l*np.cos(h)/2,
+                                    y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
+                                    h, l/2))
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + l*np.cos(h)/2,
+                                    y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
+                                    h-np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2)))
+
+        if nbr_of_lanes_start==nbr_of_lanes_end:
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l/2))
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + l*np.cos(h)/2,
+                                    y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
+                                    h, l/2))
+
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes_start-lanes_in_x_dir_start>0:
+            for i in range(nbr_of_lanes_start-lanes_in_x_dir_start):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
+
+class EntryRoad(Road):
+    '''
+    This a representation of a entry road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the start of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the start of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the start point.
+    :type h: Float
+    :param l: Length of the road segment
+    :type l: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+    :param entry_road_angle: Entry Road Angle.
+    :type entry_road_angle: Float
+    :param apron_length: Apron Length.
+    :type apron_length: Float
+    :param side_road_length: Side Road Length.
+    :type side_road_length: Float
+
+    '''
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS): #########
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
+        apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
+        self.c.append(Straight( x0, y0, h, l))
+        self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
+                                y0 + lw * np.sin(h + np.pi / 2), h, l))
+        self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
+                                y0 - lw * np.sin(h + np.pi / 2), h, l))
+        lwi=(nbr_of_lanes -1) * lw/2
+        for _ in range(nbr_of_lanes-1):
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l))
+            lwi -= lw
+        self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                y0 + lwi * np.sin(h + np.pi / 2),
+                                h, apron_length2))
+        self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + apron_length2 * np.cos(h),
+                                y0 + lwi * np.sin(h + np.pi / 2) + apron_length2 * np.sin(h),
+                                h, l-apron_length2))
+        self.l.append(Straight( x0 + (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.sin(h),
+                                y0 - (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.cos(h),
+                                entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
+
+class ExitRoad(Road):
+    '''
+    This a representation of a entry road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+    :param x0: The x coordinate of the center of the start of the road segment.
+    :type x0: Float
+    :param y0: The y coordinate of the center of the start of the road segment.
+    :type y0: Float
+    :param h: Global heading of the road segment at the start point.
+    :type h: Float
+    :param l: Length of the road segment
+    :type l: Float
+    :param lw: Lane width.
+    :type lw: Float
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+    :param exit_road_angle: Exit Road Angle.
+    :type exit_road_angle: Float
+    :param apron_length: Apron Length.
+    :type apron_length: Float
+    :param side_road_length: Side Road Length.
+    :type side_road_length: Float
+
+    '''
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS): #########
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
+        apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
+        self.c.append(Straight( x0, y0, h, l))
+        self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
+                                y0 + lw * np.sin(h + np.pi / 2), h, l))
+        self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
+                                y0 - lw * np.sin(h + np.pi / 2), h, l))
+        lwi=(nbr_of_lanes -1) * lw/2
+        for _ in range(nbr_of_lanes-1):
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l))
+            lwi -= lw
+        self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                y0 + lwi * np.sin(h + np.pi / 2),
+                                h, l-apron_length2))
+        self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + (l-apron_length2) * np.cos(h),
+                                y0 + lwi * np.sin(h + np.pi / 2) + (l-apron_length2) * np.sin(h),
+                                h, apron_length2))
+        self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + (l-apron_length2) * np.cos(h),
+                                y0 + lwi * np.sin(h + np.pi / 2) + (l-apron_length2) * np.sin(h),
+                                h-exit_road_angle, (apron_length*np.tan(exit_road_angle)+lw/2)/np.sin(exit_road_angle)))
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
+
+
 
 class XCrossRoad(Road):
     '''
@@ -308,145 +559,57 @@ class XCrossRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, r, lw, chs, len_till_stop, nbr_of_lanes):
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS): #########
         Road.__init__(self, id)
-        self.segments = []
-        self.x = x0
-        self.y = y0
+        self.SpeedLimit = SpeedL       #########
+        self.RefSpeed = RefS           #########
+        p = 0
+        self.x=x0
+        self.y=y0
+        for c in range(4):
+            lwi=(cs_nbr_of_lanes[c] -1) * lw/2
+            for lane in range(2): #cs_nbr_of_lanes[c]
+                self.l.append(Straight( x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2),
+                                        y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2),
+                                        cs_h[c]+h, cs_len_till_stop[c]+1))
+                lwi -= lw
 
-        for ch in chs:
-            self.segments.append(XSegment(id, x0, y0, h, r, lw, ch, len_till_stop, nbr_of_lanes))
+
+			#This changes the direction of the lanes that drive backwards
+            if cs_nbr_of_lanes[c]-cs_lanes_in_x_dir[c]>0:
+                for i in range(cs_nbr_of_lanes[c]-cs_lanes_in_x_dir[c]):
+                    l=[]
+                    for (x, y) in self.l[len(self.l)-cs_nbr_of_lanes[c]+i]: #This has to be rethought
+                        l.append([x, y])
+                    l = l[::-1]
+                    self.l[len(self.l)-cs_nbr_of_lanes[c]+i] = l
+
+
+            #l=[]
+            #for (x, y) in self.l[4*c]: #This has to be rethought
+            #    l.append([x, y])
+            #l = l[::-1]
+            #self.l[4*c] = l
+
+            self.l.append(Straight( x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.cos(cs_h[c]+h+ np.pi / 2),
+                                    y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.sin(cs_h[c]+h+ np.pi / 2),
+                                    cs_h[c]+h + 6/8*np.pi, (cs_l[c]-cs_len_till_stop[c]-1-lw/2)*np.sqrt(2)))
+
+            #self.l.append(Bend( x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.cos(cs_h[c]+ np.pi / 2),
+            #                    y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.sin(cs_h[c]+ np.pi / 2),
+            #                    cs_h[c] + np.pi, cs_h[c] + np.pi/2, cs_l[c]-cs_len_till_stop[c]-lw-1))
+
+            self.l.append(Straight( x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.cos(cs_h[c]+h+ np.pi / 2),
+                                    y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.sin(cs_h[c]+h+ np.pi / 2),
+                                    cs_h[c]+h + 10/8*np.pi, (cs_l[c]-cs_len_till_stop[c]-1+lw/2)*np.sqrt(2)))
+
+            self.l.append(Straight( x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.cos(cs_h[c]+h+ np.pi / 2),
+                                    y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + ((cs_nbr_of_lanes[c] -1) * lw/2)*np.sin(cs_h[c]+h+ np.pi / 2),
+                                    cs_h[c]+h + np.pi, 2*(cs_l[c]-cs_len_till_stop[c]-1)))
+
 
     def getstart(self):
         return (self.x, self.y)
 
     def getend(self):
         return (self.x, self.y)
-
-class XSegment(Road):
-    '''
-    This a representation of one arm of the xcrossing road segment.
-
-    :param id: Unique id.
-    :type id: String
-    :param x0: The x coordinate of the center of the road segment.
-    :type x0: Float
-    :param y0: The y coordinate of the center of the road segment.
-    :type y0: Float
-    :param h: Global heading of the road segment at the starting point.
-    :type h: Float
-    :param r: Distance from the starting point to furthest center point of one of the lanes.
-    :type r: Float
-    :param lw: Lane width.
-    :type lw: Float
-    :param ch: The heading of the arm relative to the heading of the xcrossing segment
-    :type ch: Float
-    :param len_till_stop: Number of lanes.
-    :type len_till_stop: Integer
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    '''
-    def __init__(self, id, x0, y0, h, r, lw, ch, len_till_stop, nbr_of_lanes):
-        Road.__init__(self, id)
-        self.lturn = []
-        self.rturn = []
-        self.straight = []
-
-        self.__create_center(x0, y0, r, ch + h)
-        self.__create_edges(x0, y0, r, lw, ch + h, len_till_stop)
-        self.__create_turns(x0, y0, lw, r - len_till_stop, ch + h, nbr_of_lanes)
-        self.__create_lanes(x0, y0, r, lw, ch + h, nbr_of_lanes)
-
-    # Calculates the lanes for the xcrossing arm
-    def __create_lanes(self, x0, y0, r, lw, h, nbr_of_lanes):
-        x = x0 + r * np.cos(h)
-        y = y0 + r * np.sin(h)
-        lwi = -(nbr_of_lanes / 2) * lw
-
-        for _ in range(nbr_of_lanes):
-            x1 = x + lwi * np.cos(h + np.pi / 2) / 2
-            y1 = y + lwi * np.sin(h + np.pi / 2) / 2
-            self.l.append(Straight(x1, y1, h - np.pi, r))
-            lwi += lw * 2
-
-    # Calculates the edges of the xcrossing arm
-    def __create_edges(self, x0, y0, r, lw, h, len_till_stop):
-        x = x0 + r * np.cos(h)
-        y = y0 + r * np.sin(h)
-
-        self.e1.append(Straight(x + lw * np.cos(h + np.pi / 2),
-                              y + lw * np.sin(h + np.pi / 2),
-                              h - np.pi,
-                              len_till_stop))
-        self.e2.append(Straight(x - lw * np.cos(h + np.pi / 2),
-                               y - lw * np.sin(h + np.pi / 2),
-                               h - np.pi,
-                               len_till_stop))
-
-        x2 = x + lw * np.cos(h + np.pi / 2)
-        y2 = y + lw * np.sin(h + np.pi / 2)
-        x3 = x2 + len_till_stop * np.cos(h + np.pi)
-        y3 = y2 + len_till_stop * np.sin(h + np.pi)
-        self.e1.append(Bend(x3, y3, h + np.pi, -np.pi / 2, 2))
-
-    # Calculates the turns from one arm to another on the xcrossing segment.
-    def __create_turns(self, x0, y0, lw, r, h, nbr_of_lanes):
-        lwi = -(nbr_of_lanes / 2) * lw
-        lturn = self.__get_left_turn(x0, y0, lwi, r, h)
-        rturn = self.__get_right_turn(x0, y0, lwi, r, h)
-        self.lturn.append(lturn)
-        self.rturn.append(rturn)
-
-    # Calculates the center line for the arm.
-    def __create_center(self, x0, y0, r, h):
-        x = x0 + r * np.cos(h)
-        y = y0 + r * np.sin(h)
-        self.c.append(Straight(x, y, h - np.pi, r))
-
-    # Calculates the right junction turn.
-    def __get_right_turn(self, x0, y0, lw, l, h):
-        x = x0 - lw * np.cos(h + np.pi / 2) / 2
-        y = y0 - lw * np.sin(h + np.pi / 2) / 2
-
-        x1 = x + (l - 1.35) * np.cos(h)
-        y1 = y + (l - 1.35) * np.sin(h)
-
-        x = x0 - lw * np.cos(h) / 2
-        y = y0 - lw * np.sin(h) / 2
-
-        x2 = x + l * np.cos(h + np.pi / 2)
-        y2 = y + l * np.sin(h + np.pi / 2)
-
-        p1 = (x1, y1)
-        p2 = (x2, y2)
-        rc = radius_of_circle(p1, p2, np.pi / 2)
-        #return Bend(x1, y1, h + np.pi, -np.pi / 2, rc)
-        return Straight(x1, y1, h - 1.27 * np.pi , 4.0)
-
-    # Calculates the left junction turn.
-    def __get_left_turn(self, x0, y0, lw, l, h):
-        x = x0 - lw * np.cos(h + np.pi / 2) / 2
-        y = y0 - lw * np.sin(h + np.pi / 2) / 2
-
-        x1 = x + (l - 3) * np.cos(h)
-        y1 = y + (l - 3) * np.sin(h)
-
-        x = x0 + lw * np.cos(h) / 2
-        y = y0 + lw * np.sin(h) / 2
-
-        x2 = x + l * np.cos(h - np.pi / 2)
-        y2 = y + l * np.sin(h - np.pi / 2)
-
-        p1 = (x1, y1)
-        p2 = (x2, y2)
-        rc = radius_of_circle(p1, p2, np.pi / 2)
-        #return Bend(x1, y1, h + np.pi, np.pi / 2, rc)
-        #return Straight(x1, y1, h - 0.72 * np.pi , 8.0)
-        return Straight(x1, y1, h - 0.72 * np.pi , 7.0)
-
-    def getstart(self):
-        return self.c[0].getend()
-
-    def getend(self):
-        return self.c[0].getstart()

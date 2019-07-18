@@ -9,13 +9,29 @@ class Path:
     def __init__(self, dt, t1):
         self.dt = dt
         self.t1 = t1
+        self.flag = False
 
     def __iter__(self):
         self.t = 0.0
         return self
 
+#    def __next__(self):
+#        if self.t > self.t1:
+#            raise StopIteration
+#        ret = self.eval(self.t)
+#        self.t += self.dt
+        #import pdb; pdb.set_trace()
+#        return(ret)
+
     def __next__(self):
-        if self.t > self.t1:
+        if self.t == self.t1:
+            self.flag = True
+        if self.t > self.t1 and self.flag == False:
+            self.flag = True
+            ret = self.eval(self.t1*0.999)
+            self.t += self.dt
+            return(ret)
+        if self.t > self.t1 and self.flag == True:
             raise StopIteration
         ret = self.eval(self.t)
         self.t += self.dt

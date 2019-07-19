@@ -1,4 +1,4 @@
-'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates.
+'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates. Path.py is basically representing the geometry (i.e. points, line, vector) of each roadtype.
 
 The road classes are :class:'Bend', :class:'Curved', and :class:'Straight'.
 '''
@@ -17,7 +17,7 @@ class Path:
 
 #    def __next__(self):
 #        if self.t > self.t1:
-#            raise StopIteration
+#            raise StopIteration         Clean
 #        ret = self.eval(self.t)
 #        self.t += self.dt
         #import pdb; pdb.set_trace()

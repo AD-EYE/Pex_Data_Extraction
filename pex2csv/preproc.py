@@ -8,27 +8,66 @@ from utils import dist
 
 # A wrapper class for lanes that will be incrementally fed to the vecor mapping module
 class Lane(object):
+
+    '''
+    This Wrapper class will be use to define actual lanes, centers and edges of road. For edges and centers, some of the following parameters are irrelevant and
+    will be set to default values.
+
+    :param lane: A very bad parameter name. This is actually a tab of point defining the edge or center or lane
+    :type lane: [(x,y)]
+
+    :param junction_end:
+    :type junction_end: String
+
+    :param junction_end:
+    :type junction_end: String
+
+    :param SpeedLimit/RefSpeed: Value representing the speedlimit/ the reference speed of the lane (only usefull for lane)
+    :type r: Float
+
+    :param reverse: Not use! Boolean that could reverse the lane tab when it was in the other direction (only usefull for lane)
+    :type reverse: Boolean
+
+    '''
+
     def __init__(self, lanes, junction_end='NORMAL', junction_start='NORMAL', reverse=False):
         self.lanes = lanes
         self.junction_end = junction_end
         self.junction_start = junction_start
-        self.SpeedLimit = -1                                ##################
-        self.RefSpeed = -1                                  ##################
+        self.SpeedLimit = -1
+        self.RefSpeed = -1
 
 
         if reverse:
             self.__reverse_lanes()
 
     def get_lanes(self):
+        '''
+        This method return the array lanes (the tab of point defining a lane or edge or center
+        '''
         return np.array(self.lanes)
 
     def get_junction_end(self):
+        '''
+        This method return junction_end parameters
+        '''
         return self.junction_end
 
     def get_junction_start(self):
+        '''
+        This method return junction_start parameters
+        '''
         return self.junction_start
 
     def adjust_for_turn(self, point):
+        '''
+        This method take a point provided, check if points in the lanes parameters are less than one meter apart from each other
+        If that not the case, this method insert a point from the tab of point provided in order for the lanes para to respect the 1 meter rule
+
+        :param point: Tab of point
+        :type point: [(x,y)]
+        '''
+
         points = self.lanes
         for i in range(len(points)):
             if(dist(points[i - 1], point) <= 1.0):
@@ -36,6 +75,9 @@ class Lane(object):
                 break
 
     def adjust_for_roundabout(self, point):
+        '''
+        This method return the array lanes (the tab of point defining a lane or edge or center
+        '''
         points = self.lanes
         for i in range(len(points)):
             if(dist(points[i - 1], point) <= 1.0):
@@ -43,6 +85,9 @@ class Lane(object):
                 break
 
     def __reverse_lanes(self):
+        '''
+        This method return the array lanes (the tab of point defining a lane or edge or center
+        '''
         self.lanes = self.lanes[::-1]
 
 class RoadProcessor(object):
@@ -59,8 +104,11 @@ class RoadProcessor(object):
         self.roads = roads
 
     def create_lanes(self):
-        #self.__process_order()
+        #self.__process_order()                   #Clean
         self.__create_lanes()
+
+
+                        # Useless #
 
     # Goes through all road segments and marks which ones are connected
     # at the start and which ones are connected at the end
@@ -99,6 +147,11 @@ class RoadProcessor(object):
         elif dist(road1.getend(), road2.getend()) <= 1.0:
             road1.next_road = road2.id
             road2.next_road = road1.id
+
+
+                        # Useless #
+
+
 
     # Creates the lanes in the correct order in regards to the vmap module
     def __create_lanes(self):

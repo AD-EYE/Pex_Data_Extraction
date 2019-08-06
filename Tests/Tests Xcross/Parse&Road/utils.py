@@ -62,23 +62,55 @@ def Intersection_Lines(L1, L2):
 
     '''
 
-    if (L1[1][0]-L1[0][0]==0) and (L2[1][0]-L2[0][0]==0):
-        xinter = L1[1][0]
-        yinter = (L1[len(L1)][1]+L2[0][1]/2)
-    elif ((L1[1][0]-L1[0][0]==0) and (L2[1][0]-L2[0][0]==0)):
-        xinter= (L1[len(L1)][1]+L2[0][1])/2
-        yinter= L1[1][1]
-    elif L2[1][0]-L2[0][0]==0:
-        xinter = L2[1][0]
+    if L1[1][0] == L1[0][0]:    # x cst for L1
+
+        if L2[1][1] == L2[0][1]:  #perpen
+            xinter = L1[1][0]
+            yinter = L2[1][1]
+
+        elif L2[1][0] == L2[0][0]: # para
+            xinter = (L1[len(L1)-1][0]+L2[0][0])/2
+            yinter = (L1[len(L1)-1][1]+L2[0][1])/2
+        else:
+
+            a2 = (L2[1][1]-L2[0][1])/(L2[1][0]-L2[0][0])
+            b2 = L2[1][1]- a2*L2[1][0]
+            xinter = L1[1][0]
+            yinter = a2*xinter+b2
+
+    elif L2[1][0] == L2[0][0]:    # x cst for L2
+
+        if L1[1][1] == L1[0][1]:  #perpen
+            xinter = L2[1][0]
+            yinter = L1[1][1]
+        elif L1[1][0] == L1[0][0]:  # para
+            xinter = (L1[len(L1)-1][0]+L2[0][0])/2
+            yinter = (L1[len(L1)-1][1]+L2[0][1])/2
+        else:
+            a1 = (L1[1][1]-L1[0][1])/(L1[1][0]-L1[0][0])
+            b1 = L1[1][1]- a1*L1[1][0]
+
+            xinter = L2[1][0]
+            yinter = a1*xinter+b1
+
+    elif L1[1][1] == L1[0][1] : # y cst for L1
+
+        if L2[1][1] == L2[0][1]:
+            xinter = (L1[len(L1)-1][0]+L2[0][0])/2
+            yinter = (L1[len(L1)-1][1]+L2[0][1])/2
+        else :
+            a2 = (L2[1][1]-L2[0][1])/(L2[1][0]-L2[0][0])
+            b2 = L2[1][1]- a2*L2[1][0]
+            yinter = L1[1][1]
+            xinter = (yinter -b2)/a2
+
+    elif L2[1][1] == L2[0][1] : # y cst for L1
         a1 = (L1[1][1]-L1[0][1])/(L1[1][0]-L1[0][0])
         b1 = L1[1][1]- a1*L1[1][0]
-        yinter = a1*xinter+b1
-    elif L1[1][0]-L1[0][0]==0:
-        xinter = L1[1][0]
-        a2 = (L2[1][1]-L2[0][1])/(L2[1][0]-L2[0][0])
-        b2 = L2[1][1]- a2*L2[1][0]
-    else :
+        yinter = L2[1][1]
+        xinter = (yinter -b1)/a1
 
+    else:
         a1 = (L1[1][1]-L1[0][1])/(L1[1][0]-L1[0][0])
         b1 = L1[1][1]- a1*L1[1][0]
 

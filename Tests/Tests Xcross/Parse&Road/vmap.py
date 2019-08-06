@@ -148,11 +148,6 @@ class VectorMap:
             if lane_first is None: lane_first = lane_previous
             node_previous = node_current
 
-        # Pass on the speed of the road
-        # self.lane.set_LimitVel(SpeedLimit)
-        # self.lane.set_RefVel(RefSpeed)
-        # self.lane.set_LimitVel(SpeedLimit)
-        # self.lane.set_RefVel(RefSpeed)
 
         # Mark junctions and turns provided by caller.
         self.lane[lane_first].set_junction(junction_start)

@@ -769,7 +769,9 @@ class XCrossRoad(Road):
         #                      # |     #
         #
         #
-
+        print(len(self.l))
+        print()
+        print(self.l)
 
         compteur_for_lane_interest = 0  # This compteur will grant us access to the lanes
 
@@ -892,7 +894,7 @@ class XCrossRoad(Road):
                     self.l.append(Actual_Lane5)
 
             compteur_for_lane_interest += cs_nbr_of_lanes[i]
-
+        print(len(self.l))
 
     def getstart(self):
         return (self.x, self.y)

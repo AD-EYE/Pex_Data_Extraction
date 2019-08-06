@@ -22,4 +22,4 @@ if __name__ == '__main__':
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
 
     vm.export()
-    # vm.plot()
+    vm.plot()

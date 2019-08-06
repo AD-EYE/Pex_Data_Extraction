@@ -6,35 +6,7 @@ It will extract roads from the simulation in order to convert those road into th
 
 from lxml import etree
 from road import *
-from staticalobject import *
 import numpy as np
-
-def get_staticalobject(path='./data/roads.pex'):
-    '''
-    This fonction go fetch the list of traffic Light that make up the simulation in the pex file.
-    To do so, the fonction search in the  part of the pex files, and then use the id
-    of each  to add them to a list of  using the get_X function define in this module.
-
-    :param path: A path use to point to the pex file
-    :type path: String
-
-    '''
-
-    # eTree module fetch the Roads in the Pex file
-    ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
-    tree = etree.parse(path)
-    staticalobject_In_Simu = tree.findall('//InfraOther')
-    staticalobject = {}
-
-    # For each Traffic Light in the simulation we produce a corresponding TrafficLight in the TrafLight list
-
-    for t in staticalobject_In_Simu:
-        type = t.xpath('@xsi:type', namespaces = ns)[0]
-        id = t.get('id')
-        if (type == 'TrafficLightRoadSideNL'):
-            staticalobject[id] = get_TLight(t, id)
-    return staticalobject
-
 
 def get_roads(path='./data/roads.pex'):
     '''
@@ -75,17 +47,6 @@ def get_roads(path='./data/roads.pex'):
         elif (type == 'LaneAdapterRoad'):
             roads[id] = get_adapter(s, id)
     return roads
-
-    # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
-
-def get_TLight(t, id):
-    x0 = float(t[0].get('X'))
-    y0 = float(t[0].get('Y'))
-    h = float(t[1].get('Heading')) * np.pi / 180
-    s = 1
-    return TrafficLight(id, x0, y0, h, s)
-
-
 
     # The following fonctions are called by get_roads and return the road type with the right parameters define in Road.py corresponding to the road id in the input. #
 

@@ -36,6 +36,7 @@ def get_staticalobject(path='./data/roads.pex'):
     return staticalobject
 
 
+
 def get_roads(path='./data/roads.pex'):
     '''
     This fonction go fetch the list of road that make up the simulation in the pex file.
@@ -76,15 +77,15 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_adapter(s, id)
     return roads
 
-    # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
+    # The following fonctions are called by get_trafLight and return the traffic light type with the right parameters define in trafficlight.py corresponding to the TrafficLight id in the input. #
+
 
 def get_TLight(t, id):
     x0 = float(t[0].get('X'))
     y0 = float(t[0].get('Y'))
     h = float(t[1].get('Heading')) * np.pi / 180
-    s = 1
+    s = 1               ############## A CHANGER
     return TrafficLight(id, x0, y0, h, s)
-
 
 
     # The following fonctions are called by get_roads and return the road type with the right parameters define in Road.py corresponding to the road id in the input. #

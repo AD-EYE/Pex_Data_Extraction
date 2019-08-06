@@ -19,9 +19,6 @@ class VectorMap:
         self.lane       = VMList(Lane)
         self.whiteline  = VMList(WhiteLine)
         self.roadedge   = VMList(RoadEdge)
-        self.vector     = VMList(Vector)
-        self.signaldata = VMList(SignalData)
-        self.stopline   = VMList(Stopline)
 
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
@@ -30,7 +27,7 @@ class VectorMap:
     # Returns the Node ID of the new Node.
     def __new_node(self, x, y):
         # Create a new Point and corresponding Node.
-        point_id = self.point.create(x, y, 0.0)
+        point_id = self.point.create(x, y)
         node_id = self.node.create(point_id)
         # Add entry to Node map.
         self.__xy_node_map[(x, y)] = node_id
@@ -191,43 +188,6 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
-
-
-
-    def make_TrafficLight(self, TrafficLightList):
-
-            # Definition of Cst to define stoplines
-
-            offset = 0.2   # Distance between the TrLight and the actual Road
-            lw = 3.5
-            nboflanes = 1
-
-            # Going trhought the list of traffic Lights in the simulationS
-
-            n = len(TrafficLightList)
-            for i in range(n):
-                pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
-
-                # For the Stopline
-                PointID4 = self.point.create(TrafficLightList[i].x0 - offset* np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - offset* np.sin(TrafficLightList[i].h), 0)
-                PointID5 = self.point.create(TrafficLightList[i].x0 - (lw*nboflanes + offset) * np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - (lw*nboflanes + offset) * np.sin(TrafficLightList[i].h), 0)
-
-                VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
-
-                SignDataID1 = self.signaldata.create(VectorID1, i+1, 1, i+1)
-                SignDataID2 = self.signaldata.create(VectorID2, i+1, 3, i+1)
-                SignDataID3 = self.signaldata.create(VectorID3, i+1, 2, i+1)
-
-                # Stopline
-
-                LineID = self.line.create(PointID4,PointID5)
-                StoplineID = self.stopline.create(LineID, SignDataID1, 0, 1)
-
-
     # Returns the drivable lane data in the format:
     # [ [x0, y0, mag0, dir0, edge_color0, face_color0],
     #   [x1, y1, mag1, dir1, edge_color1, face_color1], ...]
@@ -327,9 +287,6 @@ class VectorMap:
         self.lane.export('./csv/lane.csv')
         self.whiteline.export('./csv/whiteline.csv')
         self.roadedge.export('./csv/roadedge.csv')
-        self.vector.export('./csv/vector.csv')
-        self.signaldata.export('./csv/signaldata.csv')
-        self.stopline.export('./csv/stopline.csv')
 
 class VMList:
     '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
@@ -403,10 +360,10 @@ class Point:
     :type y: float
 
     '''
-    def __init__(self, x, y, z):
+    def __init__(self, x, y):
         self.B = 0.0        # Latitude
         self.L = 0.0        # Longitude
-        self.H = z       # Altitude
+        self.H = 0.0        # Altitude
         self.Ly = x         # Global Y, values are swapped for Autoware, does not work swapping the lines
         self.Bx = y         # Global X
         self.ReF = 7
@@ -684,63 +641,4 @@ class RoadEdge:
 
     def __str__(self):
         data = [self.LID, self.LinkID]
-        return ','.join(map(str, data))
-
-class Vector:
-    '''Vector map data saved to vector.csv. This class especially usefull for the definition of Traffic Light.
-
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
-    def __init__(self, point, Heading):
-        self.pid = point       # Corresponding point ID
-        self.hang = Heading    # Heading
-        self.Vang = 90         # cf slide
-
-    def __str__(self):
-        data = [self.pid, self.hang, self.Vang]
-        return ','.join(map(str, data))
-
-class SignalData:
-    '''Vector map data saved to signaldata.csv. This class especially usefull for the definition of Traffic Light.
-
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
-    def __init__(self, vector, plid, type, LinkID):
-        self.VID = vector      # Corresponding Vector ID
-        self.plid = plid
-        self.type = type
-        self.LinkID = LinkID       # cf slide
-
-    def __str__(self):
-        data = [self.VID, self.plid, self.type, self.LinkID]
-        return ','.join(map(str, data))
-
-class Stopline:
-    '''Vector map data saved to stopline.csv. This class especially usefull for the definition of Traffic Light.
-
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
-    def __init__(self, LID, TLID, SignID, LinkID):
-        self.LID = LID      # Corresponding Vector ID
-        self.TLID = TLID
-        self.SignID = SignID
-        self.LinkID = LinkID       # cf slide
-
-    def __str__(self):
-        data = [self.LID, self.TLID, self.SignID, self.LinkID]
         return ','.join(map(str, data))

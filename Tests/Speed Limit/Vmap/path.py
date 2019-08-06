@@ -1,4 +1,4 @@
-'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates. Path.py is basically representing the geometry (i.e. points, line, vector) of each roadtype.
+'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates.
 
 The road classes are :class:'Bend', :class:'Curved', and :class:'Straight'.
 '''
@@ -6,17 +6,6 @@ import numpy as np
 import bezier
 
 class Path:
-    '''
-    Class defining the iterable object use to define each usefull geometry
-
-    :param dt: Step of the iteration
-    :type dt: Float
-
-    :param t1: Start of the iteration
-    :type t1: Float
-
-    '''
-
     def __init__(self, dt, t1):
         self.dt = dt
         self.t1 = t1
@@ -28,7 +17,7 @@ class Path:
 
 #    def __next__(self):
 #        if self.t > self.t1:
-#            raise StopIteration         Clean
+#            raise StopIteration
 #        ret = self.eval(self.t)
 #        self.t += self.dt
         #import pdb; pdb.set_trace()
@@ -60,16 +49,12 @@ class Bend(Path):
 
     :param x0: The x coordinate of the starting point of the curve.
     :type x0: Float
-
     :param y0: The y coordinate of the starting point of the curve
     :type y0: Float
-
     :param a0: Global heading of the starting point.
     :type a0: Float
-
     :param da: Heading of the endpoint relative to the curves' heading.
     :type da: Float
-
     :param r: Distance of the curve from the center of the circle used to represent the curve.
     :type r: Float
 
@@ -90,13 +75,11 @@ class Curve(Path):
     '''
     This path is represented with a bezier curve.
 
-    :param xs: Tab of the x coordinate of the points defining the curve
-    :type xs: [Float]
-
-    :param ys: Tab of the y coordinate of the points defining the curve
-    :type ys: [Float]
-
-    :param offset: Offeset allowing to move the curve compare to the curve created if offset = 0
+    :param xs: The x ??
+    :type xs: Float
+    :param ys: The y ??
+    :type ys: Float
+    :param offset: ??
     :type offset: Float
 
     '''
@@ -139,13 +122,10 @@ class Straight(Path):
 
     :param x0: The x coordinate of the starting point of the line.
     :type x0: Float
-
     :param y0: The y coordinate of the starting point of the line.
     :type y0: Float
-
     :param h: Global heading of the starting point.
     :type  h: Float
-
     :param l: Length of the line.
     :type l: Float
 

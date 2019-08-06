@@ -66,6 +66,7 @@ class Lane(object):
 
         :param point: Tab of point
         :type point: [(x,y)]
+
         '''
 
         points = self.lanes
@@ -121,33 +122,20 @@ class StaticalObjectProcessor(object):
         self.TrfLight = tflLight
 
 
-
 class RoadProcessor(object):
     '''
     Class responsible for processing the road segments for the vmap module
     '''
     def __init__(self):
-
-        # All of the following tab will be filled with Lane Object
-
         self.lanes = []
         self.centers = []
         self.edges = []
-
-        # Excpect this one which will be fed with RoadType Object define in Road.py
-
         self.roads = []
 
     def add_roads(self, roads):
-        '''
-        Fill up the Roads tab
-        '''
         self.roads = roads
 
     def create_lanes(self):
-        '''
-        Main fonction use to generate the lanes of all the roads in the roads tab
-        '''
         #self.__process_order()                   #Clean
         self.__create_lanes()
 
@@ -195,15 +183,15 @@ class RoadProcessor(object):
 
                         # Useless #
 
-    # For a better understanding of the following functions/methods go to the wiki about the Vector Mapper #
 
-    # Creates the lanes for each roads per RT in roads
+
+    # Creates the lanes in the correct order in regards to the vmap module
     def __create_lanes(self):
         roads = self.roads.copy()
 
         self.__create_roundabouts(roads)
         self.__create_xcrossings(roads)
-        #self.__create_rest(roads)                  # Clean
+        #self.__create_rest(roads)                                     #Clean
         self.__create_bezier_roads(roads)
         self.__create_straight_roads(roads)
         self.__create_bend_roads(roads)
@@ -236,7 +224,7 @@ class RoadProcessor(object):
             #        road = p
             #        if "XCrossing" in p.id: break
             #        if not "Roundabout" in p.id:
-            #            road = roads.pop(p.id, None)                   # Clean
+            #            road = roads.pop(p.id, None)
             #            if road is None: break
             #        self.__add_segment(road)
             roads.pop(roundabout.id, None)
@@ -257,7 +245,7 @@ class RoadProcessor(object):
             #    lturns.append(s.lturn[0].getstart())
 
             #for s in xcrossing.segments:
-            #    self.__add_xcross(s, rturns, lturns)           # Clean
+            #    self.__add_xcross(s, rturns, lturns)                       #Clean
 
             #    path = self.__get_path(s.next_road)
             #    if not path: continue
@@ -315,13 +303,13 @@ class RoadProcessor(object):
 
 
     # # This function should only do someting if there are no roundabouts
-    # # or xcrossings. That means that the road network is a single path
+    # # or xcrossings. That means that the road network is a single path                   #Clean
     # # between two dead ends.
     # def __create_rest(self, roads):
     #     if roads:
     #         end = self.__get_end_roads()
     #         if end:
-    #             path = self.__get_path(end.id)                              # Clean
+    #             path = self.__get_path(end.id)
     #             for p in path:
     #                 self.__add_segment(p)
 
@@ -342,7 +330,7 @@ class RoadProcessor(object):
         self.__add_segment(xcross.SpeedLimit, xcross.SpeedLimit, xcross, rturns = rturns, lturns = lturns)
         #self.__add_segment_xcross(xcross, rturns = rturns, lturns = lturns)
         #self.__add_lane(xcross.lturn[0], False, 'LEFT_BRANCHING', 'RIGHT_MERGING')
-        #self.__add_lane(xcross.rturn[0], False, 'RIGHT_BRANCHING', 'LEFT_MERGING')                                 #Clean
+        #self.__add_lane(xcross.rturn[0], False, 'RIGHT_BRANCHING', 'LEFT_MERGING')                                           # Clean
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
@@ -351,8 +339,8 @@ class RoadProcessor(object):
         for (x, y) in lane:
             l.append([x, y])
         newlane = Lane(l, junction_end, junction_start, reverse)
-        newlane.SpeedLimit = SpeedLimit
-        newlane.RefSpeed = RefSpeed
+        newlane.SpeedLimit = SpeedLimit                                               #############
+        newlane.RefSpeed = RefSpeed                                                   #############
         if(rturns):
             for point in rturns:
                 newlane.adjust_for_turn(point)
@@ -381,7 +369,7 @@ class RoadProcessor(object):
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
     def __add_segment(self, lane, rturns = None, lturns = None):
-        #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Clean
+        #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned            #Clean
         #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
             self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
@@ -412,7 +400,7 @@ class RoadProcessor(object):
     def __add_entry(self, lane, rturns = None, lturns = None):
         #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
-        #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)                        # Clean
+        #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)                           #Clean
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
             self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
@@ -424,8 +412,8 @@ class RoadProcessor(object):
     # vmap module
     def __add_exit(self, lane, rturns = None, lturns = None):
         #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns)
-        #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)             # Clean
-        #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)
+        #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
+        #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)                   #ClEan
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
             self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
@@ -439,7 +427,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)
-        #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)                   # Clean
+        #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
             self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
@@ -560,7 +548,7 @@ class RoadProcessor(object):
                 adapter.append(roads[id])
         return adapter
 
-    # Turns the road so the lanes will have the correct direction.
+    # Turns the road so the lanes will have the correct direction.                  # USELESS
     def __turn_road(self, road, previous_road_id):
         road.turn_road()
         road.next_road = road.previous_road

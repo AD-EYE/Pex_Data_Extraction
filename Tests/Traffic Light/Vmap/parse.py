@@ -76,13 +76,12 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_adapter(s, id)
     return roads
 
-    # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
 
 def get_TLight(t, id):
     x0 = float(t[0].get('X'))
     y0 = float(t[0].get('Y'))
     h = float(t[1].get('Heading')) * np.pi / 180
-    s = 1
+    s = 1               ############## A CHANGER
     return TrafficLight(id, x0, y0, h, s)
 
 

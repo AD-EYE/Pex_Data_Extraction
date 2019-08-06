@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = './../../AD-EYE/PreScan_Experiments/Base_Map/Simulation/Base_Map_S.pex'
+PEX_FILE_LOCATION = "C:\\Users\\Public\\Documents\\Experiments\\Simulation\\Base_Map_S.pex"
 
 if __name__ == '__main__':
     roads = parse.get_roads(path=PEX_FILE_LOCATION)
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     vm = VectorMap()
 
     for lane in rproc.lanes:
-        vm.make_lane(lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
+        vm.make_lane(lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
     # Commented out since centers and edges seem to crash autoware
     #for edge in rproc.edges:
     #    vm.make_line(edge.get_lanes(), line_type='EDGE')
@@ -22,4 +22,4 @@ if __name__ == '__main__':
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
 
     vm.export()
-    vm.plot()
+    # vm.plot()

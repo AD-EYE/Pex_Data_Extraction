@@ -76,6 +76,7 @@ class VectorMap:
         if lane_before is not None:
             self.lane[lane_id].set_lane_before(lane_before)
             self.lane[lane_before].set_lane_after(lane_id)
+
         return (lane_id, dtlane_id)
 
     # Creates a new Line between the last two points. Returns ID of new Line.
@@ -103,7 +104,7 @@ class VectorMap:
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    def make_lane(self, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
+    def make_lane(self, SpeedLimit, RefSpeed, ps, Stl, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
         '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
@@ -143,6 +144,12 @@ class VectorMap:
                 dtlane_before = dtlane_previous
             )
 
+            # for i in range(len(Stl)):
+            #     PointID1 = self.point.create(Stl[i][0], Stl[i][1], 0)
+            #     PointID2 = self.point.create(Stl[i][2], Stl[i][3], 0)
+            #     LineID = self.line.create(PointID1,PointID2)
+            #     StoplineID = self.stopline.create(LineID, 0, 0, lane_id)
+
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
             if lane_first is None: lane_first = lane_previous
@@ -154,6 +161,7 @@ class VectorMap:
         self.lane[lane_first].set_turn(turn_start)
         self.lane[lane_previous].set_junction(junction_end)
         self.lane[lane_previous].set_turn(turn_end)
+
 
 
     def make_line(self, ps, line_type='EDGE'):
@@ -221,6 +229,7 @@ class VectorMap:
 
                 LineID = self.line.create(PointID4,PointID5)
                 StoplineID = self.stopline.create(LineID, SignDataID1, 0, 1)
+
 
 
     # Returns the drivable lane data in the format:

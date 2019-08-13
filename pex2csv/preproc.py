@@ -13,7 +13,7 @@ class Lane(object):
     This Wrapper class will be use to define actual lanes, centers and edges of road. For edges and centers, some of the following parameters are irrelevant and
     will be set to default values.
 
-    :param lane: A very bad parameter name. This is actually a tab of point defining the edge or center or lane
+    :param lane: A very bad parameter name. This is actually a tab of point defining an edge or center or lane
     :type lane: [(x,y)]
 
     :param junction_end:
@@ -36,6 +36,7 @@ class Lane(object):
         self.junction_start = junction_start
         self.SpeedLimit = -1
         self.RefSpeed = -1
+        self.Stoplines = []
 
 
         if reverse:
@@ -346,13 +347,14 @@ class RoadProcessor(object):
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
-    def __add_lane(self, SpeedLimit, RefSpeed, lane, reverse, junction_end = 'NORMAL', junction_start = 'NORMAL', rturns = None, lturns = None, epoints = None):
+    def __add_lane(self, SpeedLimit, RefSpeed, Stl, lane, reverse, junction_end = 'NORMAL', junction_start = 'NORMAL', rturns = None, lturns = None, epoints = None):
         l = []
         for (x, y) in lane:
             l.append([x, y])
         newlane = Lane(l, junction_end, junction_start, reverse)
         newlane.SpeedLimit = SpeedLimit
         newlane.RefSpeed = RefSpeed
+        newlane.Stoplines = Stl
         if(rturns):
             for point in rturns:
                 newlane.adjust_for_turn(point)
@@ -384,7 +386,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Clean
         #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.stopline, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -428,7 +430,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.stopline, lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)

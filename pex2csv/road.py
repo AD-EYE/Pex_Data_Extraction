@@ -33,6 +33,7 @@ class Road:
         self.e1 = []
         self.e2 = []
         self.l = []
+        self.stopline = []
         self.previous_road = -1
         self.next_road = -1
         self.isturned = False    #Useless !!!
@@ -90,13 +91,14 @@ class BendRoad(Road):
     :type lanes_in_x_dir: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS):  # Take into account the speed as a parameter
+    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):  # Take into account the speed as a parameter
 
         # General Initialization
 
         Road.__init__(self, id)     #Gave the Id linked to BendRoad
         self.SpeedLimit = SpeedL    #Set the different speeds
         self.RefSpeed = RefS
+        self.stopline = Stl
 
         # Lanes, Center and Edges of the Road
 
@@ -168,13 +170,14 @@ class CurvedRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS): #Same as BendRoad
+    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl): #Same as BendRoad
 
         # General Initialization
 
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
+        self.stopline = Stl
 
         # Creation of the points needed for the Bezier Curve
 
@@ -387,13 +390,14 @@ class StraightRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):
 
         # General Init
 
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
+        self.stopline = Stl
 
         # Edges, Center Line and Lanes
 
@@ -447,10 +451,11 @@ class AdapterRoad(Road):
     :type lanes_in_x_dir_end: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl): #########
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
+        self.stopline = Stl
         self.c.append(Straight( x0, y0, h, l))
 
 
@@ -545,10 +550,11 @@ class EntryRoad(Road):
     :type side_road_length: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl): #########
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
+        self.stopline = Stl
         apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
         self.c.append(Straight( x0, y0, h, l))
 
@@ -620,10 +626,11 @@ class ExitRoad(Road):
     :type side_road_length: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl): #########
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
+        self.stopline = Stl
         apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
         self.c.append(Straight( x0, y0, h, l))
         self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
@@ -695,8 +702,9 @@ class XCrossRoad(Road):
         p = 0
         self.x=x0
         self.y=y0
+        self.stopline = []
 
-        # Lanes and edges Creation
+        # Lanes Creation
 
         # Creation of each "Starting Lane"
 
@@ -751,6 +759,11 @@ class XCrossRoad(Road):
                     l = l[::-1]
                     self.l[next_first_lane + j] = l
 
+        # Stoplines Creation
+
+        # for i in range(4): # for each crossection
+
+
 
         # Creating every connections between each starting lanes
 
@@ -769,9 +782,7 @@ class XCrossRoad(Road):
         #                      # |     #
         #
         #
-        print(len(self.l))
-        print()
-        print(self.l)
+
 
         compteur_for_lane_interest = 0  # This compteur will grant us access to the lanes
 
@@ -894,7 +905,11 @@ class XCrossRoad(Road):
                     self.l.append(Actual_Lane5)
 
             compteur_for_lane_interest += cs_nbr_of_lanes[i]
-        print(len(self.l))
+
+        # Edges
+
+        # TO DO
+
 
     def getstart(self):
         return (self.x, self.y)

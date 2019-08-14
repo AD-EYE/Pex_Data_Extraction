@@ -26,6 +26,9 @@ class Road:
         :param SpeedLimit/RefSpeed: Define the speed limit / the speed reference on the road.
         :type SpeedLimit/RefSpeed: Float
 
+        param SpeedProfil: Tab of Float defining the speed profil (Speed Limit per RoadType)
+        :type SpeedLimit/RefSpeed: [Float]
+
     '''
     def __init__(self, id):
         self.id = id
@@ -39,6 +42,8 @@ class Road:
         self.isturned = False    #Useless !!!
         self.SpeedLimit = 1
         self.RefSpeed = 1
+        self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70]
+        # Speed Profil = [Straight R, Bend R, Curve R, RoundAbout, X cross, Y cross, Exit R, EnTry R, Adapter R]
 
     def getstart(self):
         '''This method returns the starting coordinates of the road's center path.
@@ -90,6 +95,9 @@ class BendRoad(Road):
     :param lanes_in_x_dir: Number of lanes in the x direction. Used to reverse the lane that goes in the x direction
     :type lanes_in_x_dir: Integer
 
+    :param Stl:
+    :type Stl:
+
     '''
     def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):  # Take into account the speed as a parameter
 
@@ -99,6 +107,8 @@ class BendRoad(Road):
         self.SpeedLimit = SpeedL    #Set the different speeds
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.DefinedSpeed = self.SpeedProfil[1]
+
 
         # Lanes, Center and Edges of the Road
 
@@ -178,6 +188,7 @@ class CurvedRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.DefinedSpeed = self.SpeedProfil[2]
 
         # Creation of the points needed for the Bezier Curve
 
@@ -246,6 +257,8 @@ class RoundaboutRoad(Road):
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
+        self.DefinedSpeed = 1
+        self.DefinedSpeed = self.SpeedProfil[3]
 
         # Lanes, Center and Edge2 of the Road
 
@@ -313,6 +326,8 @@ class ExitLane(Road):
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
+        self.DefinedSpeed = 1
+        self.DefinedSpeed = self.SpeedProfil[4]
         r += lw
         self.x = x0
         self.y = y0
@@ -398,6 +413,8 @@ class StraightRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.DefinedSpeed = 1
+        self.DefinedSpeed = self.SpeedProfil[0]
 
         # Edges, Center Line and Lanes
 
@@ -456,6 +473,8 @@ class AdapterRoad(Road):
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
         self.stopline = Stl
+        self.DefinedSpeed = self.SpeedProfil[5]
+
         self.c.append(Straight( x0, y0, h, l))
 
 
@@ -555,6 +574,7 @@ class EntryRoad(Road):
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
         self.stopline = Stl
+        self.DefinedSpeed = self.SpeedProfil[6]
         apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
         self.c.append(Straight( x0, y0, h, l))
 
@@ -631,6 +651,7 @@ class ExitRoad(Road):
         self.SpeedLimit = SpeedL       #########
         self.RefSpeed = RefS           #########
         self.stopline = Stl
+        self.DefinedSpeed = self.SpeedProfil[7]
         apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
         self.c.append(Straight( x0, y0, h, l))
         self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
@@ -703,6 +724,7 @@ class XCrossRoad(Road):
         self.x=x0
         self.y=y0
         self.stopline = []
+        self.DefinedSpeed = self.SpeedProfil[8]
 
         # Lanes Creation
 

@@ -103,9 +103,12 @@ def get_bend(s, id):
     Stl = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
-            x1 = float(R[0].get('X'))
-            y1 = float(R[0].get('Y'))
-            Stl.append((x1, y1))
+            hStop = float(R[1].get('Heading'))* np.pi / 180
+            x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
+            y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
+            Stl.append((x1, y1, x2, y2))
     return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
 def get_curved(s, id):
@@ -125,9 +128,13 @@ def get_curved(s, id):
     Stl = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
-            x1 = float(R[0].get('X'))
-            y1 = float(R[0].get('Y'))
-            Stl.append((x1, y1))
+            hStop = float(R[1].get('Heading'))* np.pi / 180
+            x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
+            y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
+            Stl.append((x1, y1, x2, y2))
+            print(Stl)
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
 def get_roundabout(s, id):
@@ -158,14 +165,14 @@ def get_straight(s, id):
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             if float(R[1].get('Heading')) == 180:
-                Factor = lanes_in_x_dir
+                Side = 0
             else :
-                Factor = nbr_of_lanes- lanes_in_x_dir
+                Side = 1
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
-            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*(Factor-0.5)) * np.sin(h)
-            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*(Factor-0.5)) * np.cos(h)
-            Stl.append((x1, y1, x2, y2))
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
+            Stl.append((x1, y1, x2, y2, Side))
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
 def get_entry(s, id):
@@ -185,15 +192,14 @@ def get_entry(s, id):
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             if float(R[1].get('Heading')) == 180:
-                Factor = lanes_in_x_dir
+                Side = 0
             else :
-                Factor = nbr_of_lanes- lanes_in_x_dir
+                Side = 1
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
-            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*(Factor-0.5)) * np.sin(h)
-            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*(Factor-0.5)) * np.cos(h)
-            Stl.append((x1, y1))
-            Stl.append((x2, y2))
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
+            Stl.append((x1, y1, x2, y2, Side))
     return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
 
 def get_exit(s, id):
@@ -213,15 +219,14 @@ def get_exit(s, id):
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             if float(R[1].get('Heading')) == 180:
-                Factor = lanes_in_x_dir
+                Side = 0
             else :
-                Factor = nbr_of_lanes- lanes_in_x_dir
+                Side = 1
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
-            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*(Factor-0.5)) * np.sin(h)
-            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*(Factor-0.5)) * np.cos(h)
-            Stl.append((x1, y1, x2, y2))
-    print(Stl)
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
+            Stl.append((x1, y1, x2, y2, Side))
     return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
 
 def get_adapter(s, id):
@@ -238,17 +243,15 @@ def get_adapter(s, id):
     RoadMarking = s[16]
     Stl = []
     for R in RoadMarking:
-        if "BitmapRoadMarker" in str(R.get('id')) :
             if float(R[1].get('Heading')) == 180:
-                Factor = lanes_in_x_dir
+                Side = 0
             else :
-                Factor = nbr_of_lanes- lanes_in_x_dir
+                Side = 1
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
-            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*(Factor-0.5)) * np.sin(h)
-            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*(Factor-0.5)) * np.cos(h)
-            Stl.append((x1, y1))
-            Stl.append((x2, y2))
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
+            Stl.append((x1, y1, x2, y2, Side))
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl)
 
 def get_xcross(s, id):

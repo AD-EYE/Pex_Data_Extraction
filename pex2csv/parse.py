@@ -74,6 +74,8 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_exit(s, id)
         elif (type == 'LaneAdapterRoad'):
             roads[id] = get_adapter(s, id)
+        elif (type == 'YCrossing'):
+            roads[id] = get_ycross(s, id)
     return roads
 
     # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
@@ -272,3 +274,23 @@ def get_xcross(s, id):
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax)
+
+def get_ycross(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    Vmax = s.get('MaxSpeed')
+    h = float(s[1].get('Heading')) * np.pi / 180
+    cs = s[18]
+    lw = float(cs[0].get('LaneWidth'))
+    cs_h = []
+    cs_len_till_stop = []
+    cs_nbr_of_lanes = []
+    cs_lanes_in_x_dir = []
+    cs_l = []
+    for c in cs:
+        cs_h.append((float(c.get('Heading'))) * np.pi / 180)
+        cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
+        cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
+        cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
+        cs_l.append(float(c.get('RoadEndLength')))
+    return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax)

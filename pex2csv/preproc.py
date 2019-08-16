@@ -205,7 +205,7 @@ class RoadProcessor(object):
 
         self.__create_roundabouts(roads)
         self.__create_xcrossings(roads)
-        #self.__create_rest(roads)                  # Clean
+        self.__create_ycrossings(roads)
         self.__create_bezier_roads(roads)
         self.__create_straight_roads(roads)
         self.__create_bend_roads(roads)
@@ -272,6 +272,16 @@ class RoadProcessor(object):
             #        self.__add_segment(road)
 
             roads.pop(xcrossing.id, None)
+
+    # Creates lanes traveling from each ycrossing until the path meets
+    # another ycrossing or a dead end
+    def __create_ycrossings(self, roads):
+        ycrossings = self.__get_ycrossings()
+        for ycrossing in ycrossings:
+            self.stoplines.append(ycrossing.stopline)
+            road = roads.pop(ycrossing.id, None)
+            self.__add_segment(ycrossing)
+            roads.pop(ycrossing.id, None)
 
     # Creates bezier roads
     def __create_bezier_roads(self, roads):
@@ -515,6 +525,15 @@ class RoadProcessor(object):
             if "XCrossing" in id:
                 xcross.append(roads[id])
         return xcross
+
+    # Fetches all xcrossing in the road network
+    def __get_ycrossings(self):
+        roads = self.roads
+        ycross = []
+        for id in roads.keys():
+            if "YCrossing" in id:
+                ycross.append(roads[id])
+        return ycross
 
     # Fetches all straight road in the road network
     def __get_straightroads(self):

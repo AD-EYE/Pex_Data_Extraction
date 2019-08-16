@@ -198,7 +198,6 @@ class VectorMap:
 
             for i in range(len(tab)):
 
-
                 Middle_Point = (tab[i][4],tab[i][5])
                 min_dist = 1000
                 for j in range(len(self.point)):
@@ -262,7 +261,7 @@ class VectorMap:
     def __aggregate_lanes(self):
         data = []
         for l in self.lane:
-            x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+            y, x = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
             if l.get_turn() == 'RIGHT_TURN':
@@ -325,7 +324,7 @@ class VectorMap:
         plt.grid(True)
         for x, y, m, d, ec, fc in self.__aggregate_lanes():
             plt.arrow(
-                x, y, m * np.cos(d), m * np.sin(d),
+                x, y, m * np.sin(d), m * np.cos(d),
                 head_width=0.25, head_length=0.2, fc=fc, ec=ec,
                 width=0.1, length_includes_head=True
             )

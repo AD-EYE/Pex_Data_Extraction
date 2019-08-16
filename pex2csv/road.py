@@ -42,7 +42,7 @@ class Road:
         self.isturned = False    #Useless !!!
         self.SpeedLimit = 1
         self.RefSpeed = 1
-        self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70]
+        self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70,50]
         # Speed Profil = [Straight R, Bend R, Curve R, RoundAbout, X cross, Y cross, Exit R, EnTry R, Adapter R]
 
     def getstart(self):
@@ -95,8 +95,11 @@ class BendRoad(Road):
     :param lanes_in_x_dir: Number of lanes in the x direction. Used to reverse the lane that goes in the x direction
     :type lanes_in_x_dir: Integer
 
-    :param Stl:
-    :type Stl:
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
 
     '''
     def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):  # Take into account the speed as a parameter
@@ -179,6 +182,12 @@ class CurvedRoad(Road):
     :param lanes_in_x_dir: Number of lanes in the x direction. Used to reverse the lane that goes in the x direction
     :type nbr_of_lanes: Integer
 
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
     def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl): #Same as BendRoad
 
@@ -249,6 +258,9 @@ class RoundaboutRoad(Road):
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
 
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
     def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes, SpeedL, RefS):
 
@@ -257,7 +269,6 @@ class RoundaboutRoad(Road):
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
-        self.DefinedSpeed = 1
         self.DefinedSpeed = self.SpeedProfil[3]
 
         # Lanes, Center and Edge2 of the Road
@@ -326,7 +337,6 @@ class ExitLane(Road):
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
-        self.DefinedSpeed = 1
         self.DefinedSpeed = self.SpeedProfil[4]
         r += lw
         self.x = x0
@@ -404,6 +414,12 @@ class StraightRoad(Road):
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
 
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):
 
@@ -413,7 +429,6 @@ class StraightRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
-        self.DefinedSpeed = 1
         self.DefinedSpeed = self.SpeedProfil[0]
 
         # Edges, Center Line and Lanes
@@ -448,73 +463,91 @@ class AdapterRoad(Road):
 
     :param id: Unique id.
     :type id: String
+
     :param x0: The x coordinate of the center of the start of the road segment.
     :type x0: Float
+
     :param y0: The y coordinate of the center of the start of the road segment.
     :type y0: Float
+
     :param h: Global heading of the road segment at the start point.
     :type h: Float
+
     :param l: Length of the road segment
     :type l: Float
+
     :param lw: Lane width.
     :type lw: Float
+
     :param nbr_of_lanes_start: Number of lanes.
     :type nbr_of_lanes_start: Integer
+
     :param nbr_of_lanes_end: Number of lanes.
     :type nbr_of_lanes_end: Integer
+
     :param lanes_in_x_dir_start: Number of lanes.
     :type lanes_in_x_dir_start: Integer
+
     :param lanes_in_x_dir_end: Number of lanes.
     :type lanes_in_x_dir_end: Integer
 
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl):
+
+        # General Init
+
         Road.__init__(self, id)
-        self.SpeedLimit = SpeedL       #########
-        self.RefSpeed = RefS           #########
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
         self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[5]
 
+        # Edges, Center Line and Lanes
+
         self.c.append(Straight( x0, y0, h, l))
 
-
-
         self.e1.append(Straight( x0 + lw * (nbr_of_lanes_start/2)* np.cos(h + np.pi / 2),
-                                y0 + lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2), h, l))    ######
-
-
+                                y0 + lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2), h, l))
 
         self.e2.append(Straight( x0 - lw * (nbr_of_lanes_start/2)* np.cos(h + np.pi / 2),
                                 y0 - lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2), h, l/2))
 
-
-
+        # We first create the lanes that are not concerned by the changes
 
         lwi = (nbr_of_lanes_start -1) * lw/2
         for _ in range(min(nbr_of_lanes_start, nbr_of_lanes_end)-1):
+
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                     y0 + lwi * np.sin(h + np.pi / 2),
                                     h, l))
             lwi -= lw
 
-        if nbr_of_lanes_start>nbr_of_lanes_end:
+        # Then we create the one remaining lane (cf wiki only one lane at a time)
 
-            self.e2.append(Straight( x0 - lw * (nbr_of_lanes_start/2) * np.cos(h + np.pi / 2)+l*np.cos(h)/2 , y0 - lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2) + l*np.sin(h)/2 , h + np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2) ) )             ###########
+        if nbr_of_lanes_start>nbr_of_lanes_end:  # If we add a lane
+
+            self.e2.append(Straight( x0 - lw * (nbr_of_lanes_start/2) * np.cos(h + np.pi / 2)+l*np.cos(h)/2 , y0 - lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2) + l*np.sin(h)/2 , h + np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2) ) )    # This is the "missing part" of the edge going in the x direction
 
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                     y0 + lwi * np.sin(h + np.pi / 2),
-                                    h, l/2))
+                                    h, l/2))                           # The begining of the "branching" lane
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + l*np.cos(h)/2,
                                     y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
-                                    h, l/2))
+                                    h, l/2))                           # This part combine with the previous lane from the lane going straight
             lwi -= lw
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                     y0 + lwi * np.sin(h + np.pi / 2),
-                                    h+np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2)))
+                                    h+np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2)))   # And this is the branching part
 
-        if nbr_of_lanes_start<nbr_of_lanes_end:
+        if nbr_of_lanes_start<nbr_of_lanes_end:   # Same if we substract a lane
 
-            self.e2.append(Straight( x0 - lw * (nbr_of_lanes_start/2) * np.cos(h + np.pi / 2)+l*np.cos(h)/2 , y0 - lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2) + l*np.sin(h)/2 , h - np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2) ) )             ###########
+            self.e2.append(Straight( x0 - lw * (nbr_of_lanes_start/2) * np.cos(h + np.pi / 2)+l*np.cos(h)/2 , y0 - lw * (nbr_of_lanes_start/2)* np.sin(h + np.pi / 2) + l*np.sin(h)/2 , h - np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2) ) )
 
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                     y0 + lwi * np.sin(h + np.pi / 2),
@@ -526,7 +559,7 @@ class AdapterRoad(Road):
                                     y0 + lwi * np.sin(h + np.pi / 2) + l*np.sin(h)/2,
                                     h-np.arctan(2*lw/l), np.sqrt((l/2)**2+lw**2)))
 
-        if nbr_of_lanes_start==nbr_of_lanes_end:
+        if nbr_of_lanes_start==nbr_of_lanes_end: # If the simulation contain straight adapater road
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                     y0 + lwi * np.sin(h + np.pi / 2),
                                     h, l/2))
@@ -549,50 +582,64 @@ class EntryRoad(Road):
 
     :param id: Unique id.
     :type id: String
+
     :param x0: The x coordinate of the center of the start of the road segment.
     :type x0: Float
+
     :param y0: The y coordinate of the center of the start of the road segment.
     :type y0: Float
+
     :param h: Global heading of the road segment at the start point.
     :type h: Float
+
     :param l: Length of the road segment
     :type l: Float
+
     :param lw: Lane width.
     :type lw: Float
+
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
+
     :param entry_road_angle: Entry Road Angle.
     :type entry_road_angle: Float
+
     :param apron_length: Apron Length.
     :type apron_length: Float
+
     :param side_road_length: Side Road Length.
     :type side_road_length: Float
 
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl):
+
+        # General Init
+
         Road.__init__(self, id)
-        self.SpeedLimit = SpeedL       #########
-        self.RefSpeed = RefS           #########
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
         self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[6]
         apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
+
+        # Edges, Center Line and Lanes
+
         self.c.append(Straight( x0, y0, h, l))
 
-
-
         self.e1.append(Straight( x0 + lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
-                                y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))   #############
-
-
+                                y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
 
         self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
-                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, apron_length2))  #############
-
-
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, apron_length2))
 
         self.e2.append(Straight( x0 -lw * (nbr_of_lanes/2) + (apron_length*np.tan(entry_road_angle)-lw * (nbr_of_lanes/2)+lw/2)*np.sin(h),
-                                y0 - lw * (nbr_of_lanes/2) - (apron_length*np.tan(entry_road_angle)-lw * (nbr_of_lanes/2)+lw/2)*np.cos(h), entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))         ################
-
+                                y0 - lw * (nbr_of_lanes/2) - (apron_length*np.tan(entry_road_angle)-lw * (nbr_of_lanes/2)+lw/2)*np.cos(h), entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))
 
 
         lwi=(nbr_of_lanes -1) * lw/2
@@ -611,6 +658,7 @@ class EntryRoad(Road):
         self.l.append(Straight( x0 + (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.sin(h),
                                 y0 - (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.cos(h),
                                 entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))
+
         #This changes the direction of the lanes that drive backwards
         if nbr_of_lanes-lanes_in_x_dir>0:
             for i in range(nbr_of_lanes-lanes_in_x_dir):
@@ -626,38 +674,62 @@ class ExitRoad(Road):
 
     :param id: Unique id.
     :type id: String
+
     :param x0: The x coordinate of the center of the start of the road segment.
     :type x0: Float
+
     :param y0: The y coordinate of the center of the start of the road segment.
     :type y0: Float
+
     :param h: Global heading of the road segment at the start point.
     :type h: Float
+
     :param l: Length of the road segment
     :type l: Float
+
     :param lw: Lane width.
     :type lw: Float
+
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
+
     :param exit_road_angle: Exit Road Angle.
     :type exit_road_angle: Float
+
     :param apron_length: Apron Length.
     :type apron_length: Float
+
     :param side_road_length: Side Road Length.
     :type side_road_length: Float
 
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl): #########
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl):
+
+        # General Init
+
         Road.__init__(self, id)
-        self.SpeedLimit = SpeedL       #########
-        self.RefSpeed = RefS           #########
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
         self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[7]
         apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
+
+        # Edges, Center Line and Lanes
+
         self.c.append(Straight( x0, y0, h, l))
+
         self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
                                 y0 + lw * np.sin(h + np.pi / 2), h, l))
         self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
                                 y0 - lw * np.sin(h + np.pi / 2), h, l))
+
+
         lwi=(nbr_of_lanes -1) * lw/2
         for _ in range(nbr_of_lanes-1):
             self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
@@ -673,6 +745,7 @@ class ExitRoad(Road):
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + (l-apron_length2) * np.cos(h),
                                 y0 + lwi * np.sin(h + np.pi / 2) + (l-apron_length2) * np.sin(h),
                                 h-exit_road_angle, (apron_length*np.tan(exit_road_angle)+lw/2)/np.sin(exit_road_angle)))
+
         #This changes the direction of the lanes that drive backwards
         if nbr_of_lanes-lanes_in_x_dir>0:
             for i in range(nbr_of_lanes-lanes_in_x_dir):
@@ -709,7 +782,7 @@ class XCrossRoad(Road):
     :param chs: List of headings for each arm of the xcrossing.
     :type chs: [Float]
 
-    :param len_till_stop: Distance from endpoint of the arms to the arms' stop line.
+    :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
     :type len_till_stop: Float
 
     :param nbr_of_lanes: Number of lanes.
@@ -717,10 +790,12 @@ class XCrossRoad(Road):
 
     '''
     def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS):
+
+        # General Init
+
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
-        p = 0
         self.x=x0
         self.y=y0
         self.stopline = []
@@ -730,7 +805,7 @@ class XCrossRoad(Road):
 
         # Creation of each "Starting Lane"
 
-        compteur = 0
+        counter = 0
 
         for c in range(4):  # For each Branch of the X Crossing
 
@@ -738,20 +813,20 @@ class XCrossRoad(Road):
             nb_of_lanes = cs_nbr_of_lanes[c]
             lanes_in_x_dir = cs_lanes_in_x_dir[c]
             lwi=(cs_nbr_of_lanes[c] -1) * lw/2
-            next_first_lane = compteur             # Allow us the access to the first lane created that need to be reversed
+            next_first_lane = counter             # Allow us the access to the first lane created that need to be reversed
 
             for lane in range(nb_of_lanes):
 
                 l1 = Straight(x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2), y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2), cs_h[c]+h, cs_len_till_stop[c]+1) #+1 or doesnt work
 
-                Actual_Lane = []
+                Actual_Lane = []  # This convert the lane from a path obj to a tab of point
                 for (x,y) in l1:
                     Actual_Lane.append([x, y])
 
                 self.l.append(Actual_Lane)
 
                 lwi -= lw
-                compteur += 1
+                counter += 1
 
             # We are creating here the straight part of the lane at the beginning of each crosssection from the stopline to
             # the beggining of the road in the following order (1 : a -> b then 2->3->4)
@@ -804,23 +879,25 @@ class XCrossRoad(Road):
         #                      # |     #
         #
         #
+        # In order to understand the implentation of this next part, please read the comment AND the wiki dedicated to this RT
 
 
-        compteur_for_lane_interest = 0  # This compteur will grant us access to the lanes
+        compteur_for_lane_interest = 0  # This compteur will grant us access to the lanes going in the opposite of x direction
 
-        compteur_for_right_most_lane = cs_nbr_of_lanes[0] # this compteyr does stuff
-        compteur_for_lane_in_front = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] # same
-        compteur_for_left_most_lane = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] + cs_nbr_of_lanes[2] # same
+        compteur_for_right_most_lane = cs_nbr_of_lanes[0] # this counter allow us to access the lanes that are located in the next right crosssection
+        compteur_for_lane_in_front = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] # this counter allow us to access the lanes that are located in the crosssection in front of the one being compute
+        compteur_for_left_most_lane = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] + cs_nbr_of_lanes[2] # this counter allow us to access the lanes that are located in the next left crosssection
 
 
-        total_nb_of_lanes = 0
+        total_nb_of_lanes = 0   # This will be usefull to create a counter that can circle back to the beggining of the lane list (see below)
         for y in range(4):
             total_nb_of_lanes += cs_nbr_of_lanes[y]
+
 
         for i in range(4):  # For each Branch of the X Crossing
             nb_of_lanes = cs_nbr_of_lanes[i]
             lanes_in_x_dir = cs_lanes_in_x_dir[i]
-            compteur_lanes_restantes = nb_of_lanes - lanes_in_x_dir
+            compteur_lanes_restantes = nb_of_lanes - lanes_in_x_dir      # This will give plenty of informations : is the road a one way road ? how many lanes are left to create ?
             compteur_for_right_most_lane += cs_nbr_of_lanes[(i+1)%4]
             compteur_for_lane_in_front += cs_nbr_of_lanes[(i+2)%4]
             compteur_for_left_most_lane += cs_nbr_of_lanes[(i+3)%4]
@@ -931,6 +1008,191 @@ class XCrossRoad(Road):
         # Edges
 
         # TO DO
+
+
+    def getstart(self):
+        return (self.x, self.y)
+
+    def getend(self):
+        return (self.x, self.y)
+
+
+class YCrossRoad(Road):
+    '''
+    This a representation of an ycrossing road in Prescan. Each road contains one segment for each arm of the ycrossing.
+
+    :param id: Unique id.
+    :type id: String
+
+    :param x0: The x coordinate of the center of the road segment.
+    :type x0: Float
+
+    :param y0: The y coordinate of the center of the road segment.
+    :type y0: Float
+
+    :param h: Global heading of the road segment at the starting point.
+    :type h: Float
+
+    :param r: Distance from the starting point to furthest center point of one of the lanes.
+    :type r: Float
+
+    :param lw: Lane width.
+    :type lw: Float
+
+    :param chs: List of headings for each arm of the xcrossing.
+    :type chs: [Float]
+
+    :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
+    :type len_till_stop: Float
+
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    '''
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS):
+
+        # General Init
+
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
+        self.x=x0
+        self.y=y0
+        self.stopline = []
+        self.DefinedSpeed = self.SpeedProfil[9]
+
+        # Lanes Creation
+
+        # Creation of each "Starting Lane"
+
+        counter = 0
+
+        for c in range(3):  # For each Branch of the Y Crossing
+
+
+            nb_of_lanes = cs_nbr_of_lanes[c]
+            lanes_in_x_dir = cs_lanes_in_x_dir[c]
+            lwi=(cs_nbr_of_lanes[c] -1) * lw/2
+            next_first_lane = counter             # Allow us the access to the first lane created that need to be reversed
+
+            for lane in range(nb_of_lanes):
+
+                l1 = Straight(x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2), y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2), cs_h[c]+h, cs_len_till_stop[c]+1) #+1 or doesnt work
+
+                Actual_Lane = []  # This convert the lane from a path obj to a tab of point
+                for (x,y) in l1:
+                    Actual_Lane.append([x, y])
+
+                self.l.append(Actual_Lane)
+
+                lwi -= lw
+                counter += 1
+
+            # We are creating here the straight part of the lane at the beginning of each crosssection from the stopline to
+            # the beggining of the road in the following order (1 : a -> b then 2->3)
+            #
+            #
+            #                ######################
+            #                             a) |---->
+            #                   2               1
+            #                             b)  ---->
+            #                #######       ########
+            #                      #       #
+            #                      #   3   #
+            #                      #       #
+            #
+            # We need now to change the direction of the lanes that drive backwards
+
+
+            # Changing the direction of the lanes that drive backwards
+
+            if nb_of_lanes-lanes_in_x_dir>0:
+                for j in range(nb_of_lanes-lanes_in_x_dir):
+                    l=[]
+                    for (x, y) in self.l[next_first_lane + j]:
+                        l.append([x, y])
+                    l = l[::-1]
+                    self.l[next_first_lane + j] = l
+
+        # Stoplines Creation
+
+
+
+
+        # Creating every connections between each starting lanes
+
+        # We will now link each crossections of the x crossing
+        #
+        #                ######################
+        #                <----------------|----
+        #                   2    |          1
+        #                        |    b)  ---->
+        #                ####### |     ########
+        #                      # |     #
+        #                      # | 3   #
+        #                      # |     #
+        #
+        #
+        # In order to understand the implentation of this next part, please read the comment AND the wiki dedicated to this RT
+
+
+
+        total_nb_of_lanes = 0   # This will be usefull to create a counter that can circle back to the beggining of the lane list (see below)
+        Number_of_lanes_of_interest = []
+        for i in range(3):
+            nb_of_lanes = cs_nbr_of_lanes[i]
+            lanes_in_x_dir = cs_lanes_in_x_dir[i]
+            total_nb_of_lanes += nb_of_lanes
+            Number_of_lanes_of_interest.append(nb_of_lanes - lanes_in_x_dir)
+
+
+        compteur_for_lane_interest =0
+        compteur_for_right_most_lane = cs_nbr_of_lanes[0] # this counter allow us to access the lanes that are located in the next right crosssection
+        compteur_for_lane_in_front = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] # this counter allow us to access the lanes that are located in the crosssection in front of the one being compute
+        for m in range(3):
+
+            if Number_of_lanes_of_interest[m] !=0 :  # if there are lanes going in the opposite x direction
+
+                nb_of_lanes = cs_nbr_of_lanes[m]
+                lanes_in_x_dir = cs_lanes_in_x_dir[m]
+                compteur_lanes_restantes = nb_of_lanes - lanes_in_x_dir
+                compteur_for_right_most_lane += cs_nbr_of_lanes[(m+1)%3]
+                compteur_for_lane_in_front += cs_nbr_of_lanes[(m+2)%3]
+
+
+                if compteur_lanes_restantes == 1:   # if there is only one lane of interest
+                    Lane_interest = self.l[compteur_for_lane_interest]
+
+
+                    # Link a droite et devant pour la lane la plus a droite
+
+                    (x1,y1) = Lane_interest[len(Lane_interest[0])-1]  # We take the coordinate of the last point (the point which is on the stopline basically) of the right most lane
+
+                    (x2,y2) = self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes][0]       # And then the coordinate of the first point of the lane to the right
+                    (x3,y3) = Intersection_Lines(Lane_interest,self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes])
+
+                    xs = [x1, x3, x3, x2]
+                    ys = [y1, y3, y3, y2]
+
+                    # Lane going to the right
+                    if cs_lanes_in_x_dir[(i+1)%3] != 0:    # Is the right turn possible ?
+                        l1 = Curve(xs, ys, 0)
+                        Actual_Lane1 = []
+                        for (x,y) in l1:
+                            Actual_Lane1.append([x, y])
+                        self.l.append(Actual_Lane1)
+            compteur_for_lane_interest += cs_nbr_of_lanes[m]
+
+
+
+            Lanes_of_Interest = self.l[compteur_for_lane_interest:compteur_for_lane_interest+nb_of_lanes - lanes_in_x_dir:1]   # Lanes going in the opposite direction of x that we are looking to connect to other lanes
+
+
+
+
+
+
+
 
 
     def getstart(self):

@@ -5,7 +5,7 @@ import parse
 
 # config
 PEX_FILE_LOCATION = "C:\\Users\\Public\\Documents\\Experiments\\TestVM\\TestVM.pex"
-PEX_FILE_LOCATION2 = "C:\\Users\\adeye\\Desktop\\AD-EYE_Core\\AD-EYE\\Experiments\\Base_Map\\Simulation\\Base_Map.pex"
+PEX_FILE_LOCATION2 = "C:\\Users\\adeye\\Desktop\\AD-EYE_Core\\AD-EYE\\Experiments\\Base_Map_Closed\\Simulation\\Base_Map_Closed.pex"
 
 if __name__ == '__main__':
 
@@ -22,7 +22,6 @@ if __name__ == '__main__':
     rproc2.add_staticalobject(statobj)
     rproc2.create_statical_object()
     vm = VectorMap()
-    i=0
     for lane in rproc.lanes:
         if Take_Speed_Pescan:
             vm.make_lane(lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())

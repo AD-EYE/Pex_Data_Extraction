@@ -6,6 +6,7 @@ The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class
 
 '''
 import numpy as np
+from utils import dist
 
 class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
@@ -197,23 +198,32 @@ class VectorMap:
 
             for i in range(len(tab)):
 
+
+                Middle_Point = (tab[i][4],tab[i][5])
+                min_dist = 1000
+                for j in range(len(self.point)):
+                    x = self.point[j].Ly
+                    y = self.point[j].Bx
+                    point_of_interest = (x,y)
+                    distance = dist(point_of_interest,Middle_Point)
+                    if min_dist > distance:
+                        min_dist = distance
+                        closest_point = point_of_interest
+                        closest_node = j
+
+                for k in range(len(self.lane)):
+                    if closest_node == self.lane[k].FNID:
+                        lane_id = self.lane[k].BLID
+                        print(lane_id)
                 PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
                 PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
                 LineID = self.line.create(PointID1,PointID2)
-
-                for i in range(len(self.point)):
-                    print(self.point[i])
-                    StoplineID = self.stopline.create(LineID, 0, 0, 0)
+                StoplineID = self.stopline.create(LineID, 0, 0, lane_id-1)
 
 
 
     def make_TrafficLight(self, TrafficLightList):
 
-            # Definition of Cst to define stoplines
-
-            offset = 0.2   # Distance between the TrLight and the actual Road
-            lw = 3.5
-            nboflanes = 1
 
             # Going trhought the list of traffic Lights in the simulationS
 
@@ -222,10 +232,6 @@ class VectorMap:
                 pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
                 pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
                 pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
-
-                # For the Stopline
-                PointID4 = self.point.create(TrafficLightList[i].x0 - offset* np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - offset* np.sin(TrafficLightList[i].h), 0)
-                PointID5 = self.point.create(TrafficLightList[i].x0 - (lw*nboflanes + offset) * np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - (lw*nboflanes + offset) * np.sin(TrafficLightList[i].h), 0)
 
                 VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
                 VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
@@ -237,8 +243,16 @@ class VectorMap:
 
                 # Stopline
 
-                LineID = self.line.create(PointID4,PointID5)
-                StoplineID = self.stopline.create(LineID, SignDataID1, 0, 1)
+                # for j in range(len(self.stoplines)):
+                #     x1 =self.point[self.lane[self.stoplines[j].LinkID].BNID].Ly
+                #     y1 = self.point[self.lane[self.stoplines[j].LinkID].BNID].Bx
+
+                #       x2 = self.point[self.lane[self.stoplines[j].LinkID].FNID].Ly
+                #     y2 = self.point[self.lane[self.stoplines[j].LinkID].FNID].Bx
+
+
+
+
 
 
     # Returns the drivable lane data in the format:

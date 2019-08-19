@@ -635,11 +635,11 @@ class EntryRoad(Road):
         self.e1.append(Straight( x0 + lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
                                 y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
 
-        self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
-                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, apron_length2))
+        #self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2)+ (l-apron_length2) * np.cos(h),
+                                #y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-entry_road_angle, apron_length2))
 
-        self.e2.append(Straight( x0 -lw * (nbr_of_lanes/2) + (apron_length*np.tan(entry_road_angle)-lw * (nbr_of_lanes/2)+lw/2)*np.sin(h),
-                                y0 - lw * (nbr_of_lanes/2) - (apron_length*np.tan(entry_road_angle)-lw * (nbr_of_lanes/2)+lw/2)*np.cos(h), entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))
+        self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h-entry_road_angle,l-apron_length2 ))
 
 
         lwi=(nbr_of_lanes -1) * lw/2
@@ -724,10 +724,14 @@ class ExitRoad(Road):
 
         self.c.append(Straight( x0, y0, h, l))
 
-        self.e1.append(Straight( x0 + lw * np.cos(h + np.pi / 2),
-                                y0 + lw * np.sin(h + np.pi / 2), h, l))
-        self.e2.append(Straight( x0 - lw * np.cos(h + np.pi / 2),
-                                y0 - lw * np.sin(h + np.pi / 2), h, l))
+        self.e1.append(Straight( x0 + lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
+                                y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
+
+        self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h,apron_length2))
+
+        self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2)+ (l-apron_length2) * np.cos(h),
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-exit_road_angle,(l-apron_length2-1)*np.cos(h-exit_road_angle) ))
 
 
         lwi=(nbr_of_lanes -1) * lw/2
@@ -1083,7 +1087,7 @@ class YCrossRoad(Road):
                 for (x,y) in l1:
                     Actual_Lane.append([x, y])
 
-                self.l.append(Actual_Lane)
+                self.l.append(Actual_Lane[1:])
 
                 lwi -= lw
                 counter += 1
@@ -1179,8 +1183,11 @@ class YCrossRoad(Road):
 
                         (x3,y3) = Intersection_Lines(Lanes_of_Interest[0],Lane_available_for_connection[r])
 
-                        xs = [x1, x3, x3, x2]
-                        ys = [y1, y3, y3, y2]
+                        (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                        (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+
+                        xs = [x1, x5, x4, x2]
+                        ys = [y1, y5, y4, y2]
 
 
                         l1 = Curve(xs, ys, 0)
@@ -1224,9 +1231,11 @@ class YCrossRoad(Road):
 
                                 (x3,y3) = Intersection_Lines(Lanes_of_Interest_right[q], Lane_available_for_connection_right[j])
 
-                                xs = [x1, x3, x3, x2]
-                                ys = [y1, y3, y3, y2]
+                                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
 
+                                xs = [x1, x5, x4, x2]
+                                ys = [y1, y5, y4, y2]
 
                                 l1 = Curve(xs, ys, 0)
                                 Actual_Lane1 = []
@@ -1242,8 +1251,11 @@ class YCrossRoad(Road):
 
                             (x3,y3) = Intersection_Lines(Lanes_of_Interest_right[q], Lane_available_for_connection_right[len(Lane_available_for_connection_right)-1-q])
 
-                            xs = [x1, x3, x3, x2]
-                            ys = [y1, y3, y3, y2]
+                            (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                            (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+
+                            xs = [x1, x5, x4, x2]
+                            ys = [y1, y5, y4, y2]
 
 
                             l1 = Curve(xs, ys, 0)
@@ -1267,8 +1279,11 @@ class YCrossRoad(Road):
 
                                 (x3,y3) = Intersection_Lines(Lanes_of_Interest_left[q], Lane_available_for_connection_left[j])
 
-                                xs = [x1, x3, x3, x2]
-                                ys = [y1, y3, y3, y2]
+                                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+
+                                xs = [x1, x5, x4, x2]
+                                ys = [y1, y5, y4, y2]
 
 
                                 l1 = Curve(xs, ys, 0)
@@ -1285,9 +1300,11 @@ class YCrossRoad(Road):
 
                             (x3,y3) = Intersection_Lines(Lanes_of_Interest_left[q], Lane_available_for_connection_left[len(Lane_available_for_connection_left)-1-q])
 
-                            xs = [x1, x3, x3, x2]
-                            ys = [y1, y3, y3, y2]
+                            (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                            (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
 
+                            xs = [x1, x5, x4, x2]
+                            ys = [y1, y5, y4, y2]
 
                             l1 = Curve(xs, ys, 0)
                             Actual_Lane1 = []
@@ -1298,71 +1315,7 @@ class YCrossRoad(Road):
                             Lane_available_for_connection_left.pop(len(Lane_available_for_connection_left)-1-q)
 
 
-
-
-
-
-
-
-
-
-
             compteur_for_lane_interest += cs_nbr_of_lanes[m]
-
-                # for h in range(len(Lanes_of_Interest)):
-
-               ##       (x1,y1) = Lanes_of_Interest[h][len(Lanes_of_Interest[h])-1]
-
-               ##       (x2,y2) = Lane_available_for_connection[cs_lanes_in_x_dir[(m+1)%3]][0]
-
-               ##       (x3,y3) = Intersection_Lines(Lanes_of_Interest[h],Lane_available_for_connection[cs_lanes_in_x_dir[(m+1)%3]])
-
-               ##       xs = [x1, x3, x3, x2]
-                #     ys = [y1, y3, y3, y2]
-
-
-              ###         l1 = Curve(xs, ys, 0)
-                #     Actual_Lane1 = []
-                #     for (x,y) in l1:
-                #         Actual_Lane1.append([x, y])
-                #     self.l.append(Actual_Lane1)
-
-
-
-
-
-
-            #     if compteur_lanes_restantes == 1:   # if there is only one lane of interest
-            #         Lane_interest = self.l[compteur_for_lane_interest]
-
-
-          #           # Link a droite et devant pour la lane la plus a droite
-
-           #           (x1,y1) = Lane_interest[len(Lane_interest)-1]  # We take the coordinate of the last point (the point which is on the stopline basically) of the right most lane
-
-           #          (x2,y2) = self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes][0]       # And then the coordinate of the first point of the lane to the right
-            #         (x3,y3) = Intersection_Lines(Lane_interest,self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes])
-
-           #           xs = [x1, x3, x3, x2]
-            #         ys = [y1, y3, y3, y2]
-
-           #          # Lane going to the right
-            #         if Number_of_lanes_of_interest[(m+1)%3]-cs_nbr_of_lanes[(m+1)%3] != 0:    # Is the right turn possible ?
-            #             l1 = Curve(xs, ys, 0)
-            #             Actual_Lane1 = []
-            #             for (x,y) in l1:
-            #                 Actual_Lane1.append([x, y])
-            #             self.l.append(Actual_Lane1)
-            # compteur_for_lane_interest += cs_nbr_of_lanes[m]
-
-
-
-
-
-
-
-
-
 
 
 

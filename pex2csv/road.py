@@ -793,7 +793,7 @@ class XCrossRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS):
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):
 
         # General Init
 
@@ -802,7 +802,7 @@ class XCrossRoad(Road):
         self.RefSpeed = RefS
         self.x=x0
         self.y=y0
-        self.stopline = []
+        self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[8]
 
         # Lanes Creation
@@ -1053,7 +1053,7 @@ class YCrossRoad(Road):
     :type nbr_of_lanes: Integer
 
     '''
-    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS):
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):
 
         # General Init
 
@@ -1062,7 +1062,7 @@ class YCrossRoad(Road):
         self.RefSpeed = RefS
         self.x=x0
         self.y=y0
-        self.stopline = []
+        self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[9]
 
         # Lanes Creation

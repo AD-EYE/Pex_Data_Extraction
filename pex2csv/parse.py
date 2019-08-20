@@ -176,7 +176,7 @@ def get_straight(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir))
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
 def get_entry(s, id):
@@ -273,7 +273,18 @@ def get_xcross(s, id):
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
-    return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax)
+    Stl = []
+    for i in range(4):
+        cs_l[i]-cs_len_till_stop[i]
+        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+        x3 = (x1+x2)/2
+        y3 = (y1+y2)/2
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+
+    return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)
 
 def get_ycross(s, id):
     x0 = float(s[0].get('X'))
@@ -293,4 +304,16 @@ def get_ycross(s, id):
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
-    return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax)
+
+    Stl = []
+    for i in range(3):
+        cs_l[i]-cs_len_till_stop[i]
+        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+        x3 = (x1+x2)/2
+        y3 = (y1+y2)/2
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+
+    return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)

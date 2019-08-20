@@ -213,41 +213,69 @@ class VectorMap:
                 for k in range(len(self.lane)):
                     if closest_node == self.lane[k].FNID:
                         lane_id = self.lane[k].BLID
-                        print(lane_id)
+
                 PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
                 PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
                 LineID = self.line.create(PointID1,PointID2)
-                StoplineID = self.stopline.create(LineID, 0, 0, lane_id-1)
+                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1)
 
 
 
     def make_TrafficLight(self, TrafficLightList):
 
 
-            # Going trhought the list of traffic Lights in the simulationS
+            # Going throught the list of traffic Lights in the simulationS
 
             n = len(TrafficLightList)
+
             for i in range(n):
-                pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
+                min_dist=1000
+                Orign_Point = (TrafficLightList[i].x0,TrafficLightList[i].y0)
+                for j in range(len(self.stopline)):
 
-                VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
+                    x1 =self.point[self.line[self.stopline[j].LID].BPID].Ly
+                    y1= self.point[self.line[self.stopline[j].LID].BPID].Bx
+                    point_of_interest = (x1,y1)
+                    distance = dist(point_of_interest,Orign_Point)
+                    if min_dist > distance:
+                        min_dist = distance
+                        stoplines_id = j
+                        nb_clones = self.stopline[j].SignID
+                        lane_id = self.stopline[j].LinkID
 
-                SignDataID1 = self.signaldata.create(VectorID1, i+1, 1, i+1)
-                SignDataID2 = self.signaldata.create(VectorID2, i+1, 3, i+1)
-                SignDataID3 = self.signaldata.create(VectorID3, i+1, 2, i+1)
 
-                # Stopline
 
-                # for j in range(len(self.stoplines)):
-                #     x1 =self.point[self.lane[self.stoplines[j].LinkID].BNID].Ly
-                #     y1 = self.point[self.lane[self.stoplines[j].LinkID].BNID].Bx
 
-                #       x2 = self.point[self.lane[self.stoplines[j].LinkID].FNID].Ly
-                #     y2 = self.point[self.lane[self.stoplines[j].LinkID].FNID].Bx
+                stopline_number = stoplines_id
+
+                for k in range(nb_clones):
+
+                    pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
+                    pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
+                    pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
+
+                    VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
+                    VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
+                    VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
+
+                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)
+                    SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
+                    SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
+
+
+
+                    # Linking Stopline
+
+                    self.stopline[stopline_number].set_TLID(SignDataID1)
+
+                    stopline_number +=1
+
+
+            for p in range(len(self.stopline)):
+                self.stopline[p].set_SignID(0)
+
+
+
 
 
 
@@ -766,6 +794,12 @@ class Stopline:
         self.TLID = TLID
         self.SignID = SignID
         self.LinkID = LinkID       # cf slide
+
+    def set_SignID(self, SignID):
+        self.SignID = SignID
+
+    def set_TLID(self, TLID):
+        self.TLID = TLID
 
     def __str__(self):
         data = [self.LID, self.TLID, self.SignID, self.LinkID]

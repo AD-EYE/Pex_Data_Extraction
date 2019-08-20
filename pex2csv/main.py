@@ -12,8 +12,8 @@ if __name__ == '__main__':
 
     Take_Speed_Pescan = True
 
-    roads = parse.get_roads(path=PEX_FILE_LOCATION)
-    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
+    roads = parse.get_roads(path=PEX_FILE_LOCATION2)
+    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION2)
     rproc = RoadProcessor(Take_Speed_Pescan)
     rproc.add_roads(roads)
     rproc.create_lanes()
@@ -37,7 +37,6 @@ if __name__ == '__main__':
     #     vm.make_line(edge.get_lanes(), line_type='EDGE')
     #for center in rproc.centers:
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
-
     vm.make_Stoplines(rproc.stoplines)
     vm.make_TrafficLight(rproc2.TrfLight)
     vm.export()

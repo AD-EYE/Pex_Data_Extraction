@@ -195,7 +195,7 @@ class VectorMap:
     def make_Stoplines(self, Stoplines):
         '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
         where the stopline is.
-        It first find the closest lane using the third point
+        It first find the closest lane using the third point  TO WRITE
         '''
 
         for tab in Stoplines:

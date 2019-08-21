@@ -51,6 +51,7 @@ def get_roads(path='./data/roads.pex'):
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
     segments = tree.findall('//RoadSegment')
+    connections = tree.findall('//Connection')
     roads = {}
 
     # For each Road Segment in the simulation produce a road type in the road list
@@ -65,7 +66,7 @@ def get_roads(path='./data/roads.pex'):
         elif (type == 'StraightRoad'):
             roads[id] = get_straight(s, id)
         elif (type == 'Roundabout'):
-            roads[id] = get_roundabout(s, id)
+            roads[id] = get_roundabout(s, id, connections, path)
         elif (type == 'XCrossing'):
             roads[id] = get_xcross(s, id)
         elif (type == 'EntryLaneRoad'):
@@ -143,7 +144,7 @@ def get_curved(s, id):
             print(Stl)
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
-def get_roundabout(s, id):
+def get_roundabout(s, id, connections, path):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     Vmax = s.get('MaxSpeed')
@@ -152,10 +153,30 @@ def get_roundabout(s, id):
     lw = float(s.get('LaneWidth'))
     nbr_of_lanes = int(s.get('NumberOfLanes'))
     cs = s[18]
-    chs = []
+    cs_h = []
+    cs_filletradius = []
+    cs_nb_of_lanes = []
+    cs_nb_of_lane_x_direction = []
     for s in cs:
-        chs.append((float(s.get('Heading')) + h) * np.pi / 180)
-    return RoundaboutRoad(id, x0, y0, r, lw, chs, nbr_of_lanes, Vmax, Vmax)
+        cs_h.append((float(s.get('Heading')) + h) * np.pi / 180)
+        cs_filletradius.append((float(s.get('FilletRadiusPercentage'))))
+        cs_nb_of_lanes.append((int(s.get('NumberOfLanes'))))
+        cs_nb_of_lane_x_direction.append((int(s.get('DirectionChangeAfterLane'))))
+
+    TabConnect = []
+    for connection in connections:
+        idA = connection.get('Road_A_UniqueId')
+        idB = connection.get('Road_B_UniqueId')
+        if (id in idA):
+            Road = get
+            TabConnect.append(idB)
+        elif (id in idB):
+            TabConnect.append(idA)
+    Tabpointcon = []
+    for i in range(len(TabConnect)):
+        Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))
+
+    return RoundaboutRoad(id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon)
 
 def get_straight(s, id):
     x0 = float(s[0].get('X'))
@@ -317,3 +338,34 @@ def get_ycross(s, id):
         Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)
+
+
+
+# The following fonction is usefull to get the linking point of roundabout #
+
+def get_links_points_roundabout(id,path):
+    '''
+    TWRITE IT
+
+    '''
+
+    # eTree module fetch the Roads in the Pex file
+    ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+    tree = etree.parse(path)
+    segments = tree.findall('//RoadSegment')
+    point = []
+
+
+
+    for s in segments:
+        type = s.xpath('@xsi:type', namespaces = ns)[0]
+        idseg = s.get('id')
+        if (idseg == id):
+            x0 = float(s[0].get('X'))
+            y0 = float(s[0].get('Y'))
+            point.append((x0,y0))
+            break
+
+
+    return point
+

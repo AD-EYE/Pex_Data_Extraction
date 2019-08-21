@@ -29,6 +29,7 @@ class Road:
         param SpeedProfil: Tab of Float defining the speed profil (Speed Limit per RoadType)
         :type SpeedLimit/RefSpeed: [Float]
 
+
     '''
     def __init__(self, id):
         self.id = id
@@ -102,7 +103,7 @@ class BendRoad(Road):
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):  # Take into account the speed as a parameter
+    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):
 
         # General Initialization
 
@@ -262,13 +263,14 @@ class RoundaboutRoad(Road):
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, r, lw, chs, nbr_of_lanes, SpeedL, RefS):
+    def __init__(self, id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect):
 
         # General Initialization
 
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
+        self.TabConnect = TabConnect
         self.DefinedSpeed = self.SpeedProfil[3]
 
         # Lanes, Center and Edge2 of the Road
@@ -286,26 +288,26 @@ class RoundaboutRoad(Road):
         offset = np.pi / 8
         h = []   #Heading list
         rh = []  #Relative Heading
-        h.append(chs[0] + offset + np.pi / 2)   #First exit´s heading
+        h.append(cs_h[0] + offset + np.pi / 2)   #First exit´s heading
 
-        for i in range(1, len(chs)):     #Creation of Heading and the relative Heading for the rest of the exit lane
-            h.append(chs[i] + offset + np.pi / 2)
-            rh.append(chs[i] - offset - (chs[i-1] + offset))
+        for i in range(1, len(cs_h)):     #Creation of Heading and the relative Heading for the rest of the exit lane
+            h.append(cs_h[i] + offset + np.pi / 2)
+            rh.append(cs_h[i] - offset - (cs_h[i-1] + offset))
 
-        rh.append(chs[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])  #Last RH
+        rh.append(cs_h[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])  #Last RH
 
         # Edge 1
 
         for i in range(len(h)):
-            x1 = x0 + (r + lw) * np.cos(chs[i] + offset)
-            y1 = y0 + (r + lw) * np.sin(chs[i] + offset)
+            x1 = x0 + (r + lw) * np.cos(cs_h[i] + offset)
+            y1 = y0 + (r + lw) * np.sin(cs_h[i] + offset)
             r1 = r + lw
             self.e1.append(Bend(x1, y1, h[i], rh[i], r1))
 
         # Exit Lanes
 
         self.exit_lanes = []
-        for ch in chs:
+        for ch in cs_h:
             self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS))
 
 class ExitLane(Road):

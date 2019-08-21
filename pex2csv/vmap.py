@@ -193,6 +193,10 @@ class VectorMap:
 
 
     def make_Stoplines(self, Stoplines):
+        '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
+        where the stopline is.
+        It first find the closest lane using the third point
+        '''
 
         for tab in Stoplines:
 
@@ -273,13 +277,6 @@ class VectorMap:
 
             for p in range(len(self.stopline)):
                 self.stopline[p].set_SignID(0)
-
-
-
-
-
-
-
 
 
     # Returns the drivable lane data in the format:

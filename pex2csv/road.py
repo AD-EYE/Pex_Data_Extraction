@@ -334,6 +334,9 @@ class ExitLane(Road):
 
     '''
     def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS):
+
+        # General Init
+
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
@@ -345,11 +348,15 @@ class ExitLane(Road):
         self.ch = ch
         self.lw = lw
 
+        # Get exit lanes
+
+        # For edges
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw)
         self.e1.append(Bend(x, y, h, a, rc))
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw)
         self.e2.append(Bend(x, y, h, a, rc))
 
+        # For lanes
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, lw/2)
         self.l.append(Bend(x, y, h, a, rc))
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw/2)
@@ -635,12 +642,23 @@ class EntryRoad(Road):
         self.e1.append(Straight( x0 + lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
                                 y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
 
-        #self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2)+ (l-apron_length2) * np.cos(h),
-                                #y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-entry_road_angle, apron_length2))
+        self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2)+ (l-apron_length2) * np.cos(h),
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-entry_road_angle, apron_length2))    # Entry part of edge 2
 
         self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
-                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h-entry_road_angle,l-apron_length2 ))
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h-entry_road_angle,l-apron_length2 ))  # Strainght part of edge 2
 
+            # We are creating here every straight lanes that are not influenced by the new entry portion
+            #
+            #              _______________________  e1
+            #              <---------------------
+            #              <---------------------
+            #              --------------------->
+            #              --------------------->
+            #
+            #                     ________________  e2
+            #                 __ /
+            #              _/
 
         lwi=(nbr_of_lanes -1) * lw/2
         for _ in range(nbr_of_lanes-1):
@@ -649,14 +667,29 @@ class EntryRoad(Road):
                                     h, l))
             lwi -= lw
 
+
+
+        # And after that we can create the last lane, which is the entry lane
+        #
+        #              ___________________________  e1
+        #              <--------------------------
+        #              <--------------------------
+        #              -------------------------->
+        #              -------------------------->
+        #              --(1)-----------(2)------->
+        #                 -- / ____________________  e2
+        #           (3) -/ __ /
+        #              ___/
+
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                 y0 + lwi * np.sin(h + np.pi / 2),
-                                h, apron_length2))
+                                h, apron_length2))              # Here we create (1)
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + apron_length2 * np.cos(h),
                                 y0 + lwi * np.sin(h + np.pi / 2) + apron_length2 * np.sin(h),
-                                h, l-apron_length2))
+                                h, l-apron_length2))   # Then (2)
+
         self.l.append(Straight( x0 + (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.sin(h),
-                                y0 - (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.cos(h),
+                                y0 - (apron_length*np.tan(entry_road_angle)-lwi+lw/2)*np.cos(h),   # And finally (3)
                                 entry_road_angle+h, (apron_length*np.tan(entry_road_angle)+lw/2)/np.sin(entry_road_angle)))
 
         #This changes the direction of the lanes that drive backwards
@@ -728,10 +761,23 @@ class ExitRoad(Road):
                                 y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
 
         self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2),
-                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h,apron_length2))
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h,apron_length2))   # Straight part of edge 2
 
         self.e2.append(Straight( x0 - lw * (nbr_of_lanes/2) * np.cos(h + np.pi / 2)+ (l-apron_length2) * np.cos(h),
-                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-exit_road_angle,(l-apron_length2-1)*np.cos(h-exit_road_angle) ))
+                                y0 - lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2)+ (l-apron_length2) * np.sin(h), h-exit_road_angle,(l-apron_length2-1)*np.cos(h-exit_road_angle) ))    # Exit part of edge 2
+
+
+        # We are creating here every straight lanes that are not influenced by the new exit portion
+        #
+        #              _______________________  e1
+        #              <---------------------
+        #              <---------------------
+        #              --------------------->
+        #              --------------------->
+        #
+        #              ________________
+        #                              \__
+        #                                 \___  e2
 
 
         lwi=(nbr_of_lanes -1) * lw/2
@@ -740,15 +786,29 @@ class ExitRoad(Road):
                                     y0 + lwi * np.sin(h + np.pi / 2),
                                     h, l))
             lwi -= lw
+
+
+        # And after that we can create the last lane, which is the exit lane
+        #
+        #              _______________________  e1
+        #              <---------------------
+        #              <---------------------
+        #              --------------------->
+        #              --------------------->
+        #              -----(1)-------------> (2)
+        #              ________________  \ (3)
+        #                              \__ -->
+        #                                 \___  e2
+
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
                                 y0 + lwi * np.sin(h + np.pi / 2),
-                                h, l-apron_length2))
+                                h, l-apron_length2))        # We create (1) here
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + (l-apron_length2) * np.cos(h),
                                 y0 + lwi * np.sin(h + np.pi / 2) + (l-apron_length2) * np.sin(h),
-                                h, apron_length2))
+                                h, apron_length2))    # Then (2)
         self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2) + (l-apron_length2) * np.cos(h),
                                 y0 + lwi * np.sin(h + np.pi / 2) + (l-apron_length2) * np.sin(h),
-                                h-exit_road_angle, (apron_length*np.tan(exit_road_angle)+lw/2)/np.sin(exit_road_angle)))
+                                h-exit_road_angle, (apron_length*np.tan(exit_road_angle)+lw/2)/np.sin(exit_road_angle)))  # And finally (3)
 
         #This changes the direction of the lanes that drive backwards
         if nbr_of_lanes-lanes_in_x_dir>0:

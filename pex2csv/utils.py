@@ -130,9 +130,37 @@ def Intersection_Circle(C1, C2):
     '''
     Return the point of intersection of 2 circles C1 et C2
 
-    :param C1/C2: Tab of a point
-    :type C1/C2: [(x,y)]
+    :param C1/C2: List containing the coordinate of the center of the circle and its radius
+    :type C1/C2: [(xc,yc,r)]
 
     '''
 
+    x1 = C1[0]
+    y1 = C1[1]
+    r1 = C1[2]
+    x2 = C2[0]
+    y2 = C2[1]
+    r2 = C2[2]
 
+    dx,dy = x2-x1,y2-y1
+    d = np.sqrt(dx*dx+dy*dy)
+    if d > r1+r2:
+        print (1)
+        return None # no solutions, the circles are separate
+    if d < abs(r1-r2):
+        print (2)
+        return None # no solutions because one circle is contained within the other
+    if d == 0 and r1 == r2:
+        print (3)
+        return None # circles are coincident and there are an infinite number of solutions
+
+    a = (r1*r1-r2*r2+d*d)/(2*d)
+    h = np.sqrt(r1*r1-a*a)
+    xm = x1 + a*dx/d
+    ym = y1 + a*dy/d
+    xs1 = xm + h*dy/d
+    xs2 = xm - h*dy/d
+    ys1 = ym - h*dx/d
+    ys2 = ym + h*dx/d
+
+    return (xs1,ys1),(xs2,ys2)

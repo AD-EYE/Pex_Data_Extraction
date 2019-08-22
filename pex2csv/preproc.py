@@ -217,22 +217,32 @@ class RoadProcessor(object):
     # another roundabout, xcrossing or a dead end
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
+
+
+        #--------------------------#
+
         for roundabout in roundabouts:
-            epoints = []
+            # epoints = []
 
-            for exit in roundabout.exit_lanes:
-                epoints.append(exit.l[0].getend())
-                epoints.append(exit.l[1].getend())
+           #   for exit in roundabout.exit_lanes:
+            #     epoints.append(exit.l[0].getend())
+            #     epoints.append(exit.l[1].getend())
 
-            self.__add_roundabout(roundabout, epoints = epoints)
+        #--------------------------#
 
-            for exit in roundabout.exit_lanes:
-                path = self.__get_path(exit.next_road)
-                if exit.next_road == -1:
-                    self.__add_roundabout_exit(exit)
-                    continue
-                if not path: continue
-                self.__add_roundabout_exit(exit)
+            self.__add_roundabout(roundabout)
+
+        #--------------------------#
+
+            # for exit in roundabout.exit_lanes:
+            #     path = self.__get_path(exit.next_road)
+            #     if exit.next_road == -1:
+            #         self.__add_roundabout_exit(exit)
+            #         continue
+            #     if not path: continue
+            #     self.__add_roundabout_exit(exit)
+        #--------------------------#
+
 
             #    for p in path:
             #        road = p
@@ -421,11 +431,13 @@ class RoadProcessor(object):
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
     def __add_roundabout(self, lane, rturns = None, lturns = None, epoints = None):
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns, epoints = epoints)
-        self.__add_center(lane.c)
-        self.__add_edge(lane.e1)
-        self.__add_edge(lane.e2)
+            self.__add_segment( lane, rturns = rturns, lturns = lturns)
+
+        # self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
+        # self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns, epoints = epoints)
+        # self.__add_center(lane.c)
+        # self.__add_edge(lane.e1)
+        # self.__add_edge(lane.e2)
 
     # Breaks down a entry road segment into lanes, edges and center for the
     # vmap module

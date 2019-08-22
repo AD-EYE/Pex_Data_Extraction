@@ -163,15 +163,16 @@ def get_roundabout(s, id, connections, path):
         cs_nb_of_lanes.append((int(s.get('NumberOfLanes'))))
         cs_nb_of_lane_x_direction.append((int(s.get('DirectionChangeAfterLane'))))
 
-    TabConnect = []
+    TabConnect = [0,0,0,0]
     for connection in connections:
         idA = connection.get('Road_A_UniqueId')
         idB = connection.get('Road_B_UniqueId')
         if (id in idA):
-            Road = get
-            TabConnect.append(idB)
+
+            TabConnect[int(connection.get('Joint_A_Id'))] = idB
         elif (id in idB):
-            TabConnect.append(idA)
+
+            TabConnect[int(connection.get('Joint_B_Id'))] = idA
     Tabpointcon = []
     for i in range(len(TabConnect)):
         Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))

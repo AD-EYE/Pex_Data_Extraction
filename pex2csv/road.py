@@ -275,40 +275,134 @@ class RoundaboutRoad(Road):
 
         # Lanes, Center and Edge2 of the Road
 
-        r = r - lw
-        self.c.append(Bend(x0, y0 - r, 0, 2 * np.pi, r))
-        self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))) #Only edge2 (edge near the center of the RA) can easily be done, the other is harder because of the exit lane of the RA
-        self.l.append(Bend( x0, y0 - (r - lw / 2), 0, 2 * np.pi, r - lw / 2))
-        self.l.append(Bend( x0, y0 - (r + lw / 2), 0, 2 * np.pi, r + lw / 2))
+        #self.c.append(Bend(x0, y0 - r, 0, 2 * np.pi, r))
+        #self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))) #Only edge2 (edge near the center of the RA) can easily be done, the other is harder because of the exit lane of the RA
+
+
+        # Creating every cricles
+
+        lwhalf = lw/2
+        r1 = r
+        for i in range(nbr_of_lanes):
+            l1 =Bend( x0, y0 - (r1 - lwhalf), 0, 2 * np.pi, r1 - lwhalf)
+            r1 = (r1 - lw)
+            Actual_Lane1 = []
+            for (x,y) in l1:
+                Actual_Lane1.append([x, y])
+            self.l.append(Actual_Lane1)
+
+
+
+        # Creation of Exit and entry lane
+
+        for j in range(4):
+
+            nb_of_lanes = cs_nb_of_lanes[j]
+            nb_of_lanes_x_direction = cs_nb_of_lane_x_direction[j]
+            nb_of_lanes_of_interest = nb_of_lanes - nb_of_lanes_x_direction
+            fillet_radius = cs_filletradius[j]
+
+            # Creation of the 2 starting points
+
+            starting_point = TabConnect[j]
+            starting_point_right = (starting_point[0][0]- (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] + (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
+            starting_point_left = (starting_point[0][0]+ (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] - (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
+
+
+            # Entry access
+
+
+            counter =0
+            for k in range(nb_of_lanes_of_interest):
+
+
+                center_of_the_circle_right = ( starting_point_right[0]-r*(fillet_radius/100)*np.sin(cs_h[j]), starting_point_right[1]+(r*(fillet_radius/100))*np.cos(cs_h[j]))
+
+
+                circle1 = [center_of_the_circle_right[0], center_of_the_circle_right[1], r*(fillet_radius/100) + (k+1)*lw]
+                circle2 = [x0, y0, (r-lw/2)]
+
+
+                (x1,y1) = (starting_point_right[0]+ (k+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_right[1] - (k+1+counter)*(lw/2)*np.cos(cs_h[j]))
+
+
+                (x2,y2) = Intersection_Circle(circle1,circle2)[1]
+
+                (x3,y3) = Intersection_Circle(circle1,circle2)[0]
+
+                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+
+
+
+                xs = [x1, x2, x4, x3]
+                ys = [y1, y2, y4, y3]
+
+
+                l1 = Curve(xs, ys, 0)
+
+                Actual_Lane1 = []
+                for (x,y) in l1:
+                    Actual_Lane1.append([x, y])
+
+                min_dist_glo = 1000
+                min_dist_loc =1000
+                for c in range(len(self.l[0])):
+
+                     for ind in range(len(Actual_Lane1[:15])):
+
+                         if dist(Actual_Lane1[ind], self.l[0][c])< min_dist_loc:
+                            min_dist_loc = dist(Actual_Lane1[ind], self.l[0][c])
+                            index_loc = ind
+
+                     if min_dist_glo > min_dist_loc:
+                        min_dist_glo = min_dist_loc
+                        index_glo = index_loc
+
+
+
+
+
+
+
+
+
+                counter +=1
+                self.l.append(Actual_Lane1[:index_glo+1])
+
+
+
+
+
 
         # Creation of edge1 and the exit lanes
 
         # Preparation for Exit lanes and Edge1
 
-        offset = np.pi / 8
-        h = []   #Heading list
-        rh = []  #Relative Heading
-        h.append(cs_h[0] + offset + np.pi / 2)   #First exit´s heading
+        # offset = np.pi / 8
+        # h = []   #Heading list
+        # rh = []  #Relative Heading
+        # h.append(cs_h[0] + offset + np.pi / 2)   #First exit´s heading
 
-        for i in range(1, len(cs_h)):     #Creation of Heading and the relative Heading for the rest of the exit lane
-            h.append(cs_h[i] + offset + np.pi / 2)
-            rh.append(cs_h[i] - offset - (cs_h[i-1] + offset))
+        #   for i in range(1, len(cs_h)):     #Creation of Heading and the relative Heading for the rest of the exit lane
+        #     h.append(cs_h[i] + offset + np.pi / 2)
+        #     rh.append(cs_h[i] - offset - (cs_h[i-1] + offset))
 
-        rh.append(cs_h[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])  #Last RH
+       #   rh.append(cs_h[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])  #Last RH
 
-        # Edge 1
+       #   # Edge 1
 
-        for i in range(len(h)):
-            x1 = x0 + (r + lw) * np.cos(cs_h[i] + offset)
-            y1 = y0 + (r + lw) * np.sin(cs_h[i] + offset)
-            r1 = r + lw
-            self.e1.append(Bend(x1, y1, h[i], rh[i], r1))
+       #   for i in range(len(h)):
+        #     x1 = x0 + (r + lw) * np.cos(cs_h[i] + offset)
+        #     y1 = y0 + (r + lw) * np.sin(cs_h[i] + offset)
+        #     r1 = r + lw
+        #     self.e1.append(Bend(x1, y1, h[i], rh[i], r1))
 
-        # Exit Lanes
+       #   # Exit Lanes
 
-        self.exit_lanes = []
-        for ch in cs_h:
-            self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS))
+       #   self.exit_lanes = []
+        # for ch in cs_h:
+        #     self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS))
 
 class ExitLane(Road):
     '''

@@ -279,7 +279,7 @@ class RoundaboutRoad(Road):
         #self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))) #Only edge2 (edge near the center of the RA) can easily be done, the other is harder because of the exit lane of the RA
 
 
-        # Creating every cricles
+        # Creating every circles
 
         lwhalf = lw/2
         r1 = r
@@ -326,83 +326,118 @@ class RoundaboutRoad(Road):
                 (x1,y1) = (starting_point_right[0]+ (k+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_right[1] - (k+1+counter)*(lw/2)*np.cos(cs_h[j]))
 
 
+
+
                 (x2,y2) = Intersection_Circle(circle1,circle2)[1]
 
-                (x3,y3) = Intersection_Circle(circle1,circle2)[0]
 
-                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+                min= 100
+                index_min = 0
+                for n in range(len(self.l[0])):
+
+                    if dist(self.l[0][n],(x2,y2)) < min:
+                        min = dist(self.l[0][n],(x2,y2))
+                        index_min = n
+
+
+                (xs, ys) = self.l[0][index_min+5]
+                (xs1,ys1) = self.l[0][index_min+3]
+                (xs2,ys2) = self.l[0][index_min]
 
 
 
-                xs = [x1, x2, x4, x3]
-                ys = [y1, y2, y4, y3]
+                xs = [x1, xs2, xs1, xs]
+                ys = [y1, ys2, ys1, ys]
 
 
                 l1 = Curve(xs, ys, 0)
+                Actual_Lane1 = []
+                for (x,y) in l1:
+                    Actual_Lane1.append([x, y])
+                counter +=1
+                self.l.append(Actual_Lane1)
 
+
+                # xs = [x1, x2, x4, x3]
+                # ys = [y1, y2, y4, y3]
+
+               #   (x2,y2) = Intersection_Circle(circle1,circle2)[1]
+
+               #   (x3,y3) = Intersection_Circle(circle1,circle2)[0]
+
+               #   (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                # (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+                # l1 = Curve(xs, ys, 0)
+
+               #   Actual_Lane1 = []
+                # for (x,y) in l1:
+                #     Actual_Lane1.append([x, y])
+
+               #   min_dist_glo = 1000
+                # min_dist_loc =1000
+                # for c in range(len(self.l[0])):
+
+               #        for ind in range(len(Actual_Lane1[:15])):
+
+               #            if dist(Actual_Lane1[ind], self.l[0][c])< min_dist_loc:
+                #             min_dist_loc = dist(Actual_Lane1[ind], self.l[0][c])
+                #             index_loc = ind
+
+               #        if min_dist_glo > min_dist_loc:
+                #         min_dist_glo = min_dist_loc
+                #         index_glo = index_loc
+                # self.l.append(Actual_Lane1[:index_glo+1])
+
+
+
+
+
+            # Exit access
+
+
+            counter =0
+            for p in range(nb_of_lanes_x_direction):
+
+
+                center_of_the_circle_left = ( starting_point_left[0]+r*(fillet_radius/100)*np.sin(cs_h[j]), starting_point_left[1]-(r*(fillet_radius/100))*np.cos(cs_h[j]))
+
+
+                circle1 = [center_of_the_circle_left[0], center_of_the_circle_left[1], r*(fillet_radius/100) + (p+1)*lw]
+                circle2 = [x0, y0, (r-lw/2)]
+
+
+                (x1,y1) = (starting_point_left[0]- (p+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_left[1] + (p+1+counter)*(lw/2)*np.cos(cs_h[j]))
+
+                (x2,y2) = Intersection_Circle(circle1,circle2)[0]
+
+
+                min= 100
+                index_min = 0
+                for n in range(len(self.l[0])):
+
+                    if dist(self.l[0][n],(x2,y2)) < min:
+                        min = dist(self.l[0][n],(x2,y2))
+                        index_min = n
+
+
+                (xs, ys) = self.l[0][index_min-5]
+                (xs1,ys1) = self.l[0][index_min-3]
+                (xs2,ys2) = self.l[0][index_min+1]
+
+
+
+                xs = [xs, xs1, xs2, x1]
+                ys = [ys, ys1, ys2, y1]
+                l1 = Curve(xs, ys, 0)
                 Actual_Lane1 = []
                 for (x,y) in l1:
                     Actual_Lane1.append([x, y])
 
-                min_dist_glo = 1000
-                min_dist_loc =1000
-                for c in range(len(self.l[0])):
 
-                     for ind in range(len(Actual_Lane1[:15])):
-
-                         if dist(Actual_Lane1[ind], self.l[0][c])< min_dist_loc:
-                            min_dist_loc = dist(Actual_Lane1[ind], self.l[0][c])
-                            index_loc = ind
-
-                     if min_dist_glo > min_dist_loc:
-                        min_dist_glo = min_dist_loc
-                        index_glo = index_loc
-
-
-
-
-
-
-
-
-
+                self.l.append(Actual_Lane1)
                 counter +=1
-                self.l.append(Actual_Lane1[:index_glo+1])
 
 
-
-
-
-
-        # Creation of edge1 and the exit lanes
-
-        # Preparation for Exit lanes and Edge1
-
-        # offset = np.pi / 8
-        # h = []   #Heading list
-        # rh = []  #Relative Heading
-        # h.append(cs_h[0] + offset + np.pi / 2)   #First exit´s heading
-
-        #   for i in range(1, len(cs_h)):     #Creation of Heading and the relative Heading for the rest of the exit lane
-        #     h.append(cs_h[i] + offset + np.pi / 2)
-        #     rh.append(cs_h[i] - offset - (cs_h[i-1] + offset))
-
-       #   rh.append(cs_h[0] + np.pi / 2 - offset + 2 * np.pi - h[len(h) - 1])  #Last RH
-
-       #   # Edge 1
-
-       #   for i in range(len(h)):
-        #     x1 = x0 + (r + lw) * np.cos(cs_h[i] + offset)
-        #     y1 = y0 + (r + lw) * np.sin(cs_h[i] + offset)
-        #     r1 = r + lw
-        #     self.e1.append(Bend(x1, y1, h[i], rh[i], r1))
-
-       #   # Exit Lanes
-
-       #   self.exit_lanes = []
-        # for ch in cs_h:
-        #     self.exit_lanes.append(ExitLane(id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS))
 
 class ExitLane(Road):
     '''

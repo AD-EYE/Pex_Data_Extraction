@@ -125,7 +125,6 @@ def Intersection_Lines(L1, L2):
     return (xinter,yinter)
 
 
-
 def Intersection_Circle(C1, C2):
     '''
     Return the point of intersection of 2 circles C1 et C2

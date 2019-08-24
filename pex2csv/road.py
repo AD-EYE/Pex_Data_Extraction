@@ -358,39 +358,6 @@ class RoundaboutRoad(Road):
                 self.l.append(Actual_Lane1)
 
 
-                # xs = [x1, x2, x4, x3]
-                # ys = [y1, y2, y4, y3]
-
-               #   (x2,y2) = Intersection_Circle(circle1,circle2)[1]
-
-               #   (x3,y3) = Intersection_Circle(circle1,circle2)[0]
-
-               #   (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                # (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
-                # l1 = Curve(xs, ys, 0)
-
-               #   Actual_Lane1 = []
-                # for (x,y) in l1:
-                #     Actual_Lane1.append([x, y])
-
-               #   min_dist_glo = 1000
-                # min_dist_loc =1000
-                # for c in range(len(self.l[0])):
-
-               #        for ind in range(len(Actual_Lane1[:15])):
-
-               #            if dist(Actual_Lane1[ind], self.l[0][c])< min_dist_loc:
-                #             min_dist_loc = dist(Actual_Lane1[ind], self.l[0][c])
-                #             index_loc = ind
-
-               #        if min_dist_glo > min_dist_loc:
-                #         min_dist_glo = min_dist_loc
-                #         index_glo = index_loc
-                # self.l.append(Actual_Lane1[:index_glo+1])
-
-
-
-
 
             # Exit access
 
@@ -1009,7 +976,6 @@ class XCrossRoad(Road):
             lanes_in_x_dir = cs_lanes_in_x_dir[c]
             lwi=(cs_nbr_of_lanes[c] -1) * lw/2
             next_first_lane = counter             # Allow us the access to the first lane created that need to be reversed
-
             for lane in range(nb_of_lanes):
 
                 l1 = Straight(x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2), y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2), cs_h[c]+h, cs_len_till_stop[c]+1) #+1 or doesnt work
@@ -1050,10 +1016,6 @@ class XCrossRoad(Road):
                         l.append([x, y])
                     l = l[::-1]
                     self.l[next_first_lane + j] = l
-
-        # Stoplines Creation
-
-        # for i in range(4): # for each crossection
 
 
 
@@ -1108,8 +1070,13 @@ class XCrossRoad(Road):
                 (x2,y2) = self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes][0]       # And then the coordinate of the first point of the lane to the right
                 (x3,y3) = Intersection_Lines(Lanes_of_Interest[0],self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes])
 
-                xs = [x1, x3, x3, x2]
-                ys = [y1, y3, y3, y2]
+                #xs = [x1, x3, x3, x2]
+                #ys = [y1, y3, y3, y2]
+                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+
+                xs = [x1, x5, x4, x2]
+                ys = [y1, y5, y4, y2]
 
                 # Lane going to the right
                 if cs_nbr_of_lanes[(i+1)%4]-cs_lanes_in_x_dir[(i+1)%4] != 0:    # Is the right turn possible ?
@@ -1126,6 +1093,7 @@ class XCrossRoad(Road):
                 (x4,y4) = self.l[(compteur_for_lane_in_front-1)%total_nb_of_lanes][0]
 
                 (x5,y5) = Intersection_Lines(Lanes_of_Interest[0],self.l[(compteur_for_lane_in_front-1)%total_nb_of_lanes])
+                print((x5,y5))
 
                 xs1 = [x1, x5, x5, x4]
                 ys1 = [y1, y5, y5, y4]
@@ -1138,6 +1106,7 @@ class XCrossRoad(Road):
 
 
                 compteur_lanes_restantes -= 1
+
 
                 # "Middle Lane" and lane going to the left
 
@@ -1152,6 +1121,7 @@ class XCrossRoad(Road):
                         (x7,y7) = self.l[(compteur_for_lane_in_front-1-compteur_access_lanes)%total_nb_of_lanes][0]  # bangbang
 
                         (x8,y8) = Intersection_Lines(Lanes_of_Interest[compteur_access_lanes],self.l[(compteur_for_lane_in_front-1-compteur_access_lanes)%total_nb_of_lanes])
+
 
                         xs2 = [x6, x8, x8, x7]
                         ys2 = [y6, y8, y8, y7]
@@ -1172,8 +1142,14 @@ class XCrossRoad(Road):
 
                     (x11,y11) = Intersection_Lines(Lanes_of_Interest[len(Lanes_of_Interest)-1],self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes])
 
-                    xs3 = [x9, x11, x11, x10]
-                    ys3 = [y9, y11, y11, y10]
+                    (xm,ym) = ( ((x11+x10)/2)  ,  ((y11+y10)/2)  )
+                    (xn,yn) = ( ((x11+x9)/2)  ,  ((y11+y9)/2)  )
+
+                    xs3 = [x9, xn, xm, x11]
+                    ys3 = [y9, yn, ym, y11]
+
+                    #xs3 = [x9, x11, x11, x10]
+                    #ys3 = [y9, y11, y11, y10]
 
                     l4 = Curve(xs3, ys3, 0)
                     Actual_Lane4 = []
@@ -1189,13 +1165,21 @@ class XCrossRoad(Road):
 
                     (x14,y14) = Intersection_Lines(Lanes_of_Interest[len(Lanes_of_Interest)-1],self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes])
 
-                    xs4 = [x12, x14, x14, x13]
-                    ys4 = [y12, y14, y14, y13]
+
+                    (xm,ym) = ( ((x14+x13)/2)  ,  ((y14+y13)/2)  )
+                    (xn,yn) = ( ((x14+x12)/2)  ,  ((y14+y12)/2)  )
+
+                    xs4 = [x12, xn, xm, x13]
+                    ys4 = [y12, yn, ym, y13]
+
+                    #xs4 = [x12, x14, x14, x13]
+                    #ys4 = [y12, y14, y14, y13]
 
                     l5 = Curve(xs4, ys4, 0)
                     Actual_Lane5 = []
                     for (x,y) in l5:
                         Actual_Lane5.append([x, y])
+
                     self.l.append(Actual_Lane5)
 
             compteur_for_lane_interest += cs_nbr_of_lanes[i]

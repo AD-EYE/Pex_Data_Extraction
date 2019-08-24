@@ -62,6 +62,7 @@ def Intersection_Lines(L1, L2):
 
     '''
 
+
     if L1[1][0] == L1[0][0]:    # x cst for L1
 
         if L2[1][1] == L2[0][1]:  #perpen
@@ -111,15 +112,21 @@ def Intersection_Lines(L1, L2):
         xinter = (yinter -b1)/a1
 
     else:
+
         a1 = (L1[1][1]-L1[0][1])/(L1[1][0]-L1[0][0])
         b1 = L1[1][1]- a1*L1[1][0]
+
 
         a2 = (L2[1][1]-L2[0][1])/(L2[1][0]-L2[0][0])
         b2 = L2[1][1]- a2*L2[1][0]
 
 
-        xinter = (b2-b1)/(a1-a2)
-        yinter = a1*xinter+b1
+        if round(np.abs(a1),4) == round(np.abs(a2),4):
+            xinter = (L1[-1][0]+L2[0][0])/2
+            yinter = (L1[-1][1]+L2[0][1])/2
+        else:
+            xinter = (b2-b1)/(a1-a2)
+            yinter = a1*xinter+b1
 
 
     return (xinter,yinter)

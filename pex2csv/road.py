@@ -1070,8 +1070,8 @@ class XCrossRoad(Road):
                 (x2,y2) = self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes][0]       # And then the coordinate of the first point of the lane to the right
                 (x3,y3) = Intersection_Lines(Lanes_of_Interest[0],self.l[(compteur_for_right_most_lane-1)%total_nb_of_lanes])
 
-                #xs = [x1, x3, x3, x2]
-                #ys = [y1, y3, y3, y2]
+                xs = [x1, x3, x3, x2]
+                ys = [y1, y3, y3, y2]
                 (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
                 (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
 
@@ -1148,8 +1148,8 @@ class XCrossRoad(Road):
                     xs3 = [x9, xn, xm, x11]
                     ys3 = [y9, yn, ym, y11]
 
-                    #xs3 = [x9, x11, x11, x10]
-                    #ys3 = [y9, y11, y11, y10]
+                    xs3 = [x9, x11, x11, x10]
+                    ys3 = [y9, y11, y11, y10]
 
                     l4 = Curve(xs3, ys3, 0)
                     Actual_Lane4 = []
@@ -1172,8 +1172,8 @@ class XCrossRoad(Road):
                     xs4 = [x12, xn, xm, x13]
                     ys4 = [y12, yn, ym, y13]
 
-                    #xs4 = [x12, x14, x14, x13]
-                    #ys4 = [y12, y14, y14, y13]
+                    xs4 = [x12, x14, x14, x13]
+                    ys4 = [y12, y14, y14, y13]
 
                     l5 = Curve(xs4, ys4, 0)
                     Actual_Lane5 = []

@@ -5,15 +5,14 @@ import parse
 
 # config
 PEX_FILE_LOCATION = "C:\\Users\\Public\\Documents\\Experiments\\TestVM\\TestVM.pex"
-PEX_FILE_LOCATION2 = "C:\\Users\\adeye\\Desktop\\AD-EYE_Core\\AD-EYE\\Experiments\\Base_Map_Closed\\Simulation\\Base_Map_Closed.pex"
-
+PEX_FILE_LOCATION2 = "/home/adeye/TestWorlds/VM_Test_XYCross.pex"
 if __name__ == '__main__':
 
 
     Take_Speed_Pescan = True
 
-    roads = parse.get_roads(path=PEX_FILE_LOCATION)
-    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
+    roads = parse.get_roads(path=PEX_FILE_LOCATION2)
+    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION2)
     rproc = RoadProcessor(Take_Speed_Pescan)
     rproc.add_roads(roads)
     rproc.create_lanes()

@@ -138,6 +138,9 @@ class RoadProcessor(object):
         # Excpect this one which will be fed with RoadType Object define in Road.py
 
         self.roads = []
+        
+        # And this will be filled with relevant information for stoplines
+        
         self.stoplines = []
 
     def add_roads(self, roads):

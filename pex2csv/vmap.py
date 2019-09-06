@@ -221,7 +221,7 @@ class VectorMap:
                 PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
                 PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
                 LineID = self.line.create(PointID1,PointID2)
-                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1)
+                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
 
 
@@ -233,6 +233,9 @@ class VectorMap:
             n = len(TrafficLightList)
 
             for i in range(n):
+
+                # We first find the closest stopline in order to link them
+                
                 min_dist=1000
                 Orign_Point = (TrafficLightList[i].x0,TrafficLightList[i].y0)
                 for j in range(len(self.stopline)):
@@ -247,12 +250,9 @@ class VectorMap:
                         nb_clones = self.stopline[j].SignID
                         lane_id = self.stopline[j].LinkID
 
-
-
-
                 stopline_number = stoplines_id
 
-                for k in range(nb_clones):
+                for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
 
                     pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
                     pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
@@ -262,7 +262,7 @@ class VectorMap:
                     VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
                     VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)
+                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink 
                     SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
                     SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
 
@@ -275,8 +275,8 @@ class VectorMap:
                     stopline_number +=1
 
 
-            for p in range(len(self.stopline)):
-                self.stopline[p].set_SignID(0)
+            for p in range(len(self.stopline)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
+                self.stopline[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
 
 
     # Returns the drivable lane data in the format:

@@ -189,6 +189,7 @@ def get_straight(s, id):
     nbr_of_lanes = int(s.get('NumberOfLanes'))
     lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
     RoadMarking = s[16]
+
     Stl = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
@@ -217,7 +218,6 @@ def get_entry(s, id):
     Stl = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
-
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
             x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
@@ -267,7 +267,6 @@ def get_adapter(s, id):
     RoadMarking = s[16]
     Stl = []
     for R in RoadMarking:
-
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
             x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
@@ -297,7 +296,6 @@ def get_xcross(s, id):
         cs_l.append(float(c.get('RoadEndLength')))
     Stl = []
     for i in range(4):
-        cs_l[i]-cs_len_till_stop[i]
         x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
         y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
@@ -346,7 +344,7 @@ def get_ycross(s, id):
 
 def get_links_points_roundabout(id,path):
     '''
-    TWRITE IT
+    This function go and take the orign point of the road connected to the crosssection of the roundabout
 
     '''
 
@@ -370,3 +368,5 @@ def get_links_points_roundabout(id,path):
 
     return point
 
+# Support for multi lane stop line and tfl : 
+#

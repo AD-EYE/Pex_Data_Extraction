@@ -4,15 +4,15 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "C:\\Users\\Public\\Documents\\Experiments\\TestVM\\TestVM.pex"
-PEX_FILE_LOCATION2 = "/home/adeye/TestWorlds/VM_Test_XYCross.pex"
+PEX_FILE_LOCATION = "C:\\Users\\Nicolas\\Desktop\\VM_Test_XYCross.pex"
+
 if __name__ == '__main__':
 
 
     Take_Speed_Pescan = True
 
-    roads = parse.get_roads(path=PEX_FILE_LOCATION2)
-    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION2)
+    roads = parse.get_roads(path=PEX_FILE_LOCATION)
+    statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
     rproc = RoadProcessor(Take_Speed_Pescan)
     rproc.add_roads(roads)
     rproc.create_lanes()

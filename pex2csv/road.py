@@ -305,6 +305,7 @@ class RoundaboutRoad(Road):
             # Creation of the 2 starting points
 
             starting_point = TabConnect[j]
+            print(starting_point)
             starting_point_right = (starting_point[0][0]- (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] + (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
             starting_point_left = (starting_point[0][0]+ (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] - (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
 
@@ -1137,7 +1138,7 @@ class XCrossRoad(Road):
 
                     # Making the left connection
 
-                    (x9,y9) = Lanes_of_Interest[len(Lanes_of_Interest)-1][len(Lanes_of_Interest[len(Lanes_of_Interest)-1])-1]  #bangavng
+                    (x9,y9) = Lanes_of_Interest[len(Lanes_of_Interest)-1][len(Lanes_of_Interest[len(Lanes_of_Interest)-1])-1]  
 
                     (x10,y10) = self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes][0]
 
@@ -1151,12 +1152,13 @@ class XCrossRoad(Road):
 
                     xs3 = [x9, x11, x11, x10]
                     ys3 = [y9, y11, y11, y10]
-
-                    l4 = Curve(xs3, ys3, 0)
-                    Actual_Lane4 = []
-                    for (x,y) in l4:
-                        Actual_Lane4.append([x, y])
-                    self.l.append(Actual_Lane4)
+                    
+                    if cs_lanes_in_x_dir[(i+3)%4] != 0: 
+                        l4 = Curve(xs3, ys3, 0)
+                        Actual_Lane4 = []
+                        for (x,y) in l4:
+                            Actual_Lane4.append([x, y])
+                        self.l.append(Actual_Lane4)
 
                 else :    # If compteur_lanes_restantes = 0 then we just have to make the connection to the left for the uniaue lane going in the opposite of x direction
 
@@ -1175,13 +1177,14 @@ class XCrossRoad(Road):
 
                     xs4 = [x12, x14, x14, x13]
                     ys4 = [y12, y14, y14, y13]
-
-                    l5 = Curve(xs4, ys4, 0)
-                    Actual_Lane5 = []
-                    for (x,y) in l5:
-                        Actual_Lane5.append([x, y])
-
-                    self.l.append(Actual_Lane5)
+                    
+                    if cs_lanes_in_x_dir[(i+3)%4] != 0:
+                        l5 = Curve(xs4, ys4, 0)
+                        Actual_Lane5 = []
+                        for (x,y) in l5:
+                            Actual_Lane5.append([x, y])
+    
+                        self.l.append(Actual_Lane5)
 
             compteur_for_lane_interest += cs_nbr_of_lanes[i]
 

@@ -1074,11 +1074,11 @@ class XCrossRoad(Road):
 
                 xs = [x1, x3, x3, x2]
                 ys = [y1, y3, y3, y2]
-                (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
+                #(x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
+                #(x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
 
-                xs = [x1, x5, x4, x2]
-                ys = [y1, y5, y4, y2]
+                #xs = [x1, x5, x4, x2]
+                #ys = [y1, y5, y4, y2]
 
                 # Lane going to the right
                 if cs_lanes_in_x_dir[(i+1)%4] != 0:    # Is the right turn possible ?
@@ -1144,11 +1144,11 @@ class XCrossRoad(Road):
 
                     (x11,y11) = Intersection_Lines(Lanes_of_Interest[len(Lanes_of_Interest)-1],self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes])
 
-                    # (xm,ym) = ( ((x11+x10)/2)  ,  ((y11+y10)/2)  )
-                    # (xn,yn) = ( ((x11+x9)/2)  ,  ((y11+y9)/2)  )
+                    #(xm,ym) = ( ((x11+x10)/2)  ,  ((y11+y10)/2)  )
+                    #(xn,yn) = ( ((x11+x9)/2)  ,  ((y11+y9)/2)  )
 
-                   #   xs3 = [x9, xn, xm, x11]
-                    # ys3 = [y9, yn, ym, y11]
+                    #xs3 = [x9, xn, xm, x11]
+                    #ys3 = [y9, yn, ym, y11]
 
                     xs3 = [x9, x11, x11, x10]
                     ys3 = [y9, y11, y11, y10]
@@ -1169,11 +1169,11 @@ class XCrossRoad(Road):
                     (x14,y14) = Intersection_Lines(Lanes_of_Interest[len(Lanes_of_Interest)-1],self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes])
 
 
-                    (xm,ym) = ( ((x14+x13)/2)  ,  ((y14+y13)/2)  )
-                    (xn,yn) = ( ((x14+x12)/2)  ,  ((y14+y12)/2)  )
+                    #(xm,ym) = ( ((x14+x13)/2)  ,  ((y14+y13)/2)  )
+                    #(xn,yn) = ( ((x14+x12)/2)  ,  ((y14+y12)/2)  )
 
-                    xs4 = [x12, xn, xm, x13]
-                    ys4 = [y12, yn, ym, y13]
+                    #xs4 = [x12, xn, xm, x13]
+                    #ys4 = [y12, yn, ym, y13]
 
                     xs4 = [x12, x14, x14, x13]
                     ys4 = [y12, y14, y14, y13]

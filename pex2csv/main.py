@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "C:\\Users\\Nicolas\\Desktop\\VM_Test_XYCross.pex"
+PEX_FILE_LOCATION = "/home/adeye/TestWorlds/W01_Base_Map.pex"
 
 if __name__ == '__main__':
 
@@ -38,5 +38,6 @@ if __name__ == '__main__':
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
     vm.make_Stoplines(rproc.stoplines)
     vm.make_TrafficLight(rproc2.TrfLight)
+    vm.rebuild_lane_conections()
     vm.export()
     vm.plot()

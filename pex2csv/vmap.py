@@ -190,7 +190,32 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
+    def rebuild_lane_conections(self):
+        for i in range(len(self.lane)):                                 # Check every lane
+            #if self.lane[i].FLID == 0:                                  # Take those that don't have a next lane ID
+            k = 0
+            #print(self.lane[i].DID)
+            for j in range(len(self.lane)):                         # Check them against all the other lanes
+                if self.lane[i].FNID == self.lane[j].BNID:          #
+                    k = k+1
+                    if k == 1: self.lane[i].FLID = self.lane[j].DID
+                    if k == 2: self.lane[i].FLID2 = self.lane[j].DID
+                    if k == 3: self.lane[i].FLID3 = self.lane[j].DID
+                    if k == 4: self.lane[i].FLID4 = self.lane[j].DID
+                    #print('Hi')
 
+        for i in range(len(self.lane)):
+            #if self.lane[i].BLID == 0:
+            k = 0
+            #print(self.lane[i].DID)
+            for j in range(len(self.lane)):
+                if self.lane[i].BNID == self.lane[j].FNID:
+                    k = k+1
+                    if k == 1: self.lane[i].BLID = self.lane[j].DID
+                    if k == 2: self.lane[i].BLID2 = self.lane[j].DID
+                    if k == 3: self.lane[i].BLID3 = self.lane[j].DID
+                    if k == 4: self.lane[i].BLID4 = self.lane[j].DID
+                    #print('Hi2')
 
     def make_Stoplines(self, Stoplines):
         '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
@@ -235,7 +260,7 @@ class VectorMap:
             for i in range(n):
 
                 # We first find the closest stopline in order to link them
-                
+
                 min_dist=1000
                 Orign_Point = (TrafficLightList[i].x0,TrafficLightList[i].y0)
                 for j in range(len(self.stopline)):
@@ -262,7 +287,7 @@ class VectorMap:
                     VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
                     VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink 
+                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
                     SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
                     SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
 

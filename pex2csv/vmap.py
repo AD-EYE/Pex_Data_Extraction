@@ -12,7 +12,7 @@ class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
 
     '''
-    def __init__(self):
+    def __init__(self, outputPath = "./csv"):
         self.point      = VMList(Point)
         self.node       = VMList(Node)
         self.line       = VMList(Line)
@@ -23,6 +23,7 @@ class VectorMap:
         self.vector     = VMList(Vector)
         self.signaldata = VMList(SignalData)
         self.stopline   = VMList(Stopline)
+        self.outputPath = outputPath #Where to put the .csv files
 
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
@@ -396,16 +397,16 @@ class VectorMap:
         .. warning:: This will overwrite the contents of ./csv.
 
         '''
-        self.point.export('./csv/point.csv')
-        self.node.export('./csv/node.csv')
-        self.line.export('./csv/line.csv')
-        self.dtlane.export('./csv/dtlane.csv')
-        self.lane.export('./csv/lane.csv')
-        self.whiteline.export('./csv/whiteline.csv')
-        self.roadedge.export('./csv/roadedge.csv')
-        self.vector.export('./csv/vector.csv')
-        self.signaldata.export('./csv/signaldata.csv')
-        self.stopline.export('./csv/stopline.csv')
+        self.point.export('{}/point.csv'.format(self.outputPath))
+        self.node.export('{}/node.csv'.format(self.outputPath))
+        self.line.export('{}/line.csv'.format(self.outputPath))
+        self.dtlane.export('{}/dtlane.csv'.format(self.outputPath))
+        self.lane.export('{}/lane.csv'.format(self.outputPath))
+        self.whiteline.export('{}/whiteline.csv'.format(self.outputPath))
+        self.roadedge.export('{}/roadedge.csv'.format(self.outputPath))
+        self.vector.export('{}/vector.csv'.format(self.outputPath))
+        self.signaldata.export('{}/signaldata.csv'.format(self.outputPath))
+        self.stopline.export('{}/stopline.csv'.format(self.outputPath))
 
 class VMList:
     '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.

@@ -21,7 +21,7 @@ class Path:
         self.dt = dt
         self.t1 = t1
         self.flag = False
-        self.smooth_factor = 0.999999
+        self.smooth_factor = 1
 
     def __iter__(self):
         self.t = 0.0

@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/TestWorlds/W01_Base_Map.pex"
+PEX_FILE_LOCATION = "/home/adeye/TestWorlds/VM_Test_Roundabout1CWidthS2.pex"
 
 if __name__ == '__main__':
 
@@ -39,5 +39,6 @@ if __name__ == '__main__':
     vm.make_Stoplines(rproc.stoplines)
     vm.make_TrafficLight(rproc2.TrfLight)
     vm.rebuild_lane_conections()
+    vm.round_points()
     vm.export()
     vm.plot()

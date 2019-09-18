@@ -21,7 +21,7 @@ class Path:
         self.dt = dt
         self.t1 = t1
         self.flag = False
-        self.smoth_factor = 0.999999
+        self.smooth_factor = 0.999999
 
     def __iter__(self):
         self.t = 0.0
@@ -40,7 +40,7 @@ class Path:
             self.flag = True
         if self.t > self.t1 and self.flag == False:
             self.flag = True
-            ret = self.eval(self.t1*self.smoth_factor)
+            ret = self.eval(self.t1*self.smooth_factor)
             self.t += self.dt
             return(ret)
         if self.t > self.t1 and self.flag == True:

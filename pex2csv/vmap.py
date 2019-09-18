@@ -192,9 +192,9 @@ class VectorMap:
 
     def rebuild_lane_conections(self):
         for i in range(len(self.lane)):                                 # Check every lane
-            #if self.lane[i].FLID == 0:                                  # Take those that don't have a next lane ID
+            # if self.lane[i].FLID == 0:                                  # Take those that don't have a next lane ID
             k = 0
-            #print(self.lane[i].DID)
+            # print(self.lane[i].DID)
             for j in range(len(self.lane)):                         # Check them against all the other lanes
                 if self.lane[i].FNID == self.lane[j].BNID:          #
                     k = k+1
@@ -216,6 +216,12 @@ class VectorMap:
                     if k == 3: self.lane[i].BLID3 = self.lane[j].DID
                     if k == 4: self.lane[i].BLID4 = self.lane[j].DID
                     #print('Hi2')
+
+    def round_points(self):
+        for i in range(len(self.point)):
+            self.point[i].Bx = round(self.point[i].Bx, 6)
+            self.point[i].Ly = round(self.point[i].Ly, 6)
+            self.point[i].H = round(self.point[i].H, 6)
 
     def make_Stoplines(self, Stoplines):
         '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road

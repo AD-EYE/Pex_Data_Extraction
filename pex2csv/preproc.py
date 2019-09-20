@@ -573,7 +573,7 @@ class RoadProcessor(object):
         roads = self.roads
         bezier = []
         for id in roads.keys():
-            if "CurvedRoad" in id:
+            if "CurvedRoad" in id or "FlexRoad" in id:
                 bezier.append(roads[id])
         return bezier
 

@@ -77,6 +77,8 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_adapter(s, id)
         elif (type == 'YCrossing'):
             roads[id] = get_ycross(s, id)
+        elif (type == 'CubicSplineRoad'):
+            roads.update(get_flex(s, id))
     return roads
 
     # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
@@ -143,6 +145,92 @@ def get_curved(s, id):
             Stl.append((x1, y1, x2, y2, x3, y3))
             print(Stl)
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
+
+def get_flex(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    Vmax = s.get('MaxSpeed')
+    h = float(s[1].get('Heading')) * np.pi / 180
+    rh = float(s.get('RelativeHeading')) * np.pi / 180
+    cp1 = float(s.get('ControlPoint1Distance'))
+    cp2 = float(s.get('ControlPoint2Distance'))
+    dx = float(s.get('Xoffset'))
+    dy = float(s.get('Yoffset'))
+    lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+
+
+    RoadMarking = s[16]
+    Stl = []
+#    for R in RoadMarking:
+#        if "BitmapRoadMarker" in str(R.get('id')):
+#            hStop = float(R[1].get('Heading')) * np.pi / 180
+#            x1 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0 - (lw / 2) * np.sin(
+#                hStop + h)
+#            y1 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0 + (lw / 2) * np.cos(hStop + h)
+#            x2 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0 + (lw / 2) * np.sin(
+#                hStop + h)
+#            y2 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0 - (lw / 2) * np.cos(hStop + h)
+#            x3 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0
+#            y3 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0
+#            Stl.append((x1, y1, x2, y2, x3, y3))
+#            print(Stl)
+    Lid = []
+    Lx = []
+    Ly = []
+    LBt = []
+    LFt = []
+    Lh = []
+
+    Lid.append(id)
+    Lx.append(0)
+    Ly.append(0)
+    LBt.append(0)
+    LFt.append(cp1)
+    Lh.append(0)
+
+    i = 0
+    CrossSections = s[20] #.findall('//RoadCrossSection')
+    ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
+    for c in CrossSections:
+        type = c.xpath('@xsi:type', namespaces=ns)[0]
+        if type == 'CubicSplineCrossSection':
+            i = i + 1
+            Lid.append(c.get('id'))
+            Lx.append(float(c[0].get('X')))
+            Ly.append(float(c[0].get('Y')))
+            LBt.append(float(c.get('EntryTension')))
+            LFt.append(float(c.get('ExitTension')))
+            Lh.append(float(c[1].get('Heading')) * np.pi / 180)
+
+    Lid.append(0)
+    Lx.append(dx)
+    Ly.append(dy)
+    LBt.append(cp2)
+    LFt.append(cp1)
+    Lh.append(rh)
+
+    CurvedRoads = {}
+    print('i =')
+    print(i)
+    for j in range(i+1):
+        print('j =')
+        print(j)
+        NewCurvedRoad = CurvedRoad(Lid[j],
+                                   x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h),
+                                   y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h),
+                                   Lh[j] + h,
+                                   Lh[j + 1] - Lh[j], LFt[j], LBt[j + 1],
+                                   #(Lx[j+1]-Lx[j])*np.cos(Lh[j]) -(Ly[j+1]-Ly[j])*np.sin(Lh[j]),
+                                   (Lx[j + 1] - Lx[j]) * np.cos(-Lh[j]) - (Ly[j + 1] - Ly[j]) * np.sin(-Lh[j]),
+                                   (Lx[j + 1] - Lx[j]) * np.sin(-Lh[j]) + (Ly[j + 1] - Ly[j]) * np.cos(-Lh[j]),
+                                   #Lx[j+1] * np.cos(Lh[j]) - Ly[j+1] * np.sin(Lh[j]) - (Lx[j] * np.cos(Lh[j]) - Ly[j] * np.sin(Lh[j])),
+                                   #Lx[j+1] * np.sin(Lh[j]) + Ly[j+1] * np.cos(Lh[j]) - (Lx[j] * np.sin(Lh[j]) + Ly[j] * np.cos(Lh[j])),
+                                   lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
+        CurvedRoads[Lid[j]] = NewCurvedRoad
+
+    return CurvedRoads
 
 def get_roundabout(s, id, connections, path):
     x0 = float(s[0].get('X'))

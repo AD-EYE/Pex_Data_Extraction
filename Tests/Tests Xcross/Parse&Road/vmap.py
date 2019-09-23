@@ -6,7 +6,6 @@ The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class
 
 '''
 import numpy as np
-from utils import dist
 
 class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
@@ -77,7 +76,6 @@ class VectorMap:
         if lane_before is not None:
             self.lane[lane_id].set_lane_before(lane_before)
             self.lane[lane_before].set_lane_after(lane_id)
-
         return (lane_id, dtlane_id)
 
     # Creates a new Line between the last two points. Returns ID of new Line.
@@ -145,7 +143,6 @@ class VectorMap:
                 dtlane_before = dtlane_previous
             )
 
-
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
             if lane_first is None: lane_first = lane_previous
@@ -157,7 +154,6 @@ class VectorMap:
         self.lane[lane_first].set_turn(turn_start)
         self.lane[lane_previous].set_junction(junction_end)
         self.lane[lane_previous].set_turn(turn_end)
-
 
 
     def make_line(self, ps, line_type='EDGE'):
@@ -190,124 +186,41 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
-    def rebuild_lane_conections(self):
-        for i in range(len(self.lane)):                                 # Check every lane
-            # if self.lane[i].FLID == 0:                                  # Take those that don't have a next lane ID
-            k = 0
-            # print(self.lane[i].DID)
-            for j in range(len(self.lane)):                         # Check them against all the other lanes
-                if self.lane[i].FNID == self.lane[j].BNID:          #
-                    k = k+1
-                    if k == 1: self.lane[i].FLID = self.lane[j].DID
-                    if k == 2: self.lane[i].FLID2 = self.lane[j].DID
-                    if k == 3: self.lane[i].FLID3 = self.lane[j].DID
-                    if k == 4: self.lane[i].FLID4 = self.lane[j].DID
-                    #print('Hi')
-
-        for i in range(len(self.lane)):
-            #if self.lane[i].BLID == 0:
-            k = 0
-            #print(self.lane[i].DID)
-            for j in range(len(self.lane)):
-                if self.lane[i].BNID == self.lane[j].FNID:
-                    k = k+1
-                    if k == 1: self.lane[i].BLID = self.lane[j].DID
-                    if k == 2: self.lane[i].BLID2 = self.lane[j].DID
-                    if k == 3: self.lane[i].BLID3 = self.lane[j].DID
-                    if k == 4: self.lane[i].BLID4 = self.lane[j].DID
-                    #print('Hi2')
-
-    def round_points(self):
-        for i in range(len(self.point)):
-            self.point[i].Bx = round(self.point[i].Bx, 6)
-            self.point[i].Ly = round(self.point[i].Ly, 6)
-            self.point[i].H = round(self.point[i].H, 6)
-
-    def make_Stoplines(self, Stoplines):
-        '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
-        where the stopline is.
-        It first find the closest lane using the third point  TO WRITE
-        '''
-
-        for tab in Stoplines:
-
-            for i in range(len(tab)):
-
-                Middle_Point = (tab[i][4],tab[i][5])
-                min_dist = 1000
-                for j in range(len(self.point)):
-                    x = self.point[j].Ly
-                    y = self.point[j].Bx
-                    point_of_interest = (x,y)
-                    distance = dist(point_of_interest,Middle_Point)
-                    if min_dist > distance:
-                        min_dist = distance
-                        closest_point = point_of_interest
-                        closest_node = j
-
-                for k in range(len(self.lane)):
-                    if closest_node == self.lane[k].FNID:
-                        lane_id = self.lane[k].BLID
-
-                PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
-                PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
-                LineID = self.line.create(PointID1,PointID2)
-                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
 
 
     def make_TrafficLight(self, TrafficLightList):
 
+            # Definition of Cst to define stoplines
 
-            # Going throught the list of traffic Lights in the simulationS
+            offset = 0.2   # Distance between the TrLight and the actual Road
+            lw = 3.5
+            nboflanes = 1
+
+            # Going trhought the list of traffic Lights in the simulationS
 
             n = len(TrafficLightList)
-
             for i in range(n):
+                pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
+                pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
+                pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
 
-                # We first find the closest stopline in order to link them
+                # For the Stopline
+                PointID4 = self.point.create(TrafficLightList[i].x0 - offset* np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - offset* np.sin(TrafficLightList[i].h), 0)
+                PointID5 = self.point.create(TrafficLightList[i].x0 - (lw*nboflanes + offset) * np.cos(TrafficLightList[i].h) , TrafficLightList[i].y0 - (lw*nboflanes + offset) * np.sin(TrafficLightList[i].h), 0)
 
-                min_dist=1000
-                Orign_Point = (TrafficLightList[i].x0,TrafficLightList[i].y0)
-                for j in range(len(self.stopline)):
+                VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
+                VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
+                VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                    x1 =self.point[self.line[self.stopline[j].LID].BPID].Ly
-                    y1= self.point[self.line[self.stopline[j].LID].BPID].Bx
-                    point_of_interest = (x1,y1)
-                    distance = dist(point_of_interest,Orign_Point)
-                    if min_dist > distance:
-                        min_dist = distance
-                        stoplines_id = j
-                        nb_clones = self.stopline[j].SignID
-                        lane_id = self.stopline[j].LinkID
+                SignDataID1 = self.signaldata.create(VectorID1, i+1, 1, i+1)
+                SignDataID2 = self.signaldata.create(VectorID2, i+1, 3, i+1)
+                SignDataID3 = self.signaldata.create(VectorID3, i+1, 2, i+1)
 
-                stopline_number = stoplines_id
+                # Stopline
 
-                for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
-
-                    pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                    pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                    pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
-
-                    VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                    VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                    VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
-
-                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
-                    SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
-                    SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
-
-
-
-                    # Linking Stopline
-
-                    self.stopline[stopline_number].set_TLID(SignDataID1)
-
-                    stopline_number +=1
-
-
-            for p in range(len(self.stopline)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
-                self.stopline[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
+                LineID = self.line.create(PointID4,PointID5)
+                StoplineID = self.stopline.create(LineID, SignDataID1, 0, 1)
 
 
     # Returns the drivable lane data in the format:
@@ -317,7 +230,7 @@ class VectorMap:
     def __aggregate_lanes(self):
         data = []
         for l in self.lane:
-            y, x = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+            x, y = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
             direction = self.dtlane[l.get_dtlane()].get_direction()
             if l.get_turn() == 'RIGHT_TURN':
@@ -380,7 +293,7 @@ class VectorMap:
         plt.grid(True)
         for x, y, m, d, ec, fc in self.__aggregate_lanes():
             plt.arrow(
-                x, y, m * np.sin(d), m * np.cos(d),
+                x, y, m * np.cos(d), m * np.sin(d),
                 head_width=0.25, head_length=0.2, fc=fc, ec=ec,
                 width=0.1, length_includes_head=True
             )
@@ -822,12 +735,6 @@ class Stopline:
         self.TLID = TLID
         self.SignID = SignID
         self.LinkID = LinkID       # cf slide
-
-    def set_SignID(self, SignID):
-        self.SignID = SignID
-
-    def set_TLID(self, TLID):
-        self.TLID = TLID
 
     def __str__(self):
         data = [self.LID, self.TLID, self.SignID, self.LinkID]

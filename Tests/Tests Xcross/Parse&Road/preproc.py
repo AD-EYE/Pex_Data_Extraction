@@ -6,7 +6,6 @@ Only :class:RoadProcessor should be used externally.
 import numpy as np
 from utils import dist
 
-
 # A wrapper class for lanes that will be incrementally fed to the vecor mapping module
 class Lane(object):
 
@@ -14,7 +13,7 @@ class Lane(object):
     This Wrapper class will be use to define actual lanes, centers and edges of road. For edges and centers, some of the following parameters are irrelevant and
     will be set to default values.
 
-    :param lane: A very bad parameter name. This is actually a tab of point defining an edge or center or lane
+    :param lane: A very bad parameter name. This is actually a tab of point defining the edge or center or lane
     :type lane: [(x,y)]
 
     :param junction_end:
@@ -37,7 +36,7 @@ class Lane(object):
         self.junction_start = junction_start
         self.SpeedLimit = -1
         self.RefSpeed = -1
-        self.DefinedSpeed = -1
+
 
         if reverse:
             self.__reverse_lanes()
@@ -127,7 +126,7 @@ class RoadProcessor(object):
     '''
     Class responsible for processing the road segments for the vmap module
     '''
-    def __init__(self,Take_Speed_Pescan):
+    def __init__(self):
 
         # All of the following tab will be filled with Lane Object
 
@@ -138,10 +137,6 @@ class RoadProcessor(object):
         # Excpect this one which will be fed with RoadType Object define in Road.py
 
         self.roads = []
-        
-        # And this will be filled with relevant information for stoplines
-        
-        self.stoplines = []
 
     def add_roads(self, roads):
         '''
@@ -208,7 +203,7 @@ class RoadProcessor(object):
 
         self.__create_roundabouts(roads)
         self.__create_xcrossings(roads)
-        self.__create_ycrossings(roads)
+        #self.__create_rest(roads)                  # Clean
         self.__create_bezier_roads(roads)
         self.__create_straight_roads(roads)
         self.__create_bend_roads(roads)
@@ -220,32 +215,22 @@ class RoadProcessor(object):
     # another roundabout, xcrossing or a dead end
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
-
-
-        #--------------------------#
-
         for roundabout in roundabouts:
-            # epoints = []
+            epoints = []
 
-           #   for exit in roundabout.exit_lanes:
-            #     epoints.append(exit.l[0].getend())
-            #     epoints.append(exit.l[1].getend())
+            for exit in roundabout.exit_lanes:
+                epoints.append(exit.l[0].getend())
+                epoints.append(exit.l[1].getend())
 
-        #--------------------------#
+            self.__add_roundabout(roundabout, epoints = epoints)
 
-            self.__add_roundabout(roundabout)
-
-        #--------------------------#
-
-            # for exit in roundabout.exit_lanes:
-            #     path = self.__get_path(exit.next_road)
-            #     if exit.next_road == -1:
-            #         self.__add_roundabout_exit(exit)
-            #         continue
-            #     if not path: continue
-            #     self.__add_roundabout_exit(exit)
-        #--------------------------#
-
+            for exit in roundabout.exit_lanes:
+                path = self.__get_path(exit.next_road)
+                if exit.next_road == -1:
+                    self.__add_roundabout_exit(exit)
+                    continue
+                if not path: continue
+                self.__add_roundabout_exit(exit)
 
             #    for p in path:
             #        road = p
@@ -261,7 +246,6 @@ class RoadProcessor(object):
     def __create_xcrossings(self, roads):
         xcrossings = self.__get_xcrossings()
         for xcrossing in xcrossings:
-            self.stoplines.append(xcrossing.stopline)
             rturns = []
             lturns = []
             road = roads.pop(xcrossing.id, None)
@@ -286,21 +270,10 @@ class RoadProcessor(object):
 
             roads.pop(xcrossing.id, None)
 
-    # Creates lanes traveling from each ycrossing until the path meets
-    # another ycrossing or a dead end
-    def __create_ycrossings(self, roads):
-        ycrossings = self.__get_ycrossings()
-        for ycrossing in ycrossings:
-            self.stoplines.append(ycrossing.stopline)
-            road = roads.pop(ycrossing.id, None)
-            self.__add_segment(ycrossing)
-            roads.pop(ycrossing.id, None)
-
     # Creates bezier roads
     def __create_bezier_roads(self, roads):
         bezierroads = self.__get_bezierroads()
         for bezierroad in bezierroads:
-            self.stoplines.append(bezierroad.stopline)
             road = roads.pop(bezierroad.id, None)
             self.__add_segment(road)
 
@@ -308,7 +281,6 @@ class RoadProcessor(object):
     def __create_straight_roads(self, roads):
         straightroads = self.__get_straightroads()
         for straightroad in straightroads:
-            self.stoplines.append(straightroad.stopline)
             road = roads.pop(straightroad.id, None)
             self.__add_segment(road)
 
@@ -316,7 +288,6 @@ class RoadProcessor(object):
     def __create_bend_roads(self, roads):
         bendroads = self.__get_bendroads()
         for bendroad in bendroads:
-            self.stoplines.append(bendroad.stopline)
             road = roads.pop(bendroad.id, None)
             self.__add_segment(road)
 
@@ -324,7 +295,6 @@ class RoadProcessor(object):
     def __create_entry_roads(self, roads):
         entryroads = self.__get_entryroads()
         for entryroad in entryroads:
-            self.stoplines.append(entryroad.stopline)
             road = roads.pop(entryroad.id, None)
             self.__add_entry(road)
 
@@ -332,7 +302,6 @@ class RoadProcessor(object):
     def __create_exit_roads(self, roads):
         exitroads = self.__get_exitroads()
         for exitroad in exitroads:
-            self.stoplines.append(exitroad.stopline)
             road = roads.pop(exitroad.id, None)
             self.__add_exit(road)
 
@@ -340,7 +309,6 @@ class RoadProcessor(object):
     def __create_adapter_roads(self, roads):
         adapterroads = self.__get_adapterroads()
         for adapterroad in adapterroads:
-            self.stoplines.append(adapterroad.stopline)
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
 
@@ -365,8 +333,8 @@ class RoadProcessor(object):
         self.__add_edge(exit.e1)
         self.__add_edge(exit.e2)
         self.__add_center(exit.c)
-        self.__add_lane(exit.SpeedLimit, exit.SpeedLimit, exit.DefinedSpeed, exit.l[0], True, junction_start = 'LEFT_MERGING')
-        self.__add_lane(exit.SpeedLimit, exit.SpeedLimit, exit.DefinedSpeed, exit.l[1], False, junction_end = 'RIGHT_BRANCHING')
+        self.__add_lane(exit.SpeedLimit, exit.SpeedLimit, exit.l[0], True, junction_start = 'LEFT_MERGING')
+        self.__add_lane(exit.SpeedLimit, exit.SpeedLimit, exit.l[1], False, junction_end = 'RIGHT_BRANCHING')
 
     # Breaks down an xcrossing into its lanes, edges and centers and creates
     # lanes for them
@@ -378,14 +346,13 @@ class RoadProcessor(object):
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
-    def __add_lane(self, SpeedLimit, RefSpeed, DefinedSpeed, lane, reverse, junction_end = 'NORMAL', junction_start = 'NORMAL', rturns = None, lturns = None, epoints = None):
+    def __add_lane(self, SpeedLimit, RefSpeed, lane, reverse, junction_end = 'NORMAL', junction_start = 'NORMAL', rturns = None, lturns = None, epoints = None):
         l = []
         for (x, y) in lane:
             l.append([x, y])
         newlane = Lane(l, junction_end, junction_start, reverse)
         newlane.SpeedLimit = SpeedLimit
         newlane.RefSpeed = RefSpeed
-        newlane.DefinedSpeed = DefinedSpeed
         if(rturns):
             for point in rturns:
                 newlane.adjust_for_turn(point)
@@ -417,7 +384,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Clean
         #self.__add_lane(lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -425,8 +392,8 @@ class RoadProcessor(object):
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
     def __add_segment_xcross(self, lane, rturns = None, lturns = None):
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[0], not lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
+        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[0], not lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
+        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -434,13 +401,11 @@ class RoadProcessor(object):
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
     def __add_roundabout(self, lane, rturns = None, lturns = None, epoints = None):
-            self.__add_segment( lane, rturns = rturns, lturns = lturns)
-
-        # self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
-        # self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns, epoints = epoints)
-        # self.__add_center(lane.c)
-        # self.__add_edge(lane.e1)
-        # self.__add_edge(lane.e2)
+        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[0], lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
+        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[1], lane.isturned, rturns = rturns, lturns = lturns, epoints = epoints)
+        self.__add_center(lane.c)
+        self.__add_edge(lane.e1)
+        self.__add_edge(lane.e2)
 
     # Breaks down a entry road segment into lanes, edges and center for the
     # vmap module
@@ -450,7 +415,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)                        # Clean
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -463,7 +428,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -476,7 +441,7 @@ class RoadProcessor(object):
         #self.__add_lane(lane.l[2], lane.isturned, rturns = rturns, lturns = lturns)
         #self.__add_lane(lane.l[3], lane.isturned, rturns = rturns, lturns = lturns)                   # Clean
         for i in range(len(lane.l)):
-            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
+            self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.l[i], lane.isturned, rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
@@ -541,15 +506,6 @@ class RoadProcessor(object):
                 xcross.append(roads[id])
         return xcross
 
-    # Fetches all xcrossing in the road network
-    def __get_ycrossings(self):
-        roads = self.roads
-        ycross = []
-        for id in roads.keys():
-            if "YCrossing" in id:
-                ycross.append(roads[id])
-        return ycross
-
     # Fetches all straight road in the road network
     def __get_straightroads(self):
         roads = self.roads
@@ -573,7 +529,7 @@ class RoadProcessor(object):
         roads = self.roads
         bezier = []
         for id in roads.keys():
-            if "CurvedRoad" in id or "FlexRoad" in id:
+            if "CurvedRoad" in id:
                 bezier.append(roads[id])
         return bezier
 

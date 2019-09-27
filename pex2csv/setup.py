@@ -1,8 +1,11 @@
 from cx_Freeze import setup, Executable
 from datetime import date
+from subprocess import check_output
 
-#Create a version number for the build (based on the date (YY.MM.DD))
-vers = "build-{}".format(date.today().__str__()[2:].replace("-", "."))
+#Create a version number for the build based on the date (YY.MM.DD) ...
+vers = "build-{}_".format(date.today().__str__()[2:].replace("-", "."))
+# ... and the git commit ID
+vers += check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
 
 exeName = "pex2csv.exe" # The name of the final executable
 

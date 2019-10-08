@@ -199,7 +199,7 @@ class VectorMap:
         '''
 
         for tab in Stoplines:
-
+    
             for i in range(len(tab)):
 
                 Middle_Point = (tab[i][4],tab[i][5])
@@ -209,13 +209,17 @@ class VectorMap:
                     y = self.point[j].Bx
                     point_of_interest = (x,y)
                     distance = dist(point_of_interest,Middle_Point)
+                    
                     if min_dist > distance:
                         min_dist = distance
                         closest_point = point_of_interest
                         closest_node = j
-
+                
+                lane_id =1
                 for k in range(len(self.lane)):
+                    
                     if closest_node == self.lane[k].FNID:
+
                         lane_id = self.lane[k].BLID
 
                 PointID1 = self.point.create(tab[i][0], tab[i][1], 0)

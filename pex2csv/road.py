@@ -263,7 +263,7 @@ class RoundaboutRoad(Road):
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect):
+    def __init__(self, id, x0, y0, r, lw, cs_lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect):
 
         # General Initialization
 
@@ -306,8 +306,8 @@ class RoundaboutRoad(Road):
 
             starting_point = TabConnect[j]
             print(starting_point)
-            starting_point_right = (starting_point[0][0]- (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] + (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
-            starting_point_left = (starting_point[0][0]+ (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] - (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
+            starting_point_right = (starting_point[0][0]- (nb_of_lanes/2)*cs_lw[j]*np.sin(cs_h[j]),starting_point[0][1] + (nb_of_lanes/2)*cs_lw[j]*np.cos(cs_h[j]))
+            starting_point_left = (starting_point[0][0]+ (nb_of_lanes/2)*cs_lw[j]*np.sin(cs_h[j]),starting_point[0][1] - (nb_of_lanes/2)*cs_lw[j]*np.cos(cs_h[j]))
 
 
             # Entry access
@@ -324,7 +324,7 @@ class RoundaboutRoad(Road):
                 circle2 = [x0, y0, (r-lw/2)] # main circle
 
 
-                (x1,y1) = (starting_point_right[0]+ (k+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_right[1] - (k+1+counter)*(lw/2)*np.cos(cs_h[j])) # Staring point of the Lane
+                (x1,y1) = (starting_point_right[0]+ (k+1+counter)*(cs_lw[j]/2)*np.sin(cs_h[j]),starting_point_right[1] - (k+1+counter)*(cs_lw[j]/2)*np.cos(cs_h[j])) # Staring point of the Lane
 
 
 
@@ -342,17 +342,17 @@ class RoundaboutRoad(Road):
 
                 # And then create a curve
                 
-                (xs, ys) = self.l[0][index_min+5]
-                (xs1,ys1) = self.l[0][index_min+3]
+                (xs, ys) = self.l[0][(index_min+7)%len(self.l[0])]
+                (xs1,ys1) = self.l[0][(index_min+3)%len(self.l[0])]
                 (xs2,ys2) = self.l[0][index_min]
 
 
 
-                xs = [x1, xs2, xs1, xs]
-                ys = [y1, ys2, ys1, ys]
+                xsl = [x1, xs1, xs1, xs]
+                ysl = [y1, ys1, ys1, ys]
 
 
-                l1 = Curve(xs, ys, 0)
+                l1 = Curve(xsl, ysl, 0)
                 Actual_Lane1 = []
                 for (x,y) in l1:
                     Actual_Lane1.append([x, y])
@@ -375,7 +375,7 @@ class RoundaboutRoad(Road):
                 circle2 = [x0, y0, (r-lw/2)]
 
 
-                (x1,y1) = (starting_point_left[0]- (p+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_left[1] + (p+1+counter)*(lw/2)*np.cos(cs_h[j]))
+                (x1,y1) = (starting_point_left[0]- (p+1+counter)*(cs_lw[j]/2)*np.sin(cs_h[j]),starting_point_left[1] + (p+1+counter)*(cs_lw[j]/2)*np.cos(cs_h[j]))
 
                 (x2,y2) = Intersection_Circle(circle1,circle2)[0]
 
@@ -389,14 +389,14 @@ class RoundaboutRoad(Road):
                         index_min = n
 
 
-                (xs, ys) = self.l[0][index_min-5]
-                (xs1,ys1) = self.l[0][index_min-3]
+                (xs, ys) = self.l[0][(index_min-7)%len(self.l[0])]
+                (xs1,ys1) = self.l[0][(index_min-2)%len(self.l[0])]
                 (xs2,ys2) = self.l[0][index_min+1]
 
 
 
-                xs = [xs, xs1, xs2, x1]
-                ys = [ys, ys1, ys2, y1]
+                xs = [xs, xs1, xs1, x1]
+                ys = [ys, ys1, ys1, y1]
                 l1 = Curve(xs, ys, 0)
                 Actual_Lane1 = []
                 for (x,y) in l1:
@@ -1365,10 +1365,13 @@ class YCrossRoad(Road):
                 Lane_available_for_connection = []
                 for p in range(1,3):
                     for k in range(cs_lanes_in_x_dir[(m+p)%3]):
+                        
+                            
                         Lane_available_for_connection.append(self.l[(local_count+cs_nbr_of_lanes[(m+p)%3]-cs_lanes_in_x_dir[(m+p)%3]+k)%total_nb_of_lanes]) # We had here every lane available for connection (ie the lane going in the x direction)
+                        
                     if p != 2:
                         local_count += cs_nbr_of_lanes[(m+1)%3]
-
+                
 
 
                 if Number_of_lanes_of_interest[m] == 1 :  # If we have only one lane of interest (going in the opposite of x dir)
@@ -1533,7 +1536,8 @@ class YCrossRoad(Road):
 
                             Lane_available_for_connection_left.pop(len(Lane_available_for_connection_left)-1-q)
 
-
+            if Number_of_lanes_of_interest[m] ==0:
+                local_count += cs_nbr_of_lanes[(m+1)%3]
             compteur_for_lane_interest += cs_nbr_of_lanes[m]
 
 

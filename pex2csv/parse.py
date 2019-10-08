@@ -113,7 +113,7 @@ def get_bend(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,1))
     return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
 def get_curved(s, id):
@@ -140,7 +140,7 @@ def get_curved(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,1))
             print(Stl)
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
 
@@ -157,11 +157,13 @@ def get_roundabout(s, id, connections, path):
     cs_filletradius = []
     cs_nb_of_lanes = []
     cs_nb_of_lane_x_direction = []
+    cs_lw = []
     for s in cs:
         cs_h.append((float(s.get('Heading')) + h) * np.pi / 180)
         cs_filletradius.append((float(s.get('FilletRadiusPercentage'))))
         cs_nb_of_lanes.append((int(s.get('NumberOfLanes'))))
         cs_nb_of_lane_x_direction.append((int(s.get('DirectionChangeAfterLane'))))
+        cs_lw.append(float(s.get('LaneWidth')))
 
     TabConnect = [0,0,0,0]
     for connection in connections:
@@ -177,7 +179,7 @@ def get_roundabout(s, id, connections, path):
     for i in range(len(TabConnect)):
         Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))
 
-    return RoundaboutRoad(id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon)
+    return RoundaboutRoad(id, x0, y0, r, lw, cs_lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon)
 
 def get_straight(s, id):
     x0 = float(s[0].get('X'))
@@ -224,7 +226,7 @@ def get_entry(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,1))
     return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
 
 def get_exit(s, id):
@@ -250,7 +252,7 @@ def get_exit(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,1))
     return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
 
 def get_adapter(s, id):
@@ -273,7 +275,7 @@ def get_adapter(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,1))
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl)
 
 def get_xcross(s, id):
@@ -302,7 +304,7 @@ def get_xcross(s, id):
         y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x3 = (x1+x2)/2
         y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_lanes_in_x_dir[i]))
 
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)
 
@@ -334,7 +336,7 @@ def get_ycross(s, id):
         y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x3 = (x1+x2)/2
         y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_lanes_in_x_dir[i]))
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)
 

@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "C:\\Users\\Nicolas\\Desktop\\VM_Test_XYCross.pex"
+PEX_FILE_LOCATION = "C:\\Users\\nico7\\Desktop\\Round3.pex"
 
 if __name__ == '__main__':
 

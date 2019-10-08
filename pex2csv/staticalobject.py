@@ -57,7 +57,7 @@ class TrafficLight(StaticalObject):
     :param h: Heading of the Traffic Light
     :type h: Float
 
-    :param s: Style of the Traffic Light (RoadSide, Japan overhead and so on...). Cf Parse.py for the converting-list integer to style.
+    :param s: Style of the Traffic Light (RoadSide, Japan overhead and so on...).NOT IMPLEMENTED.
     :type s: Integer
 
 

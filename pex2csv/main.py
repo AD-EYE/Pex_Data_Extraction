@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/TestWorlds/FLEX3.pex"
+PEX_FILE_LOCATION = "/home/adeye/TestWorlds/W01_Base_Map.pex"
 
 if __name__ == '__main__':
 

@@ -120,7 +120,6 @@ venv.bak/
 dmypy.json
 
 # csv and data
-*/csv/*
 */data/*
 !*/csv/.gitkeep
 !*/data/.gitkeep

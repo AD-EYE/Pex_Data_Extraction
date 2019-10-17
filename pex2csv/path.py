@@ -21,7 +21,7 @@ class Path:
         self.dt = dt
         self.t1 = t1
         self.flag = False
-        self.smooth_factor = 1
+        self.smooth_factor = 0.999999
 
     def __iter__(self):
         self.t = 0.0
@@ -48,6 +48,27 @@ class Path:
         ret = self.eval(self.t)
         self.t += self.dt
         return(ret)
+
+#    def __next__(self):
+#        if self.t <= (self.t1 - self.dt):
+#            ret = self.eval(self.t)
+#            self.t += self.dt
+#            return(ret)
+#        elif self.t < self.t1:
+#            if (self.t1 - self.dt) > 0:
+#                ret = self.eval(self.t1-self.dt/2)
+#                self.t += self.dt
+#                return(ret)
+#            else:
+#                ret = self.eval(self.t)
+#                self.t += self.dt
+#                return(ret)
+#        elif self.t < (self.t1 + self.dt):
+#            ret = self.eval(self.t1)
+#            self.t += self.dt
+#            return(ret)
+#        else:
+#            raise StopIteration
 
     def getstart(self):
         return self.eval(0.0)

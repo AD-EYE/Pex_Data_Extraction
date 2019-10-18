@@ -223,6 +223,45 @@ class VectorMap:
             self.point[i].Ly = round(self.point[i].Ly, 6)
             self.point[i].H = round(self.point[i].H, 6)
 
+    def merge_redundant_points(self):
+        c = 0
+        for i in range(len(self.lane)):
+            if self.lane[i].FLID == 0:
+                PID_i = self.lane[i].FNID         #This works because NID = PID
+                for j in range(len(self.point)):
+                    PID_j = j
+                    if PID_i != PID_j:
+                        if self.square_distance(PID_i, PID_j) < 0.0001:
+                            self.merge_two_points(PID_i, PID_j)
+                            c = c+1
+                            print('Case ' + str(c) + ': x = ' + str(self.point[PID_i].Ly) + ', y = ' + str(self.point[PID_i].Bx))
+
+    def merge_redundant_points_all(self):
+        c = 0
+        for i in range(len(self.point)):
+            #if self.lane[i].FLID == 0:
+            PID_i = i         #This works because NID = PID
+            for j in range(len(self.point)):
+                PID_j = j
+                if PID_i != PID_j:
+                    if self.square_distance(PID_i, PID_j) < 0.0001:
+                        self.merge_two_points(PID_i, PID_j)
+                        c = c+1
+                        print('Case ' + str(c) + ': x = ' + str(self.point[PID_i].Ly) + ', y = ' + str(self.point[PID_i].Bx) + ', PID_i = ' + str(PID_i) + ', PID_j = ' + str(PID_j))
+
+    def square_distance(self, PID_1, PID_2):
+        return ((self.point[PID_1].Bx - self.point[PID_2].Bx)**2 + (self.point[PID_1].Ly - self.point[PID_2].Ly)**2 + (self.point[PID_1].H - self.point[PID_2].H)**2)
+
+    def merge_two_points(self, PID_1, PID_2):
+        for i in range(len(self.dtlane)):
+            if self.dtlane[i].PID == PID_2:
+                self.dtlane[i].PID = PID_1
+        for i in range(len(self.lane)):
+            if self.lane[i].BNID == PID_2:
+                self.lane[i].BNID = PID_1
+            if self.lane[i].FNID == PID_2:
+                self.lane[i].FNID = PID_1
+
     def make_Stoplines(self, Stoplines):
         '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
         where the stopline is.

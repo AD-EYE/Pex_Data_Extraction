@@ -21,7 +21,7 @@ class Path:
         self.dt = dt
         self.t1 = t1
         self.flag = False
-        self.smooth_factor = 0.999999
+        self.smooth_factor = 1
 
     def __iter__(self):
         self.t = 0.0
@@ -127,7 +127,7 @@ class Curve(Path):
         self.offset = offset
         nodes = np.asfortranarray([xs, ys])
         self.c = bezier.Curve(nodes, degree = 3)
-        dt = 1.0 / np.ceil(self.c.length)
+        dt = 1.0 / self.c.length
         Path.__init__(self, dt, 1.0)
 
     def dpdt(self, t):

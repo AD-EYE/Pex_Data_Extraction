@@ -40,7 +40,6 @@ class Road:
         self.stopline = []
         self.previous_road = -1
         self.next_road = -1
-        self.isturned = False    #Useless !!!
         self.SpeedLimit = 1
         self.RefSpeed = 1
         self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70,50]
@@ -58,11 +57,6 @@ class Road:
         :returns (Float, Float)
         '''
         return self.c[0].getend()
-
-    def turn_road(self):    #Useless !!!!!
-        '''This method marks the road segment as turned in order for the road processor to know on which endpoint it should start.
-        '''
-        self.isturned = not self.isturned
 
 class BendRoad(Road):
     '''

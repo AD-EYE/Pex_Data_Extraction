@@ -1,4 +1,7 @@
-'''This module contains all of the code defining the paths we use to represent different road segments. Each path is an iterable object so the path can be 'walked' by asking for new x and y coordinates. Path.py is basically representing the geometry (i.e. points, line, vector) of each roadtype.
+'''This module contains all of the code defining the paths we use to represent
+different road segments. Each path is an iterable object so the path can be
+'walked' by asking for new x and y coordinates. Path.py is basically
+representing the geometry (i.e. points, line, vector) of each roadtype.
 
 The road classes are :class:'Bend', :class:'Curved', and :class:'Straight'.
 '''
@@ -27,14 +30,6 @@ class Path:
         self.t = 0.0
         return self
 
-#    def __next__(self):
-#        if self.t > self.t1:
-#            raise StopIteration         Clean
-#        ret = self.eval(self.t)
-#        self.t += self.dt
-        #import pdb; pdb.set_trace()
-#        return(ret)
-
     def __next__(self):
         if self.t == self.t1:
             self.flag = True
@@ -48,27 +43,6 @@ class Path:
         ret = self.eval(self.t)
         self.t += self.dt
         return(ret)
-
-#    def __next__(self):
-#        if self.t <= (self.t1 - self.dt):
-#            ret = self.eval(self.t)
-#            self.t += self.dt
-#            return(ret)
-#        elif self.t < self.t1:
-#            if (self.t1 - self.dt) > 0:
-#                ret = self.eval(self.t1-self.dt/2)
-#                self.t += self.dt
-#                return(ret)
-#            else:
-#                ret = self.eval(self.t)
-#                self.t += self.dt
-#                return(ret)
-#        elif self.t < (self.t1 + self.dt):
-#            ret = self.eval(self.t1)
-#            self.t += self.dt
-#            return(ret)
-#        else:
-#            raise StopIteration
 
     def getstart(self):
         return self.eval(0.0)

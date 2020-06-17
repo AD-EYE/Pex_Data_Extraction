@@ -55,7 +55,6 @@ def get_roads(path='./data/roads.pex'):
     roads = {}
 
     # For each Road Segment in the simulation produce a road type in the road list
-
     for s in segments:
         type = s.xpath('@xsi:type', namespaces = ns)[0]
         id = s.get('id')
@@ -163,19 +162,6 @@ def get_flex(s, id):
 
     RoadMarking = s[16]
     Stl = []
-#    for R in RoadMarking:
-#        if "BitmapRoadMarker" in str(R.get('id')):
-#            hStop = float(R[1].get('Heading')) * np.pi / 180
-#            x1 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0 - (lw / 2) * np.sin(
-#                hStop + h)
-#            y1 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0 + (lw / 2) * np.cos(hStop + h)
-#            x2 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0 + (lw / 2) * np.sin(
-#                hStop + h)
-#            y2 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0 - (lw / 2) * np.cos(hStop + h)
-#            x3 = -float(R[0].get('Y')) * np.sin(h) + float(R[0].get('X')) * np.cos(h) + x0
-#            y3 = float(R[0].get('X')) * np.sin(h) + float(R[0].get('Y')) * np.cos(h) + y0
-#            Stl.append((x1, y1, x2, y2, x3, y3))
-#            print(Stl)
     Lid = []
     Lx = []
     Ly = []
@@ -222,11 +208,8 @@ def get_flex(s, id):
                                    y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h),
                                    Lh[j] + h,
                                    Lh[j + 1] - Lh[j], LFt[j], LBt[j + 1],
-                                   #(Lx[j+1]-Lx[j])*np.cos(Lh[j]) -(Ly[j+1]-Ly[j])*np.sin(Lh[j]),
                                    (Lx[j + 1] - Lx[j]) * np.cos(-Lh[j]) - (Ly[j + 1] - Ly[j]) * np.sin(-Lh[j]),
                                    (Lx[j + 1] - Lx[j]) * np.sin(-Lh[j]) + (Ly[j + 1] - Ly[j]) * np.cos(-Lh[j]),
-                                   #Lx[j+1] * np.cos(Lh[j]) - Ly[j+1] * np.sin(Lh[j]) - (Lx[j] * np.cos(Lh[j]) - Ly[j] * np.sin(Lh[j])),
-                                   #Lx[j+1] * np.sin(Lh[j]) + Ly[j+1] * np.cos(Lh[j]) - (Lx[j] * np.sin(Lh[j]) + Ly[j] * np.cos(Lh[j])),
                                    lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
         CurvedRoads[Lid[j]] = NewCurvedRoad
 
@@ -456,5 +439,5 @@ def get_links_points_roundabout(id,path):
 
     return point
 
-# Support for multi lane stop line and tfl : 
+# Support for multi lane stop line and tfl :
 #

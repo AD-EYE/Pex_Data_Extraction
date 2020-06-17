@@ -44,7 +44,6 @@ class Road:
         self.SpeedLimit = 1
         self.RefSpeed = 1
         self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70,50]
-        # Speed Profil = [Straight R, Bend R, Curve R, RoundAbout, X cross, Y cross, Exit R, EnTry R, Adapter R]
 
     def getstart(self):
         '''This method returns the starting coordinates of the road's center path.
@@ -273,12 +272,6 @@ class RoundaboutRoad(Road):
         self.TabConnect = TabConnect
         self.DefinedSpeed = self.SpeedProfil[3]
 
-        # Lanes, Center and Edge2 of the Road
-
-        #self.c.append(Bend(x0, y0 - r, 0, 2 * np.pi, r))
-        #self.e2.append(Bend(x0, y0 - (r - lw), 0, 2 * np.pi, (r - lw))) #Only edge2 (edge near the center of the RA) can easily be done, the other is harder because of the exit lane of the RA
-
-
         # Creating every circles
 
         lwhalf = lw/2
@@ -341,7 +334,7 @@ class RoundaboutRoad(Road):
                         index_min = n
 
                 # And then create a curve
-                
+
                 (xs, ys) = self.l[0][index_min+5]
                 (xs1,ys1) = self.l[0][index_min+3]
                 (xs2,ys2) = self.l[0][index_min]
@@ -363,7 +356,7 @@ class RoundaboutRoad(Road):
 
             # Exit access
 
-            # Same expect tfor the math 
+            # Same expect tfor the math
             counter =0
             for p in range(nb_of_lanes_x_direction):
 
@@ -1095,7 +1088,7 @@ class XCrossRoad(Road):
                 (x4,y4) = self.l[(compteur_for_lane_in_front-1)%total_nb_of_lanes][0]
 
                 (x5,y5) = Intersection_Lines(Lanes_of_Interest[0],self.l[(compteur_for_lane_in_front-1)%total_nb_of_lanes])
-                
+
 
                 xs1 = [x1, x5, x5, x4]
                 ys1 = [y1, y5, y5, y4]
@@ -1138,7 +1131,7 @@ class XCrossRoad(Road):
 
                     # Making the left connection
 
-                    (x9,y9) = Lanes_of_Interest[len(Lanes_of_Interest)-1][len(Lanes_of_Interest[len(Lanes_of_Interest)-1])-1]  
+                    (x9,y9) = Lanes_of_Interest[len(Lanes_of_Interest)-1][len(Lanes_of_Interest[len(Lanes_of_Interest)-1])-1]
 
                     (x10,y10) = self.l[(compteur_for_left_most_lane-1)%total_nb_of_lanes][0]
 
@@ -1152,8 +1145,8 @@ class XCrossRoad(Road):
 
                     xs3 = [x9, x11, x11, x10]
                     ys3 = [y9, y11, y11, y10]
-                    
-                    if cs_lanes_in_x_dir[(i+3)%4] != 0: 
+
+                    if cs_lanes_in_x_dir[(i+3)%4] != 0:
                         l4 = Curve(xs3, ys3, 0)
                         Actual_Lane4 = []
                         for (x,y) in l4:
@@ -1177,13 +1170,13 @@ class XCrossRoad(Road):
 
                     xs4 = [x12, x14, x14, x13]
                     ys4 = [y12, y14, y14, y13]
-                    
+
                     if cs_lanes_in_x_dir[(i+3)%4] != 0:
                         l5 = Curve(xs4, ys4, 0)
                         Actual_Lane5 = []
                         for (x,y) in l5:
                             Actual_Lane5.append([x, y])
-    
+
                         self.l.append(Actual_Lane5)
 
             compteur_for_lane_interest += cs_nbr_of_lanes[i]
@@ -1335,7 +1328,7 @@ class YCrossRoad(Road):
 
             # We will proceed by doing two list for each crossection :
             # The first list will list every lanes going in the right direction on the current crossections
-            # The second list will contain every relevant lanes that can be linked to the lane that are in the first list 
+            # The second list will contain every relevant lanes that can be linked to the lane that are in the first list
             #
             #
             #                ######################
@@ -1345,13 +1338,13 @@ class YCrossRoad(Road):
             #                #######       ########
             #                      # |   | #
             #                      # | 3 | #
-            #                      # |   | #   
+            #                      # |   | #
             #                       (e) (f)
             #
             # So here for instance for crossection one , list 1 = [Lane a]
             # and List 2 = [Lane c,Lane e]
             #
-            
+
             if Number_of_lanes_of_interest[m] !=0 :  # if there are lanes going in the opposite x direction
 
 
@@ -1401,9 +1394,9 @@ class YCrossRoad(Road):
                     Lane_available_for_connection_left = Lane_available_for_connection[cs_lanes_in_x_dir[(m+1)%3]:cs_lanes_in_x_dir[(m+1)%3]+cs_lanes_in_x_dir[(m+2)%3]]
 
                     # We will create a more specific list out of list 2 (that contains every lanes available for connections
-                    # Lane available for connection left in whih you'll have every lane locatrd on the crossection to the left 
+                    # Lane available for connection left in whih you'll have every lane locatrd on the crossection to the left
                     # And Lane available for connection right will is the same but for the lanes located on the corssection to the right
-                    
+
                     if len(Lanes_of_Interest)%2 !=0: # If there is an odd numbers of lanes then list 2 will be broken into the 2 list right/left and the raminaing lane will be had to the list that have less lanes
                         Lanes_of_Interest_right = Lanes_of_Interest[0:int((len(Lanes_of_Interest)-1)/2)]
                         Lanes_of_Interest_left = Lanes_of_Interest[int((len(Lanes_of_Interest)-1)/2)+1:]
@@ -1422,10 +1415,10 @@ class YCrossRoad(Road):
 
 
                     for q in range(len(Lanes_of_Interest_right)):  # Right side of Y Crossing
-                    
+
                         # The list now created we make every connections
                         # And we will proceed that way
-                        # 
+                        #
                         #                     |      |       |
                         #                     |      |       |
                         # Lanes in list 2 :   |      |       |
@@ -1433,14 +1426,14 @@ class YCrossRoad(Road):
                         #                    (a2)   (b2)    (c2)
                         #                        |       |
                         #                        |       |
-                        # Lanes in list 1 :      |       |    
+                        # Lanes in list 1 :      |       |
                         #                        |       |
                         #                       (a1)    (b1)
-                        #  
+                        #
                         # a1 to a2, and b1 to b2 and c2
                         # If List 1 had three lanes then a1 to a2, b1 to b2, c1 to c2
-                        # As you know list 1 cannot be longer then list 2               
-                        
+                        # As you know list 1 cannot be longer then list 2
+
                         if q == len(Lanes_of_Interest_right)-1 : # if the lane of interest currently under study is the last lane
                             for j in range(len(Lane_available_for_connection_right)):  # Then we have to do every remaining connections
 

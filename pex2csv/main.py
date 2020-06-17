@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/TestWorlds/W01_Base_Map.pex"
+PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W01_Base_Map/Simulation/W01_Base_Map.pex"
 
 if __name__ == '__main__':
 
@@ -13,8 +13,7 @@ if __name__ == '__main__':
 
     roads = parse.get_roads(path=PEX_FILE_LOCATION)
     statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
-    rproc = RoadProcessor(Take_Speed_Pescan)
-    rproc.add_roads(roads)
+    rproc = RoadProcessor(roads)
     rproc.create_lanes()
     rproc2 = StaticalObjectProcessor()
     rproc2.add_staticalobject(statobj)

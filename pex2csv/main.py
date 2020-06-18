@@ -9,7 +9,7 @@ PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W01_Base_Map/Sim
 if __name__ == '__main__':
 
 
-    Take_Speed_Pescan = True
+    Take_Speed_Prescan = True
 
     roads = parse.get_roads(path=PEX_FILE_LOCATION)
     statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     rproc2.create_statical_object()
     vm = VectorMap()
     for lane in rproc.lanes:
-        if Take_Speed_Pescan:
+        if Take_Speed_Prescan:
             vm.make_lane(lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
         else:
             vm.make_lane(lane.DefinedSpeed, lane.DefinedSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())

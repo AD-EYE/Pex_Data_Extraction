@@ -1,6 +1,10 @@
-'''This module contains all of the code defining the structure of different road segments. By taking initial values from the parser the classes calculate a mathematical definition of the road type. So We use the geometry created in path.py to define the different roadtype (ex: we use Bend type to create Roundabout)
+'''This module contains all of the code defining the structure of different
+road segments. By taking initial values from the parser the classes calculate a
+mathematical definition of the road type. So We use the geometry created in
+path.py to define the different roadtype (ex: we use Bend type to create Roundabout)
 
-The road classes :class:'BendRoad', :class:'CurvedRoad', :class:'StraightRoad', :class:'RoundaboutRoad', and :class:'XCrossing' all have class variables that represent roads.
+The road classes :class:'BendRoad', :class:'CurvedRoad', :class:'StraightRoad',
+:class:'RoundaboutRoad', and :class:'XCrossing' all have class variables that represent roads.
 
 '''
 from path import *

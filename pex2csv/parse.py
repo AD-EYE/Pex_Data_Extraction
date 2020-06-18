@@ -1,5 +1,6 @@
 '''This module contains all of the code that parse the simulation.
-It will extract roads from the simulation in order to convert those road into the VectorMapping format(done in Vmap.py)
+It will extract roads from the simulation in order to convert those road into
+the VectorMapping format(done in Vmap.py)
 
 '''
 
@@ -23,15 +24,17 @@ def get_staticalobject(path='./data/roads.pex'):
     # eTree module fetch the Roads in the Pex file
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
-    staticalobject_In_Simu = tree.findall('//InfraOther')
+    # staticalobject_In_Simu = tree.findall('//InfraOther')
+    staticalobject_In_Simu = tree.findall('//Actor')
     staticalobject = {}
 
     # For each Traffic Light in the simulation we produce a corresponding TrafficLight in the TrafLight list
 
     for t in staticalobject_In_Simu:
-        type = t.xpath('@xsi:type', namespaces = ns)[0]
+        description = t.get('Description')
+
         id = t.get('id')
-        if (type == 'TrafficLightRoadSideNL'):
+        if ('Roadside' in description):
             staticalobject[id] = get_TLight(t, id)
     return staticalobject
 
@@ -314,7 +317,6 @@ def get_exit(s, id):
     Stl = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
-
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
             x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw*0.5) * np.sin(h)
@@ -398,7 +400,6 @@ def get_ycross(s, id):
 
     Stl = []
     for i in range(3):
-        cs_l[i]-cs_len_till_stop[i]
         x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
         y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0

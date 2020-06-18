@@ -1,4 +1,5 @@
-'''This module contains :class:RoadProcessor that processes road segments in order to easily feed coordinates to the vector mapping module.
+'''This module contains :class:RoadProcessor that processes road segments in
+order to easily feed coordinates to the vector mapping module.
 
 Only :class:RoadProcessor should be used externally.
 
@@ -136,36 +137,11 @@ class RoadProcessor(object):
         self.roads = roads
 
 
-    def create_lanes(self):
-        '''
-        Main fonction use to generate the lanes of all the roads in the roads tab
-        '''
-        self.__create_lanes()
-
-
-    # Takes two road segments and finds if they are connected and
-    # marks them accordingly
-    def __set_order(self, road1, road2):
-        if dist(road1.getstart(), road2.getstart()) <= 1.0:
-            road1.previous_road = road2.id
-            road2.previous_road = road1.id
-        elif dist(road1.getstart(), road2.getend()) <= 1.0:
-            road1.previous_road = road2.id
-            road2.next_road = road1.id
-        elif dist(road1.getend(), road2.getstart()) <= 1.0:
-            road1.next_road = road2.id
-            road2.previous_road = road1.id
-        elif dist(road1.getend(), road2.getend()) <= 1.0:
-            road1.next_road = road2.id
-            road2.next_road = road1.id
-
-
     # For a better understanding of the following functions/methods go to the wiki about the Vector Mapper #
 
     # Creates the lanes for each roads per RT in roads
-    def __create_lanes(self):
+    def create_lanes(self):
         roads = self.roads.copy()
-
         self.__create_roundabouts(roads)
         self.__create_xcrossings(roads)
         self.__create_ycrossings(roads)
@@ -304,7 +280,7 @@ class RoadProcessor(object):
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
     def __add_segment_xcross(self, lane, rturns = None, lturns = None):
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[0], not lane.isturned, rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
+        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[0], rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
         self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[1], rturns = rturns, lturns = lturns)
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)

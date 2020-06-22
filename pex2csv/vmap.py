@@ -192,22 +192,17 @@ class VectorMap:
 
     def rebuild_lane_conections(self):
         for i in range(len(self.lane)):                                 # Check every lane
-            # if self.lane[i].FLID == 0:                                  # Take those that don't have a next lane ID
             k = 0
-            # print(self.lane[i].DID)
             for j in range(len(self.lane)):                         # Check them against all the other lanes
-                if self.lane[i].FNID == self.lane[j].BNID:          #
+                if self.lane[i].FNID == self.lane[j].BNID:
                     k = k+1
                     if k == 1: self.lane[i].FLID = self.lane[j].DID
                     if k == 2: self.lane[i].FLID2 = self.lane[j].DID
                     if k == 3: self.lane[i].FLID3 = self.lane[j].DID
                     if k == 4: self.lane[i].FLID4 = self.lane[j].DID
-                    #print('Hi')
 
         for i in range(len(self.lane)):
-            #if self.lane[i].BLID == 0:
             k = 0
-            #print(self.lane[i].DID)
             for j in range(len(self.lane)):
                 if self.lane[i].BNID == self.lane[j].FNID:
                     k = k+1
@@ -215,13 +210,6 @@ class VectorMap:
                     if k == 2: self.lane[i].BLID2 = self.lane[j].DID
                     if k == 3: self.lane[i].BLID3 = self.lane[j].DID
                     if k == 4: self.lane[i].BLID4 = self.lane[j].DID
-                    #print('Hi2')
-
-    def round_points(self):
-        for i in range(len(self.point)):
-            self.point[i].Bx = round(self.point[i].Bx, 6)
-            self.point[i].Ly = round(self.point[i].Ly, 6)
-            self.point[i].H = round(self.point[i].H, 6)
 
     def merge_redundant_points(self):
         c = 0
@@ -235,19 +223,6 @@ class VectorMap:
                             self.merge_two_points(PID_i, PID_j)
                             c = c+1
                             print('Case ' + str(c) + ': x = ' + str(self.point[PID_i].Ly) + ', y = ' + str(self.point[PID_i].Bx))
-
-    def merge_redundant_points_all(self):
-        c = 0
-        for i in range(len(self.point)):
-            #if self.lane[i].FLID == 0:
-            PID_i = i         #This works because NID = PID
-            for j in range(len(self.point)):
-                PID_j = j
-                if PID_i != PID_j:
-                    if self.square_distance(PID_i, PID_j) < 0.0001:
-                        self.merge_two_points(PID_i, PID_j)
-                        c = c+1
-                        print('Case ' + str(c) + ': x = ' + str(self.point[PID_i].Ly) + ', y = ' + str(self.point[PID_i].Bx) + ', PID_i = ' + str(PID_i) + ', PID_j = ' + str(PID_j))
 
     def square_distance(self, PID_1, PID_2):
         return ((self.point[PID_1].Bx - self.point[PID_2].Bx)**2 + (self.point[PID_1].Ly - self.point[PID_2].Ly)**2 + (self.point[PID_1].H - self.point[PID_2].H)**2)

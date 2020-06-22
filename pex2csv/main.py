@@ -39,6 +39,5 @@ if __name__ == '__main__':
     vm.make_TrafficLight(rproc2.TrfLight)
     vm.merge_redundant_points()
     vm.rebuild_lane_conections()
-    #vm.round_points()
     vm.export()
     vm.plot()

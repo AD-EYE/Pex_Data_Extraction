@@ -228,11 +228,6 @@ class RoadProcessor(object):
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
 
-    # Breaks down an xcrossing into its lanes, edges and centers and creates
-    # lanes for them
-    def __add_xcross(self, xcross, rturns, lturns):
-        self.__add_segment(xcross.SpeedLimit, xcross.SpeedLimit, xcross, rturns = rturns, lturns = lturns)
-
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
     def __add_lane(self, SpeedLimit, RefSpeed, DefinedSpeed, lane, junction_end = 'NORMAL', junction_start = 'NORMAL', rturns = None, lturns = None, epoints = None):
@@ -279,15 +274,6 @@ class RoadProcessor(object):
 
     # Breaks down a road segment into lanes, edges and center for the
     # vmap module
-    def __add_segment_xcross(self, lane, rturns = None, lturns = None):
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit, lane.DefinedSpeed, lane.l[0], rturns = rturns, lturns = lturns) #Aqui va el not antes del lane.isturned
-        self.__add_lane(lane.SpeedLimit, lane.SpeedLimit,lane.DefinedSpeed, lane.l[1], rturns = rturns, lturns = lturns)
-        self.__add_center(lane.c)
-        self.__add_edge(lane.e1)
-        self.__add_edge(lane.e2)
-
-    # Breaks down a road segment into lanes, edges and center for the
-    # vmap module
     def __add_roundabout(self, lane, rturns = None, lturns = None, epoints = None):
             self.__add_segment( lane, rturns = rturns, lturns = lturns)
 
@@ -317,15 +303,6 @@ class RoadProcessor(object):
         self.__add_center(lane.c)
         self.__add_edge(lane.e1)
         self.__add_edge(lane.e2)
-
-    # Fetches a dead end road, that is a road that is not connected
-    # to another road segment on either end
-    def __get_end_roads(self):
-        roads = self.roads
-        for id in roads.keys():
-            if not "Roundabout" in id and roads[id].previous_road == -1:
-                return roads[id]
-        return None
 
     # Fetches all roundabouts in the road network
     def __get_roundabouts(self):

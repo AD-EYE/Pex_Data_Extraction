@@ -7,6 +7,7 @@ The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class
 '''
 import numpy as np
 from utils import dist
+import os
 
 class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
@@ -416,6 +417,9 @@ class VectorMap:
         .. warning:: This will overwrite the contents of ./csv.
 
         '''
+        if os.path.isdir('./csv/') == False : # checks if the csv file exists and creates it if not
+            os.mkdir('./csv/')
+
         self.point.export('./csv/point.csv')
         self.node.export('./csv/node.csv')
         self.line.export('./csv/line.csv')

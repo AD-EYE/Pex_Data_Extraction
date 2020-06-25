@@ -24,6 +24,8 @@ class VectorMap:
         self.vector     = VMList(Vector)
         self.signaldata = VMList(SignalData)
         self.stopline   = VMList(Stopline)
+        self.Area       = VMList(Area)
+        self.Crosswalk  = VMList(Crosswalk)
 
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
@@ -269,6 +271,40 @@ class VectorMap:
                 LineID = self.line.create(PointID1,PointID2)
                 StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
+    def make_Area(self, crosswalk):
+        '''
+        This method takes an array of tab representing every 3 points for a crosswalk
+        '''
+        empty = [] #list filled with indexes k where crosswalk[k]==[]
+        k=0
+        for tab in crosswalk :
+            if tab == []:
+                empty.append(k)
+            k=k+1
+
+        empty.reverse()
+
+        for j in empty :
+            del crosswalk[j]
+
+
+        for tab in crosswalk :
+            PID1=self.point.create(tab[0][0],tab[0][1],0)
+            PID2=self.point.create(tab[0][2],tab[0][3],0)
+            PID3=self.point.create(tab[0][4],tab[0][5],0)
+
+            LineID1=self.line.create(PID1,PID2)
+            LineID2=self.line.create(PID2,PID3)
+            LineID3=self.line.create(PID3,PID1)
+
+            AreaID=self.Area.create(LineID1,LineID3)
+            CrosswalkID=self.Crosswalk.create(AreaID)
+
+
+
+
+
+
 
 
     def make_TrafficLight(self, TrafficLightList):
@@ -430,6 +466,8 @@ class VectorMap:
         self.vector.export('./csv/vector.csv')
         self.signaldata.export('./csv/signaldata.csv')
         self.stopline.export('./csv/stopline.csv')
+        self.Crosswalk.export('./csv/crosswalk.csv')
+        self.Area.export('./csv/area.csv')
 
 class VMList:
     '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
@@ -850,3 +888,51 @@ class Stopline:
     def __str__(self):
         data = [self.LID, self.TLID, self.SignID, self.LinkID]
         return ','.join(map(str, data))
+class Area:
+    '''Vector map data saved to area.csv.
+
+    :param line: the corresponding "class line" ID
+    :type line: int
+
+    :param area: the Area ID
+    :type area: int
+
+    '''
+
+    def __init__(self,SLID,ELID):                # Area ID
+        self.SLID = SLID                # ID of the first (start) line of the Area
+        self.ELID = ELID                # ID of the last (end) line of the Area
+
+    def set_SLID(self,line):
+        self.SLID = line
+
+    def set_ELID(self,line):
+        self.ELID = line
+
+    def __str__(self):
+        data = [self.SLID, self.ELID]
+        return ','.join(map(str, data))
+
+class Crosswalk:
+        '''Vector map data saved to crosswalk.csv
+
+        :param cw: the crosswalk ID
+        :type cw: int
+
+        :param area: the corresponding "class area" ID
+        :type area: int
+
+        '''
+
+        def __init__(self,AID):
+            self.AID = AID
+            self.Type = 1
+            self.BdID = 0
+            self.LinkID = 0
+
+        def set_AID(self,area):
+            self.AID = area
+
+        def __str__(self):
+            data = [self.AID, self.Type, self.BdID, self.LinkID]
+            return ','.join(map(str,data))

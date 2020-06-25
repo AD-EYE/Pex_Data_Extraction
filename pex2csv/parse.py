@@ -108,6 +108,7 @@ def get_bend(s, id):
     lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
     RoadMarking = s[16]
     Stl = []
+    cw = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             hStop = float(R[1].get('Heading'))* np.pi / 180
@@ -118,7 +119,18 @@ def get_bend(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
-    return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+            x2 = x0 + (xl + cwh)*np.cos(hw)
+            y2 = y0 + (xl + cwh)*np.sin(hw)
+            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+    return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
 def get_curved(s, id):
     x0 = float(s[0].get('X'))
@@ -135,6 +147,7 @@ def get_curved(s, id):
     lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
     RoadMarking = s[16]
     Stl = []
+    cw = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             hStop = float(R[1].get('Heading'))* np.pi / 180
@@ -146,7 +159,18 @@ def get_curved(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
             print(Stl)
-    return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+            x2 = x0 + (xl + cwh)*np.cos(hw)
+            y2 = y0 + (xl + cwh)*np.sin(hw)
+            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+    return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
 def get_flex(s, id):
     x0 = float(s[0].get('X'))
@@ -265,6 +289,7 @@ def get_straight(s, id):
     RoadMarking = s[16]
 
     Stl = []
+    cw = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
@@ -274,7 +299,20 @@ def get_straight(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir))
-    return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+            x2 = x0 + (xl + cwh)*np.cos(hw)
+            y2 = y0 + (xl + cwh)*np.sin(hw)
+            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            cw.append([x1,y1,x2,y2,x3,y3])
+    return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
+
 
 def get_entry(s, id):
     x0 = float(s[0].get('X'))
@@ -290,6 +328,8 @@ def get_entry(s, id):
     side_road_length=float(s.get('SideRoadLength'))
     RoadMarking = s[16]
     Stl = []
+    cw =[]
+
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
@@ -299,7 +339,21 @@ def get_entry(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
-    return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+            x2 = x0 + (xl + cwh)*np.cos(hw)
+            y2 = y0 + (xl + cwh)*np.sin(hw)
+            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            cw.append([x1,y1,x2,y2,x3,y3])
+
+
+    return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl, cw)
 
 def get_exit(s, id):
     x0 = float(s[0].get('X'))
@@ -314,7 +368,9 @@ def get_exit(s, id):
     apron_length=float(s.get('ApronLength'))
     side_road_length=float(s.get('SideRoadLength'))
     RoadMarking = s[16]
+
     Stl = []
+    cw = []
     for R in RoadMarking:
         if "BitmapRoadMarker" in str(R.get('id')) :
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
@@ -324,7 +380,19 @@ def get_exit(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
-    return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl)
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+            x2 = x0 + (xl + cwh)*np.cos(hw)
+            y2 = y0 + (xl + cwh)*np.sin(hw)
+            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            cw.append([x1,y1,x2,y2,x3,y3])
+    return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl, cw)
 
 def get_adapter(s, id):
     x0 = float(s[0].get('X'))
@@ -338,7 +406,10 @@ def get_adapter(s, id):
     lanes_in_x_dir_start = int(s.get('DirectionChangeAfterLane'))
     lanes_in_x_dir_end = int(s.get('DirectionChangeAfterLaneAtEnd'))
     RoadMarking = s[16]
+
     Stl = []
+    cw = []
+
     for R in RoadMarking:
             x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(h)
             y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2) * np.cos(h)
@@ -347,7 +418,19 @@ def get_adapter(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
-    return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl)
+            if "PedestrianMarkingGeneric" in str(R.get('id')) :
+                hw = float(R[1].get('Heading'))
+                cl = float(R.get('CrossingLength'))
+                cwh = float(R.get('CrossingWidth'))
+                xl = float(R[0].get('X'))
+                x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
+                y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
+                x2 = x0 + (xl + cwh)*np.cos(hw)
+                y2 = y0 + (xl + cwh)*np.sin(hw)
+                x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
+                y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+                cw.append([x1,y1,x2,y2,x3,y3])
+    return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw)
 
 def get_xcross(s, id):
     x0 = float(s[0].get('X'))
@@ -399,6 +482,8 @@ def get_ycross(s, id):
         cs_l.append(float(c.get('RoadEndLength')))
 
     Stl = []
+    cw = []
+
     for i in range(3):
         x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
         y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
@@ -408,7 +493,7 @@ def get_ycross(s, id):
         y3 = (y1+y2)/2
         Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
 
-    return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl)
+    return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
 
 

@@ -42,6 +42,7 @@ class Road:
         self.e2 = []
         self.l = []
         self.stopline = []
+        self.crosswalk = []
         self.previous_road = -1
         self.next_road = -1
         self.SpeedLimit = 1
@@ -96,11 +97,14 @@ class BendRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl, cw):
 
         # General Initialization
 
@@ -108,6 +112,7 @@ class BendRoad(Road):
         self.SpeedLimit = SpeedL    #Set the different speeds
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[1]
 
 
@@ -183,11 +188,14 @@ class CurvedRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl): #Same as BendRoad
+    def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl, cw): #Same as BendRoad
 
         # General Initialization
 
@@ -195,6 +203,7 @@ class CurvedRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[2]
 
         # Creation of the points needed for the Bezier Curve
@@ -515,11 +524,14 @@ class StraightRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -527,6 +539,7 @@ class StraightRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[0]
 
         # Edges, Center Line and Lanes
@@ -592,11 +605,14 @@ class AdapterRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -604,6 +620,7 @@ class AdapterRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[5]
 
         # Edges, Center Line and Lanes
@@ -711,11 +728,14 @@ class EntryRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -723,6 +743,7 @@ class EntryRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[6]
         apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
 
@@ -829,11 +850,14 @@ class ExitRoad(Road):
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
     '''
-    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -841,6 +865,7 @@ class ExitRoad(Road):
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
         self.stopline = Stl
+        self.crosswalk = cw
         self.DefinedSpeed = self.SpeedProfil[7]
         apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
 
@@ -942,6 +967,9 @@ class XCrossRoad(Road):
 
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
+
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
     '''
     def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):
@@ -1221,6 +1249,9 @@ class YCrossRoad(Road):
 
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
+
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
     '''
     def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):

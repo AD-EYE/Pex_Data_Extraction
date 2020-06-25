@@ -133,6 +133,10 @@ class RoadProcessor(object):
 
         self.stoplines = []
 
+        # filled with relevant information for crosswalks
+
+        self.crosswalk = []
+
         #Fill up the Roads tab
         self.roads = roads
 
@@ -185,6 +189,7 @@ class RoadProcessor(object):
         bezierroads = self.__get_bezierroads()
         for bezierroad in bezierroads:
             self.stoplines.append(bezierroad.stopline)
+            self.crosswalk.append(bezierroad.crosswalk)
             road = roads.pop(bezierroad.id, None)
             self.__add_segment(road)
 
@@ -193,6 +198,7 @@ class RoadProcessor(object):
         straightroads = self.__get_straightroads()
         for straightroad in straightroads:
             self.stoplines.append(straightroad.stopline)
+            self.crosswalk.append(straightroad.crosswalk)
             road = roads.pop(straightroad.id, None)
             self.__add_segment(road)
 
@@ -209,6 +215,7 @@ class RoadProcessor(object):
         entryroads = self.__get_entryroads()
         for entryroad in entryroads:
             self.stoplines.append(entryroad.stopline)
+            self.crosswalk.append(entryroad.crosswalk)
             road = roads.pop(entryroad.id, None)
             self.__add_entry(road)
 
@@ -217,6 +224,7 @@ class RoadProcessor(object):
         exitroads = self.__get_exitroads()
         for exitroad in exitroads:
             self.stoplines.append(exitroad.stopline)
+            self.crosswalk.append(exitroad.crosswalk)
             road = roads.pop(exitroad.id, None)
             self.__add_exit(road)
 
@@ -225,6 +233,7 @@ class RoadProcessor(object):
         adapterroads = self.__get_adapterroads()
         for adapterroad in adapterroads:
             self.stoplines.append(adapterroad.stopline)
+            self.crosswalk.append(adapterroad.crosswalk)
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
 

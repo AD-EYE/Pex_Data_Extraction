@@ -268,8 +268,11 @@ class RoundaboutRoad(Road):
     :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
     :type DefinedSpeed: Float
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2] ] with x and y float
+
     '''
-    def __init__(self, id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect):
+    def __init__(self, id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect, cw):
 
         # General Initialization
 
@@ -278,6 +281,7 @@ class RoundaboutRoad(Road):
         self.RefSpeed = RefS
         self.TabConnect = TabConnect
         self.DefinedSpeed = self.SpeedProfil[3]
+        self.crosswalk = cw
 
         # Creating every circles
 
@@ -432,8 +436,11 @@ class ExitLane(Road):
     :param nbr_of_lanes: Number of lanes.
     :type nbr_of_lanes: Integer
 
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2] ] with x and y float
+
     '''
-    def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS):
+    def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS, cw):
 
         # General Init
 
@@ -447,6 +454,7 @@ class ExitLane(Road):
         self.r = r
         self.ch = ch
         self.lw = lw
+        self.crosswalk = cw
 
         # Get exit lanes
 
@@ -972,7 +980,7 @@ class XCrossRoad(Road):
     :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
     '''
-    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -983,6 +991,7 @@ class XCrossRoad(Road):
         self.y=y0
         self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[8]
+        self.crosswalk = cw
 
         # Lanes Creation
 
@@ -1254,7 +1263,7 @@ class YCrossRoad(Road):
     :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
 
     '''
-    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl):
+    def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, SpeedL, RefS, Stl, cw):
 
         # General Init
 
@@ -1265,6 +1274,7 @@ class YCrossRoad(Road):
         self.y=y0
         self.stopline = Stl
         self.DefinedSpeed = self.SpeedProfil[9]
+        self.crosswalk = cw
 
         # Lanes Creation
 

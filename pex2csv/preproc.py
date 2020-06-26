@@ -161,6 +161,7 @@ class RoadProcessor(object):
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
         for roundabout in roundabouts:
+            self.crosswalk.append(roundabout.crosswalk)
             self.__add_roundabout(roundabout)
             roads.pop(roundabout.id, None)
 
@@ -170,6 +171,7 @@ class RoadProcessor(object):
         xcrossings = self.__get_xcrossings()
         for xcrossing in xcrossings:
             self.stoplines.append(xcrossing.stopline)
+            self.crosswalk.append(xcrossing.crosswalk)
             road = roads.pop(xcrossing.id, None)
             self.__add_segment(xcrossing)
             roads.pop(xcrossing.id, None)
@@ -180,6 +182,7 @@ class RoadProcessor(object):
         ycrossings = self.__get_ycrossings()
         for ycrossing in ycrossings:
             self.stoplines.append(ycrossing.stopline)
+            self.crosswalk.append(ycrossing.crosswalk)
             road = roads.pop(ycrossing.id, None)
             self.__add_segment(ycrossing)
             roads.pop(ycrossing.id, None)
@@ -207,6 +210,7 @@ class RoadProcessor(object):
         bendroads = self.__get_bendroads()
         for bendroad in bendroads:
             self.stoplines.append(bendroad.stopline)
+            self.crosswalk.append(bendroad.crosswalk)
             road = roads.pop(bendroad.id, None)
             self.__add_segment(road)
 

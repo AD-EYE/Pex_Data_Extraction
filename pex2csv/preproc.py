@@ -155,6 +155,7 @@ class RoadProcessor(object):
         self.__create_entry_roads(roads)
         self.__create_exit_roads(roads)
         self.__create_adapter_roads(roads)
+        self.__create_crosswalksR(roads)
 
     # Creates lanes traveling from each roundabout until the path meets
     # another roundabout, xcrossing or a dead end
@@ -204,6 +205,14 @@ class RoadProcessor(object):
             self.crosswalk.append(straightroad.crosswalk)
             road = roads.pop(straightroad.id, None)
             self.__add_segment(road)
+
+    # Creates crosswalk roads
+    def __create_crosswalksR(self, roads):
+        crosswalks = self.__get_crosswalksR()
+        for crosswalkR in crosswalks:
+            self.crosswalk.append(crosswalkR.crosswalk)
+            road = roads.pop(crosswalkR.id, None)
+            self.__add_segment(crosswalkR)
 
     # Creates bend roads
     def __create_bend_roads(self, roads):
@@ -352,6 +361,15 @@ class RoadProcessor(object):
             if "StraightRoad" in id:
                 straights.append(roads[id])
         return straights
+
+    # Fetches all straight road in the road network
+    def __get_crosswalksR(self):
+        roads = self.roads
+        cross = []
+        for id in roads.keys():
+            if "PedestrianCrossing" in id:
+                cross.append(roads[id])
+        return cross
 
     # Fetches all Bend road in the road network
     def __get_bendroads(self):

@@ -576,6 +576,74 @@ class StraightRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+class Crosswalkr(Road):
+    '''
+    This a representation of a crosswalk road in Prescan.
+
+    :param id: Unique id.
+    :type id: String
+
+    :param x0: The x coordinate of the center of the start of the road segment.
+    :type x0: Float
+
+    :param y0: The y coordinate of the center of the start of the road segment.
+    :type y0: Float
+
+    :param h: Global heading of the road segment at the start point.
+    :type h: Float
+
+    :param l: Length of the road segment
+    :type l: Float
+
+    :param lw: Lane width.
+    :type lw: Float
+
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :type DefinedSpeed: Float
+
+    '''
+    def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, SpeedL, RefS, cw):
+
+        # General Init
+
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
+        self.crosswalk = cw
+        self.DefinedSpeed = self.SpeedProfil[0]
+
+        # Edges, Center Line and Lanes
+
+        self.c.append(Straight( x0, y0, h, l))
+
+        self.e1.append(Straight( x0 - (nbr_of_lanes/2)*lw * np.cos(h + np.pi / 2),
+                                y0 - (nbr_of_lanes/2) * lw * np.sin(h + np.pi / 2), h, l))
+
+        self.e2.append(Straight( x0 + (nbr_of_lanes/2)*lw * np.cos(h + np.pi / 2),
+                                y0 + lw * (nbr_of_lanes/2) * np.sin(h + np.pi / 2), h, l))
+
+        lwi = (nbr_of_lanes -1) * lw/2
+        for _ in range(nbr_of_lanes):
+            self.l.append(Straight( x0 + lwi * np.cos(h + np.pi / 2),
+                                    y0 + lwi * np.sin(h + np.pi / 2),
+                                    h, l))
+            lwi -= lw
+
+        #This changes the direction of the lanes that drive backwards
+        if nbr_of_lanes-lanes_in_x_dir>0:
+            for i in range(nbr_of_lanes-lanes_in_x_dir):
+                l=[]
+                for (x, y) in self.l[i]:
+                    l.append([x, y])
+                l = l[::-1]
+                self.l[i] = l
+
 class AdapterRoad(Road):
     '''
     This a representation of an adapter road in Prescan.

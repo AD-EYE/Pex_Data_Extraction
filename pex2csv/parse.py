@@ -81,6 +81,8 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_ycross(s, id)
         elif (type == 'CubicSplineRoad'):
             roads.update(get_flex(s, id))
+        elif (type == 'PedestrianCrossing'):
+            roads[id] = get_crosswalk(s, id)
     return roads
 
     # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
@@ -120,7 +122,7 @@ def get_bend(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -161,7 +163,7 @@ def get_curved(s, id):
             Stl.append((x1, y1, x2, y2, x3, y3))
             print(Stl)
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -267,7 +269,7 @@ def get_roundabout(s, id, connections, path):
     cw = []
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -318,7 +320,7 @@ def get_straight(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -331,6 +333,27 @@ def get_straight(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
+def get_crosswalk(s, id):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    Vmax = s.get('MaxSpeed')
+    h = float(s[1].get('Heading')) * np.pi / 180
+    l = float(s.get('RoadLength'))
+    lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    rw = nbr_of_lanes*lw #total width of the road
+
+    cw = []
+    x1 = x0 - (rw/2)*np.sin(h)
+    y1 = y0 + (rw/2)*np.cos(h)
+    x2 = x0 + l*np.cos(h) - (rw/2)*np.cos(h)
+    y2 = y0 + l*np.sin(h) + (rw/2)*np.cos(h)
+    x3 = x0 + (rw/2)*np.sin(h)
+    y3 = y0 - (rw/2)*np.cos(h)
+    cw.append([x1,y1,x2,y2,x3,y3])
+
+    return Crosswalkr(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, cw)
 
 def get_entry(s, id):
     x0 = float(s[0].get('X'))
@@ -358,7 +381,7 @@ def get_entry(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -399,7 +422,7 @@ def get_exit(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -437,7 +460,7 @@ def get_adapter(s, id):
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
             if "PedestrianMarkingGeneric" in str(R.get('id')) :
-                hw = float(R[1].get('Heading'))
+                hw = float(R[1].get('Heading'))*np.pi/180
                 cl = float(R.get('CrossingLength'))
                 cwh = float(R.get('CrossingWidth'))
                 xl = float(R[0].get('X'))
@@ -482,7 +505,7 @@ def get_xcross(s, id):
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
@@ -530,7 +553,7 @@ def get_ycross(s, id):
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
-            hw = float(R[1].get('Heading'))
+            hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))

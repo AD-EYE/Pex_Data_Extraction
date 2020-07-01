@@ -149,7 +149,7 @@ class VectorMap:
             )
             for tab in cross :          #here we try to find if a crosswalk crosses the lane to set CrossID of the lane (0 if there is no crosswalk)
                 for i in range (3):
-                    if dist ((x,y),tab[i+1])<2 :
+                    if dist ((x,y),(tab[i+1],tab[i+2]))<2 :
                         setattr(self.lane[0], 'CrossID', tab[0])
 
             # If this is the first Lane, remember the ID. Else, link the
@@ -276,8 +276,9 @@ class VectorMap:
 
     def make_Area(self, crosswalk):
         '''
-        This method takes an array of tab representing every 3 points for a crosswalk and creates crosswalks and area.
+        This method takes an array of tab representing every 3 points for a crosswalk.
         It returns an array of the crosswalks ID and the coordinates of the points describing them --> will be usefull to set CrossID in Lane
+        cross = [CrossID, Point1 x, Point1 y, Point2 x, Point2 y, Point3 x, Point3 y]
         '''
         empty = [] #list filled with indexes k where crosswalk[k]==[]
         k=0
@@ -292,11 +293,21 @@ class VectorMap:
             del crosswalk[j]
 
         cross = []
-
+        k = 0
         for tab in crosswalk :
-            PID1=self.point.create(tab[0][0],tab[0][1],0)
-            PID2=self.point.create(tab[0][2],tab[0][3],0)
-            PID3=self.point.create(tab[0][4],tab[0][5],0)
+            cross.append([k,tab[0][0],tab[0][1],tab[0][2],tab[0][3],tab[0][4],tab[0][5]])
+            k=k+1
+
+        return cross
+
+    def make_crosswalk(self,cross):
+        '''
+        this method creates the area and the crosswalks (and the corresponding points and lines)
+        '''
+        for tab in cross :
+            PID1=self.point.create(tab[1],tab[2],0)
+            PID2=self.point.create(tab[3],tab[4],0)
+            PID3=self.point.create(tab[5],tab[6],0)
 
             LineID1=self.line.create(PID1,PID2)
             LineID2=self.line.create(PID2,PID3)
@@ -304,11 +315,6 @@ class VectorMap:
 
             AreaID=self.Area.create(LineID1,LineID3)
             CrosswalkID=self.Crosswalk.create(AreaID)
-
-            cross.append([CrosswalkID,(tab[0][0],tab[0][1]),(tab[0][2],tab[0][3]),(tab[0][4],tab[0][5])])
-
-        return cross
-
 
 
 

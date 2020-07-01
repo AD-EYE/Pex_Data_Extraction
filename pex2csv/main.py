@@ -34,6 +34,7 @@ if __name__ == '__main__':
     #     vm.make_line(edge.get_lanes(), line_type='EDGE')
     #for center in rproc.centers:
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
+    vm.make_crosswalk(cross)
     vm.make_Stoplines(rproc.stoplines)
     vm.make_TrafficLight(rproc2.TrfLight)
     vm.merge_redundant_points()

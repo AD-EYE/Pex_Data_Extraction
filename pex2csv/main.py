@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/Test_2Crosswalks/Experiment/Experiment.pex"
+PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W01_Base_Map/Simulation/W01_Base_Map.pex"
 
 if __name__ == '__main__':
 
@@ -19,13 +19,12 @@ if __name__ == '__main__':
     rproc2.add_staticalobject(statobj)
     rproc2.create_statical_object()
     vm = VectorMap()
+    cross = vm.make_Area(rproc.crosswalk)
     for lane in rproc.lanes:
         if Take_Speed_Prescan:
-            vm.make_lane(lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
+            vm.make_lane(cross, lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
         else:
-            vm.make_lane(lane.DefinedSpeed, lane.DefinedSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
-
-
+            vm.make_lane(cross, lane.DefinedSpeed, lane.DefinedSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
 
 
 
@@ -36,7 +35,6 @@ if __name__ == '__main__':
     #for center in rproc.centers:
     #    vm.make_line(center.get_lanes(), line_type='CENTER')
     vm.make_Stoplines(rproc.stoplines)
-    vm.make_Area(rproc.crosswalk)
     vm.make_TrafficLight(rproc2.TrfLight)
     vm.merge_redundant_points()
     vm.rebuild_lane_conections()

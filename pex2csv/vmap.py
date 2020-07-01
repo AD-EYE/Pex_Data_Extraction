@@ -108,7 +108,7 @@ class VectorMap:
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    def make_lane(self, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
+    def make_lane(self, cross, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
         '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
@@ -147,7 +147,10 @@ class VectorMap:
                 lane_before = lane_previous,
                 dtlane_before = dtlane_previous
             )
-
+            for tab in cross :          #here we try to find if a crosswalk crosses the lane to set CrossID of the lane (0 if there is no crosswalk)
+                for i in range (3):
+                    if dist ((x,y),tab[i+1])<2 :
+                        setattr(self.lane[0], 'CrossID', tab[0])
 
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
@@ -273,7 +276,8 @@ class VectorMap:
 
     def make_Area(self, crosswalk):
         '''
-        This method takes an array of tab representing every 3 points for a crosswalk
+        This method takes an array of tab representing every 3 points for a crosswalk and creates crosswalks and area.
+        It returns an array of the crosswalks ID and the coordinates of the points describing them --> will be usefull to set CrossID in Lane
         '''
         empty = [] #list filled with indexes k where crosswalk[k]==[]
         k=0
@@ -287,6 +291,7 @@ class VectorMap:
         for j in empty :
             del crosswalk[j]
 
+        cross = []
 
         for tab in crosswalk :
             PID1=self.point.create(tab[0][0],tab[0][1],0)
@@ -300,8 +305,9 @@ class VectorMap:
             AreaID=self.Area.create(LineID1,LineID3)
             CrosswalkID=self.Crosswalk.create(AreaID)
 
+            cross.append([CrosswalkID,(tab[0][0],tab[0][1]),(tab[0][2],tab[0][3]),(tab[0][4],tab[0][5])])
 
-
+        return cross
 
 
 
@@ -650,7 +656,7 @@ class Lane:
 
     '''
     def __init__(self, SpeedLimit, RefSpeed, dtlane=0, node_start=0, node_end=0, lane_before=0,
-            lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT'):
+            lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT',cross=0):
         self.DID = dtlane           # Corresponding DTLane ID
         self.BLID = lane_before     # Preceding Lane ID
         self.FLID = lane_after      # Following Lane ID
@@ -662,7 +668,7 @@ class Lane:
         self.FLID2 = 0
         self.FLID3 = 0
         self.FLID4 = 0
-        self.CrossID = 0
+        self.CrossID = cross        # ID of the crosswalk crossing the lane
         self.Span = length          # Lane lengh (between Nodes)
         self.LCnt = 1
         self.Lno = 1

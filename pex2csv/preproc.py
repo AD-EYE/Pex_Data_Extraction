@@ -362,7 +362,7 @@ class RoadProcessor(object):
                 straights.append(roads[id])
         return straights
 
-    # Fetches all straight road in the road network
+    # Fetches all crosswalks in the road network
     def __get_crosswalksR(self):
         roads = self.roads
         cross = []

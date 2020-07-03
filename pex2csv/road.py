@@ -1404,7 +1404,7 @@ class YCrossRoad(Road):
 
         # Creating every connections between each starting lanes
 
-        # We will now link each crossections of the x crossing
+        # We will now link each crossections of the y crossing
         #
         #                ######################
         #                <----------------|----
@@ -1421,7 +1421,7 @@ class YCrossRoad(Road):
 
 
         total_nb_of_lanes = 0   # This will be usefull to create a counter that can circle back to the beggining of the lane list (see below)
-        Number_of_lanes_of_interest = []
+        Number_of_lanes_of_interest = [] #lanes heading towards the center of the crossroad (reverse than lanes in x dir)
         for i in range(3):
             nb_of_lanes = cs_nbr_of_lanes[i]
             lanes_in_x_dir = cs_lanes_in_x_dir[i]
@@ -1486,7 +1486,6 @@ class YCrossRoad(Road):
 
                         xs = [x1, x3, x3, x2]
                         ys = [y1, y3, y3, y2]
-
 
                         l1 = Curve(xs, ys, 0)
                         Actual_Lane1 = []

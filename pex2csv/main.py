@@ -4,7 +4,7 @@ import numpy as np
 import parse
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/Ycrossing/1/Experiment/Experiment.pex"
+PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W07_Neighborhood/Simulation/Experiment.pex"
 
 if __name__ == '__main__':
 

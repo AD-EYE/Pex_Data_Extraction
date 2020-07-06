@@ -269,10 +269,10 @@ class VectorMap:
                     if closest_node == self.lane[k].FNID:
                         lane_id = self.lane[k].BLID
 
-                PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
-                PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
-                LineID = self.line.create(PointID1,PointID2)
-                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
+                        PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
+                        PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
+                        LineID = self.line.create(PointID1,PointID2)
+                        StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
     def make_Area(self, crosswalk):
         '''

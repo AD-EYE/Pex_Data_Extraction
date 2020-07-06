@@ -1422,14 +1422,24 @@ class YCrossRoad(Road):
 
         total_nb_of_lanes = 0   # This will be usefull to create a counter that can circle back to the beggining of the lane list (see below)
         Number_of_lanes_of_interest = [] #lanes heading towards the center of the crossroad (reverse than lanes in x dir)
+        count_x_dir = 0
+        Index_lanes_x_dir = []
         for i in range(3):
+            Index_lanes_x_dir_local = []
             nb_of_lanes = cs_nbr_of_lanes[i]
             lanes_in_x_dir = cs_lanes_in_x_dir[i]
+            if lanes_in_x_dir > 0 :
+                if nb_of_lanes == lanes_in_x_dir :
+                    Index_lanes_x_dir_local.append(count_x_dir)
+                else :
+                    for k in range (nb_of_lanes - lanes_in_x_dir) :
+                        Index_lanes_x_dir_local.append(count_x_dir+k + lanes_in_x_dir)
             total_nb_of_lanes += nb_of_lanes
+            count_x_dir = total_nb_of_lanes
             Number_of_lanes_of_interest.append(nb_of_lanes - lanes_in_x_dir)
+            Index_lanes_x_dir.append(Index_lanes_x_dir_local)
 
         compteur_for_lane_interest =0
-        local_count = cs_nbr_of_lanes[0]
 
         for m in range(3): # For each corssections
 
@@ -1463,11 +1473,11 @@ class YCrossRoad(Road):
                 Lanes_of_Interest = self.l[compteur_for_lane_interest:compteur_for_lane_interest+nb_of_lanes - lanes_in_x_dir:1]   # Lanes going in the opposite direction of x that we are looking to connect to other lanes
 
                 Lane_available_for_connection = []
-                for p in range(1,3):
-                    for k in range(cs_lanes_in_x_dir[(m+p)%3]):
-                        Lane_available_for_connection.append(self.l[(local_count+cs_nbr_of_lanes[(m+p)%3]-cs_lanes_in_x_dir[(m+p)%3]+k)%total_nb_of_lanes]) # We had here every lane available for connection (ie the lane going in the x direction)
-                    if p != 2:
-                        local_count += cs_nbr_of_lanes[(m+1)%3]
+                for p in range(3):
+                    if p != m :
+                        for k in range (len(Index_lanes_x_dir[p])) :
+                            Lane_available_for_connection.append(self.l[Index_lanes_x_dir[p][k]])
+
 
 
 
@@ -1498,6 +1508,11 @@ class YCrossRoad(Road):
 
                     Lane_available_for_connection_right = Lane_available_for_connection[0:cs_lanes_in_x_dir[(m+1)%3]]
                     Lane_available_for_connection_left = Lane_available_for_connection[cs_lanes_in_x_dir[(m+1)%3]:cs_lanes_in_x_dir[(m+1)%3]+cs_lanes_in_x_dir[(m+2)%3]]
+
+                    if Lane_available_for_connection_left == [] : #If one of the lists is empty then the lanes of interest will be connected to the samme lanes
+                        Lane_available_for_connection_left = Lane_available_for_connection_right
+                    elif Lane_available_for_connection_right == [] :
+                        Lane_available_for_connection_right = Lane_available_for_connection_left
 
                     # We will create a more specific list out of list 2 (that contains every lanes available for connections
                     # Lane available for connection left in whih you'll have every lane locatrd on the crossection to the left

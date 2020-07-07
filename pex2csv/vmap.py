@@ -472,10 +472,6 @@ class VectorMap:
                 edge = np.array(edge)
                 plt.plot(edge[:,0], edge[:,1], 'b-')
 
-        if os.path.isdir('./Image/') == False : # checks if the csv file exists and creates it if not
-            os.mkdir('./Image/')
-        plt.savefig('./Image/DisplayVectorMap.svg')
-
         plt.show()
 
     def export(self):

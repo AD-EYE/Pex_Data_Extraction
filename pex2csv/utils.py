@@ -121,7 +121,7 @@ def Intersection_Lines(L1, L2):
         b2 = L2[1][1]- a2*L2[1][0]
 
 
-        if round(a1,4) == round(a2,4):
+        if round(a1,1) == round(a2,1):
             xinter = (L1[-1][0]+L2[0][0])/2
             yinter = (L1[-1][1]+L2[0][1])/2
         else:

@@ -1074,15 +1074,16 @@ class XCrossRoad(Road):
             lanes_going_OUT = cs_lanes_going_OUT[c]
             lwi=(cs_nbr_of_lanes[c] -1) * lw/2
             next_first_lane = counter             # Allow us the access to the first lane created that need to be reversed
+
             for lane in range(nb_of_lanes):
 
-                l1 = Straight(x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2), y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2), cs_h[c]+h, cs_len_till_stop[c]+1) #+1 or doesnt work
+                l1 = Straight(x0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.cos(cs_h[c]+h) + (lwi)*np.cos(cs_h[c]+h+ np.pi / 2), y0 + (cs_l[c]-cs_len_till_stop[c]-1)*np.sin(cs_h[c]+h) + (lwi)*np.sin(cs_h[c]+h+ np.pi / 2), cs_h[c]+h, (cs_len_till_stop[c]+1))
 
                 Actual_Lane = []  # This convert the lane from a path obj to a tab of point
                 for (x,y) in l1:
                     Actual_Lane.append([x, y])
 
-                self.l.append(Actual_Lane)
+                self.l.append(Actual_Lane[1:])
 
                 lwi -= lw
                 counter += 1
@@ -1137,152 +1138,251 @@ class XCrossRoad(Road):
         # In order to understand the implentation of this next part, please read the comment AND the wiki dedicated to this RT
 
 
-        count_lanes_going_IN = 0  # This counter will grant us access to the lanes going in the opposite of x direction
-
-        counter_for_right_most_lane = cs_nbr_of_lanes[0] # this counter allow us to access the lanes that are located in the next right crosssection
-        counter_for_lane_in_front = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] # this counter allow us to access the lanes that are located in the crosssection in front of the one being compute
-        counter_for_left_most_lane = cs_nbr_of_lanes[0]+cs_nbr_of_lanes[1] + cs_nbr_of_lanes[2] # this counter allow us to access the lanes that are located in the next left crosssection
-
-
         total_nb_of_lanes = 0   # This will be usefull to create a counter that can circle back to the beggining of the lane list (see below)
-        for y in range(4):
-            total_nb_of_lanes += cs_nbr_of_lanes[y]
+        Number_of_lanes_going_IN = [] #lanes heading towards the center of the crossroad
+        Index_lanes_going_out = []
+        Index_lanes_going_in = []
 
-
-        for i in range(4):  # For each Branch of the X Crossing
+        for i in range(4):
+            Index_lanes_going_out_local = []
+            Index_lanes_going_in_local = []
             nb_of_lanes = cs_nbr_of_lanes[i]
             lanes_going_OUT = cs_lanes_going_OUT[i]
-            counter_remaining_lanes = nb_of_lanes - lanes_going_OUT      # This will give plenty of informations : is the road a one way road ? how many lanes are left to create ?
-            counter_for_right_most_lane += cs_nbr_of_lanes[(i+1)%4]
-            counter_for_lane_in_front += cs_nbr_of_lanes[(i+2)%4]
-            counter_for_left_most_lane += cs_nbr_of_lanes[(i+3)%4]
 
-            if nb_of_lanes - lanes_going_OUT > 0:  # If the road is not a one way road
+            if lanes_going_OUT > 0 : # here we save the index in self.l of the lanes driving out of the crossroad
+                if nb_of_lanes == lanes_going_OUT :
+                    for k in range (nb_of_lanes):
+                        Index_lanes_going_out_local.append(total_nb_of_lanes+k)
+                else :
+                    for k in range (lanes_going_OUT) :
+                        Index_lanes_going_out_local.append(total_nb_of_lanes+k + (nb_of_lanes-lanes_going_OUT))
 
-                lanes_going_IN = self.l[count_lanes_going_IN:count_lanes_going_IN+nb_of_lanes - lanes_going_OUT:1]   # Lanes going in the opposite direction of x that we are looking to connect to other lanes
+            for k in range (nb_of_lanes): # here we save the index in self.l of the lanes going in the crossroad
+                if (k+total_nb_of_lanes) not in Index_lanes_going_out_local :
+                    Index_lanes_going_in_local.append(k + total_nb_of_lanes)
 
-                # Link a droite et devant pour la lane la plus a droite
+            total_nb_of_lanes += nb_of_lanes
 
-                (x1,y1) = lanes_going_IN[0][len(lanes_going_IN[0])-1]  # We take the coordinate of the last point (the point which is on the stopline basically) of the right most lane
+            Number_of_lanes_going_IN.append(nb_of_lanes - lanes_going_OUT)
+            Index_lanes_going_in.append(Index_lanes_going_in_local)
+            Index_lanes_going_out.append(Index_lanes_going_out_local)
 
-                (x2,y2) = self.l[(counter_for_right_most_lane-1)%total_nb_of_lanes][0]       # And then the coordinate of the first point of the lane to the right
-                (x3,y3) = Intersection_Lines(lanes_going_IN[0],self.l[(counter_for_right_most_lane-1)%total_nb_of_lanes])
-
-                xs = [x1, x3, x3, x2]
-                ys = [y1, y3, y3, y2]
-                #(x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                #(x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
-
-                #xs = [x1, x5, x4, x2]
-                #ys = [y1, y5, y4, y2]
-
-                # Lane going to the right
-                if cs_lanes_going_OUT[(i+1)%4] != 0:    # Is the right turn possible ?
-                    l1 = Curve(xs, ys, 0)
-                    Actual_Lane1 = []
-                    for (x,y) in l1:
-                        Actual_Lane1.append([x, y])
-                    self.l.append(Actual_Lane1)
+        count_lanes_going_IN =0
 
 
-                # Lane going straight
+        for m in range(4):  # For each Branch of the X Crossing
+            if Number_of_lanes_going_IN[m] !=0 :  # if there are lanes going in the opposite x direction
 
 
-                (x4,y4) = self.l[(counter_for_lane_in_front-1)%total_nb_of_lanes][0]
+                nb_of_lanes = cs_nbr_of_lanes[m]
+                lanes_going_OUT = cs_lanes_going_OUT[m]
+                counter_remaining_lanes = nb_of_lanes - lanes_going_OUT
 
-                (x5,y5) = Intersection_Lines(lanes_going_IN[0],self.l[(counter_for_lane_in_front-1)%total_nb_of_lanes])
-
-
-                xs1 = [x1, x5, x5, x4]
-                ys1 = [y1, y5, y5, y4]
-
-                l2 = Curve(xs1, ys1, 0)
-                Actual_Lane2 = []
-                for (x,y) in l2:
-                    Actual_Lane2.append([x, y])
-                self.l.append(Actual_Lane2)
+                lanes_going_IN = []
+                for k in range (len(Index_lanes_going_in[m])):
+                    lanes_going_IN.append(self.l[Index_lanes_going_in[m][k]])  # Lanes going in the crossroad that we will link to the roads going out of the crossroad
 
 
-                counter_remaining_lanes -= 1
+                Lane_available_for_connection = []
+                Lane_available_for_connection_right = []
+                Lane_available_for_connection_left = []
+                for p in range(4):
+                    if p != m :
+                        for k in range (len(Index_lanes_going_out[p])) :
+                            Lane_available_for_connection.append(self.l[Index_lanes_going_out[p][k]])
 
 
-                # "Middle Lane" and lane going to the left
 
 
-                if counter_remaining_lanes !=0 :   # This is here in case of x cross having only 1 lane going in opposite x direction
-                    counter_access_lanes = 1 # Help have acces to each lanes in between the right most lane et the left most lane
+                if Number_of_lanes_going_IN[m] == 1 :  # If we have only one lane going in the crossroad
 
-                    while (counter_remaining_lanes !=0) :     # while there is lane in between the two most left/right lanes
+                    for r in range(len(Lane_available_for_connection)): # We connect the Only Lane of interest to EVERY lane avaible for conections
 
+                        (x1,y1) = lanes_going_IN[0][len(lanes_going_IN[0])-1]
 
-                        (x6,y6) =  lanes_going_IN[counter_access_lanes][len(lanes_going_IN)-1]   # We Take the coordinate of the end point of the lanes in the middle
-                        (x7,y7) = self.l[(counter_for_lane_in_front-1-counter_access_lanes)%total_nb_of_lanes][0]  # bangbang
+                        (x2,y2) = Lane_available_for_connection[r][0]
 
-                        (x8,y8) = Intersection_Lines(lanes_going_IN[counter_access_lanes],self.l[(counter_for_lane_in_front-1-counter_access_lanes)%total_nb_of_lanes])
+                        (x3,y3) = Intersection_Lines(lanes_going_IN[0],Lane_available_for_connection[r])
 
+                        # here we check if (x3,y3) is on lanes_going_IN[0] (or Lane_available_for_connection[r])
+                        # if it is, (x1,y1) (or (x3,y3)) will be the point after (respectively the point before) on the lanes
+                        # so that the curve created will be smoother
 
-                        xs2 = [x6, x8, x8, x7]
-                        ys2 = [y6, y8, y8, y7]
+                        k2=0
+                        while k2<len(Lane_available_for_connection[r]) :
+                            p2 = Lane_available_for_connection[r][k2]
+                            if dist(p2,(x3,y3))<0.5 :
+                                (x2,y2) = Lane_available_for_connection[r][k2+1]
+                                k2=len(Lane_available_for_connection[r])
+                            k2+=1
 
-                        l3 = Curve(xs2, ys2, 0)
-                        Actual_Lane3 = []
-                        for (x,y) in l3:
-                            Actual_Lane3.append([x, y])
-                        self.l.append(Actual_Lane3)
-                        counter_access_lanes += 1
-                        counter_remaining_lanes -= 1
-
-                    # Making the left connection
-
-                    (x9,y9) = lanes_going_IN[len(lanes_going_IN)-1][len(lanes_going_IN[len(lanes_going_IN)-1])-1]
-
-                    (x10,y10) = self.l[(counter_for_left_most_lane-1)%total_nb_of_lanes][0]
-
-                    (x11,y11) = Intersection_Lines(lanes_going_IN[len(lanes_going_IN)-1],self.l[(counter_for_left_most_lane-1)%total_nb_of_lanes])
-
-                    #(xm,ym) = ( ((x11+x10)/2)  ,  ((y11+y10)/2)  )
-                    #(xn,yn) = ( ((x11+x9)/2)  ,  ((y11+y9)/2)  )
-
-                    #xs3 = [x9, xn, xm, x11]
-                    #ys3 = [y9, yn, ym, y11]
-
-                    xs3 = [x9, x11, x11, x10]
-                    ys3 = [y9, y11, y11, y10]
-
-                    if cs_lanes_going_OUT[(i+3)%4] != 0:
-                        l4 = Curve(xs3, ys3, 0)
-                        Actual_Lane4 = []
-                        for (x,y) in l4:
-                            Actual_Lane4.append([x, y])
-                        self.l.append(Actual_Lane4)
-
-                else :    # If counter_remaining_lanes = 0 then we just have to make the connection to the left for the uniaue lane going in the opposite of x direction
-
-                    (x12,y12) = lanes_going_IN[len(lanes_going_IN)-1][len(lanes_going_IN[len(lanes_going_IN)-1])-1]  #bangavng
-
-                    (x13,y13) = self.l[(counter_for_left_most_lane-1)%total_nb_of_lanes][0]
-
-                    (x14,y14) = Intersection_Lines(lanes_going_IN[len(lanes_going_IN)-1],self.l[(counter_for_left_most_lane-1)%total_nb_of_lanes])
+                        k1=len(lanes_going_IN[0])-1
+                        while k1>0 :
+                            p1 = lanes_going_IN[0][k1]
+                            if dist(p1,(x3,y3))<0.5 :
+                                (x1,y1) = lanes_going_IN[0][k1-1]
+                                k1=-1
+                            k1=k1-1
 
 
-                    #(xm,ym) = ( ((x14+x13)/2)  ,  ((y14+y13)/2)  )
-                    #(xn,yn) = ( ((x14+x12)/2)  ,  ((y14+y12)/2)  )
+                        xs = [x1, x3, x3, x2]
+                        ys = [y1, y3, y3, y2]
 
-                    #xs4 = [x12, xn, xm, x13]
-                    #ys4 = [y12, yn, ym, y13]
+                        l1 = Curve(xs, ys, 0)
+                        Actual_Lane1 = []
+                        counter_addLine = -1
+                        for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                            if counter_addLine>-1 :
+                                if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
+                            else :
+                                Actual_Lane1.append([x, y])
+                                counter_addLine+=1
+                        self.l.append(Actual_Lane1)
 
-                    xs4 = [x12, x14, x14, x13]
-                    ys4 = [y12, y14, y14, y13]
 
-                    if cs_lanes_going_OUT[(i+3)%4] != 0:
-                        l5 = Curve(xs4, ys4, 0)
-                        Actual_Lane5 = []
-                        for (x,y) in l5:
-                            Actual_Lane5.append([x, y])
+                else :
 
-                        self.l.append(Actual_Lane5)
+                    Lane_available_for_connection_right = Lane_available_for_connection[0:cs_lanes_going_OUT[(m+1)%3]]
+                    Lane_available_for_connection_left = Lane_available_for_connection[cs_lanes_going_OUT[(m+1)%3]:cs_lanes_going_OUT[(m+1)%3]+cs_lanes_going_OUT[(m+2)%3]]
 
-            count_lanes_going_IN += cs_nbr_of_lanes[i]
+                    if Lane_available_for_connection_left == [] : #If one of the lists is empty then the lanes of interest will be connected to the samme lanes
+                        Lane_available_for_connection_left = Lane_available_for_connection_right
+                    elif Lane_available_for_connection_right == [] :
+                        Lane_available_for_connection_right = Lane_available_for_connection_left
+
+                    # We will create a more specific list out of list 2 (that contains every lanes available for connections
+                    # Lane available for connection left in whih you'll have every lane locatrd on the crossection to the left
+                    # And Lane available for connection right will is the same but for the lanes located on the corssection to the right
+
+                    if len(lanes_going_IN)%2 !=0: # If there is an odd numbers of lanes then list 2 will be broken into the 2 list right/left and the raminaing lane will be had to the list that have less lanes
+                        lanes_going_IN_right = lanes_going_IN[0:(len(lanes_going_IN)//2)+1]
+                        lanes_going_IN_left = lanes_going_IN[(len(lanes_going_IN)//2)+1:]
+
+                        if len(Lane_available_for_connection_right) > len(Lane_available_for_connection_left):
+                            lanes_going_IN_right.append(lanes_going_IN[int((len(lanes_going_IN)-1)//2)])
+                        elif len(Lane_available_for_connection_left) > len(Lane_available_for_connection_right):
+                            lanes_going_IN_left.append(lanes_going_IN[int((len(lanes_going_IN)-1)//2)])
+                        else :
+                            lanes_going_IN_right.append(lanes_going_IN[int((len(lanes_going_IN)-1)//2)])
+
+                    else :
+                        lanes_going_IN_right = lanes_going_IN[0:int((len(lanes_going_IN)-1)//2)+1]
+                        lanes_going_IN_left = lanes_going_IN[int((len(lanes_going_IN)-1)//2)+1:]
+
+
+
+                    for q in range(len(lanes_going_IN_right)):  # Right side of X Crossing
+
+                        # The list now created we make every connections
+                        # And we will proceed that way
+                        #
+                        #                     |      |       |
+                        #                     |      |       |
+                        # Lanes in list 2 :   |      |       |
+                        #                     |      |       |
+                        #                    (a2)   (b2)    (c2)
+                        #                        |       |
+                        #                        |       |
+                        # Lanes in list 1 :      |       |
+                        #                        |       |
+                        #                       (a1)    (b1)
+                        #
+                        # a1 to a2, and b1 to b2 and c2
+                        # If List 1 had three lanes then a1 to a2, b1 to b2, c1 to c2
+
+                        for j in range(len(Lane_available_for_connection_right)):
+
+                            (x1,y1) = lanes_going_IN_right[q][len(lanes_going_IN_right[q])-1]
+
+                            (x2,y2) = Lane_available_for_connection_right[j][0]
+
+                            (x3,y3) = Intersection_Lines(lanes_going_IN_right[q], Lane_available_for_connection_right[j])
+
+                            k2=0
+                            while k2<len(Lane_available_for_connection_right[j]) :
+                                p2 = Lane_available_for_connection_right[j][k2]
+                                if dist(p2,(x3,y3))<0.5 :
+                                    (x2,y2) = Lane_available_for_connection_right[j][k2+1]
+                                    k2=len(Lane_available_for_connection_right[j])
+                                k2+=1
+
+                            k1=len(lanes_going_IN_right[0])-1
+                            while k1>0 :
+                                p1 = lanes_going_IN_right[q][k1]
+                                if dist(p1,(x3,y3))<0.5 :
+                                    (x1,y1) = lanes_going_IN_right[q][k1-1]
+                                    k1=-1
+                                k1=k1-1
+
+                            xs = [x1, x3, x3, x2]
+                            ys = [y1, y3, y3, y2]
+
+                            l1 = Curve(xs, ys, 0)
+                            Actual_Lane1 = []
+                            counter_addLine = -1
+                            for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                                if counter_addLine>-1 :
+                                    if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                        Actual_Lane1.append([x, y])
+                                        counter_addLine+=1
+                                else :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
+                            self.l.append(Actual_Lane1)
+
+
+
+
+
+                    for q in range(len(lanes_going_IN_left)):  # Left side of X Crossing
+                        # Same working but for the left
+                        for j in range(len(Lane_available_for_connection_left)):
+
+                            (x1,y1) = lanes_going_IN_left[q][len(lanes_going_IN_left[q])-1]
+
+                            (x2,y2) = Lane_available_for_connection_left[j][0]
+
+                            (x3,y3) = Intersection_Lines(lanes_going_IN_left[q], Lane_available_for_connection_left[j])
+
+                            k2=0
+                            while k2<len(Lane_available_for_connection_left[j]) :
+                                p2 = Lane_available_for_connection_left[j][k2]
+                                if dist(p2,(x3,y3))<0.5 :
+                                    (x2,y2) = Lane_available_for_connection_left[j][k2+1]
+                                    k2=len(Lane_available_for_connection_left[j])
+                                k2+=1
+
+                            k1=len(lanes_going_IN_left[0])-1
+                            while k1>0 :
+                                p1 = lanes_going_IN_left[q][k1]
+                                if dist(p1,(x3,y3))<0.5 :
+                                    (x1,y1) = lanes_going_IN_left[q][k1-1]
+                                    k1=-1
+                                k1=k1-1
+
+                            xs = [x1, x3, x3, x2]
+                            ys = [y1, y3, y3, y2]
+
+
+                            l1 = Curve(xs, ys, 0)
+                            Actual_Lane1 = []
+                            counter_addLine = -1
+                            for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                                if counter_addLine>-1 :
+                                    if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                        Actual_Lane1.append([x, y])
+                                        counter_addLine+=1
+                                else :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
+                            self.l.append(Actual_Lane1)
+
+
+
+
+            count_lanes_going_IN += cs_nbr_of_lanes[m]
 
         # Edges
 
@@ -1524,16 +1624,21 @@ class YCrossRoad(Road):
                                 k1=-1
                             k1=k1-1
 
-                        (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                        (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )  # Those points allow a smoother curve but seems to crash Autoware for some reasons
 
                         xs = [x1, x3, x3, x2]
                         ys = [y1, y3, y3, y2]
 
                         l1 = Curve(xs, ys, 0)
                         Actual_Lane1 = []
-                        for (x,y) in l1:
-                            Actual_Lane1.append([x, y])
+                        counter_addLine = -1
+                        for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                            if counter_addLine>-1 :
+                                if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
+                            else :
+                                Actual_Lane1.append([x, y])
+                                counter_addLine+=1
                         self.l.append(Actual_Lane1)
 
 
@@ -1595,9 +1700,6 @@ class YCrossRoad(Road):
 
                             (x3,y3) = Intersection_Lines(lanes_going_IN_right[q], Lane_available_for_connection_right[j])
 
-                            (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                            (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
-
                             k2=0
                             while k2<len(Lane_available_for_connection_right[j]) :
                                 p2 = Lane_available_for_connection_right[j][k2]
@@ -1619,8 +1721,15 @@ class YCrossRoad(Road):
 
                             l1 = Curve(xs, ys, 0)
                             Actual_Lane1 = []
-                            for (x,y) in l1:
-                                Actual_Lane1.append([x, y])
+                            counter_addLine = -1
+                            for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                                if counter_addLine>-1 :
+                                    if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                        Actual_Lane1.append([x, y])
+                                        counter_addLine+=1
+                                else :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
                             self.l.append(Actual_Lane1)
 
 
@@ -1636,9 +1745,6 @@ class YCrossRoad(Road):
                             (x2,y2) = Lane_available_for_connection_left[j][0]
 
                             (x3,y3) = Intersection_Lines(lanes_going_IN_left[q], Lane_available_for_connection_left[j])
-
-                            (x4,y4) = ( ((x3+x2)/2)  ,  ((y3+y2)/2)  )
-                            (x5,y5) = ( ((x3+x1)/2)  ,  ((y3+y1)/2)  )
 
                             k2=0
                             while k2<len(Lane_available_for_connection_left[j]) :
@@ -1662,8 +1768,15 @@ class YCrossRoad(Road):
 
                             l1 = Curve(xs, ys, 0)
                             Actual_Lane1 = []
-                            for (x,y) in l1:
-                                Actual_Lane1.append([x, y])
+                            counter_addLine = -1
+                            for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                                if counter_addLine>-1 :
+                                    if (round(x,4),round(y,4)) != (round(Actual_Lane1[counter_addLine][0],4),round(Actual_Lane1[counter_addLine][1],4)) :
+                                        Actual_Lane1.append([x, y])
+                                        counter_addLine+=1
+                                else :
+                                    Actual_Lane1.append([x, y])
+                                    counter_addLine+=1
                             self.l.append(Actual_Lane1)
 
 

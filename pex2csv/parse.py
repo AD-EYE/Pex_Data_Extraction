@@ -447,6 +447,7 @@ def get_adapter(s, id):
     lanes_in_x_dir_start = int(s.get('DirectionChangeAfterLane'))
     lanes_in_x_dir_end = int(s.get('DirectionChangeAfterLaneAtEnd'))
     RoadMarking = s[16]
+    lane_offset = int(s.get('LaneOffset'))
 
     Stl = []
     cw = []
@@ -471,7 +472,7 @@ def get_adapter(s, id):
                 x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
                 y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
                 cw.append([x1,y1,x2,y2,x3,y3])
-    return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw)
+    return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw, lane_offset)
 
 def get_xcross(s, id):
     x0 = float(s[0].get('X'))

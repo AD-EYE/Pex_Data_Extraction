@@ -126,12 +126,13 @@ def get_bend(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
     return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
@@ -161,18 +162,18 @@ def get_curved(s, id):
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
             Stl.append((x1, y1, x2, y2, x3, y3))
-            print(Stl)
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
@@ -199,6 +200,30 @@ def get_flex(s, id):
     LBt = []
     LFt = []
     Lh = []
+    cw = []
+    # for R in RoadMarking:
+    #     if "BitmapRoadMarker" in str(R.get('id')) :
+    #         hStop = float(R[1].get('Heading'))* np.pi / 180
+    #         x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
+    #         y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
+    #         x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
+    #         y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
+    #         x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
+    #         y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
+    #         Stl.append((x1, y1, x2, y2, x3, y3))
+    #     if "PedestrianMarkingGeneric" in str(R.get('id')) :
+    #         hw = float(R[1].get('Heading'))*np.pi/180
+    #         cl = float(R.get('CrossingLength'))
+    #         cwh = float(R.get('CrossingWidth'))
+    #         xl = float(R[0].get('X'))
+    #         yl = float(R[0].get('Y'))
+    #         x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+    #         y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+    #         x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+    #         y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+    #         x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+    #         y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+    #         cw.append([x1,y1,x2,y2,x3,y3])
 
     Lid.append(id)
     Lx.append(0)
@@ -206,7 +231,6 @@ def get_flex(s, id):
     LBt.append(0)
     LFt.append(cp1)
     Lh.append(0)
-
     i = 0
     CrossSections = s[20] #.findall('//RoadCrossSection')
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
@@ -231,9 +255,53 @@ def get_flex(s, id):
     CurvedRoads = {}
     print('i =')
     print(i)
+    # X = []
+    # Y = []
+    # cwj = []
+    # Stlj = []
+    # for j in range (i+1):
+    #     cwj_local  = []
+    #     Stlj_local = []
+    #     (xCR,yCR) = (x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h), y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h))
+    #     X.append(xCR)
+    #     Y.append(yCR)
+    #     cp1j = LFt[j]
+    #     cp2j = LBt[j+1]
+    #     if j>0 :
+    #         hj = Lh[j] + h
+    #         rhj = Lh[j + 1] - Lh[j]
+    #         (p1x,p1y) = (X[j-1] + cp1j*np.cos(hj),Y[j-1] - cp1j*np.sin(hj))
+    #         (p2x,p2y) = (X[j] + cp2j*np.cos(hj + rhj),Y[j] - cp2*np.sin(hj+rhj))
+    #         k=0
+    #         while k < (len(cw)):
+    #             xc = (cw[k][2]+cw[k][4])/2
+    #             yc = (cw[k][3]+cw[k][5])/2
+    #             if ( min(X[j-1],X[j],p1x,p2x) <= xc < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= yc < max(Y[j-1],Y[j],p1y,p2y) ) :
+    #                 cwj_local.append(cw.pop(k))
+    #             else : k+=1
+    #         k=0
+    #         while k < (len(Stl)):
+    #             if ( min(X[j-1],X[j],p1x,p2x) <= Stl[k][4] < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= Stl[k][5] < max(Y[j-1],Y[j],p1y,p2y) ) :
+    #                 Stlj_local.append(Stl.pop(k))
+    #             else : k+=1
+    #
+    #         cwj.append(cwj_local)
+    #         Stlj.append(Stlj_local)
+    # k=0
+    # cwj_local  = []
+    # Stlj_local = []
+    # while k < (len(cw)):
+    #     cwj_local.append(cw.pop(k))
+    # while k < (len(Stl)):
+    #     Stlj_local.append(Stl.pop(k))
+    # cwj.append(cwj_local)
+    # Stlj.append(Stlj_local)
+
+
     for j in range(i+1):
         print('j =')
         print(j)
+
         NewCurvedRoad = CurvedRoad(Lid[j],
                                    x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h),
                                    y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h),
@@ -241,9 +309,9 @@ def get_flex(s, id):
                                    Lh[j + 1] - Lh[j], LFt[j], LBt[j + 1],
                                    (Lx[j + 1] - Lx[j]) * np.cos(-Lh[j]) - (Ly[j + 1] - Ly[j]) * np.sin(-Lh[j]),
                                    (Lx[j + 1] - Lx[j]) * np.sin(-Lh[j]) + (Ly[j + 1] - Ly[j]) * np.cos(-Lh[j]),
-                                   lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl)
-        CurvedRoads[Lid[j]] = NewCurvedRoad
+                                   lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, [], [])
 
+        CurvedRoads[Lid[j]] = NewCurvedRoad
     return CurvedRoads
 
 def get_roundabout(s, id, connections, path):
@@ -273,12 +341,13 @@ def get_roundabout(s, id, connections, path):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
     TabConnect = [0,0,0,0]
@@ -324,12 +393,13 @@ def get_straight(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
@@ -385,12 +455,13 @@ def get_entry(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
 
@@ -426,12 +497,13 @@ def get_exit(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
     return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl, cw)
 
@@ -465,12 +537,13 @@ def get_adapter(s, id):
                 cl = float(R.get('CrossingLength'))
                 cwh = float(R.get('CrossingWidth'))
                 xl = float(R[0].get('X'))
-                x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-                y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-                x2 = x0 + (xl + cwh)*np.cos(hw)
-                y2 = y0 + (xl + cwh)*np.sin(hw)
-                x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-                y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+                yl = float(R[0].get('Y'))
+                x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+                y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+                x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+                y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+                x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+                y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
                 cw.append([x1,y1,x2,y2,x3,y3])
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw, lane_offset)
 
@@ -510,12 +583,13 @@ def get_xcross(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
@@ -558,12 +632,13 @@ def get_ycross(s, id):
             cl = float(R.get('CrossingLength'))
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
-            x1 = x0 + xl*np.cos(hw) - (cl/2)*np.sin(hw)
-            y1 = y0 + xl*np.sin(hw) + (cl/2)*np.cos(hw)
-            x2 = x0 + (xl + cwh)*np.cos(hw)
-            y2 = y0 + (xl + cwh)*np.sin(hw)
-            x3 = x0 + xl*np.cos(hw) + (cl/2)*np.sin(hw)
-            y3 = y0 + xl*np.sin(hw) - (cl/2)*np.cos(hw)
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)

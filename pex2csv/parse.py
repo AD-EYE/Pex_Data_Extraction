@@ -177,7 +177,7 @@ def get_curved(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
-def get_flex(s, id):
+def get_flex(s, id): # a flex road is created with several curved roads
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
     Vmax = s.get('MaxSpeed')
@@ -201,29 +201,29 @@ def get_flex(s, id):
     LFt = []
     Lh = []
     cw = []
-    # for R in RoadMarking:
-    #     if "BitmapRoadMarker" in str(R.get('id')) :
-    #         hStop = float(R[1].get('Heading'))* np.pi / 180
-    #         x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
-    #         y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
-    #         x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
-    #         y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
-    #         x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
-    #         y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-    #         Stl.append((x1, y1, x2, y2, x3, y3))
-    #     if "PedestrianMarkingGeneric" in str(R.get('id')) :
-    #         hw = float(R[1].get('Heading'))*np.pi/180
-    #         cl = float(R.get('CrossingLength'))
-    #         cwh = float(R.get('CrossingWidth'))
-    #         xl = float(R[0].get('X'))
-    #         yl = float(R[0].get('Y'))
-    #         x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-    #         y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-    #         x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
-    #         y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
-    #         x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-    #         y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-    #         cw.append([x1,y1,x2,y2,x3,y3])
+    for R in RoadMarking:
+        if "BitmapRoadMarker" in str(R.get('id')) :
+            hStop = float(R[1].get('Heading'))* np.pi / 180
+            x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
+            y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
+            x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
+            y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
+            Stl.append((x1, y1, x2, y2, x3, y3))
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))*np.pi/180
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            cw.append([x1,y1,x2,y2,x3,y3])
 
     Lid.append(id)
     Lx.append(0)
@@ -234,7 +234,7 @@ def get_flex(s, id):
     i = 0
     CrossSections = s[20] #.findall('//RoadCrossSection')
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
-    for c in CrossSections:
+    for c in CrossSections: # here we find each curve of the flexible road (to create several flexible roads)
         type = c.xpath('@xsi:type', namespaces=ns)[0]
         if type == 'CubicSplineCrossSection':
             i = i + 1
@@ -255,50 +255,50 @@ def get_flex(s, id):
     CurvedRoads = {}
     print('i =')
     print(i)
-    # X = []
-    # Y = []
-    # cwj = []
-    # Stlj = []
-    # for j in range (i+1):
-    #     cwj_local  = []
-    #     Stlj_local = []
-    #     (xCR,yCR) = (x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h), y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h))
-    #     X.append(xCR)
-    #     Y.append(yCR)
-    #     cp1j = LFt[j]
-    #     cp2j = LBt[j+1]
-    #     if j>0 :
-    #         hj = Lh[j] + h
-    #         rhj = Lh[j + 1] - Lh[j]
-    #         (p1x,p1y) = (X[j-1] + cp1j*np.cos(hj),Y[j-1] - cp1j*np.sin(hj))
-    #         (p2x,p2y) = (X[j] + cp2j*np.cos(hj + rhj),Y[j] - cp2*np.sin(hj+rhj))
-    #         k=0
-    #         while k < (len(cw)):
-    #             xc = (cw[k][2]+cw[k][4])/2
-    #             yc = (cw[k][3]+cw[k][5])/2
-    #             if ( min(X[j-1],X[j],p1x,p2x) <= xc < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= yc < max(Y[j-1],Y[j],p1y,p2y) ) :
-    #                 cwj_local.append(cw.pop(k))
-    #             else : k+=1
-    #         k=0
-    #         while k < (len(Stl)):
-    #             if ( min(X[j-1],X[j],p1x,p2x) <= Stl[k][4] < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= Stl[k][5] < max(Y[j-1],Y[j],p1y,p2y) ) :
-    #                 Stlj_local.append(Stl.pop(k))
-    #             else : k+=1
-    #
-    #         cwj.append(cwj_local)
-    #         Stlj.append(Stlj_local)
-    # k=0
-    # cwj_local  = []
-    # Stlj_local = []
-    # while k < (len(cw)):
-    #     cwj_local.append(cw.pop(k))
-    # while k < (len(Stl)):
-    #     Stlj_local.append(Stl.pop(k))
-    # cwj.append(cwj_local)
-    # Stlj.append(Stlj_local)
+    X = []
+    Y = []
+    cwj = []
+    Stlj = []
+    for j in range (i+1): # here we detect on which curved roads are the crosswalks and the stoplines
+        cwj_local  = []
+        Stlj_local = []
+        (xCR,yCR) = (x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h), y0 + Lx[j] * np.sin(h) + Ly[j] * np.cos(h))
+        X.append(xCR)
+        Y.append(yCR)
+        cp1j = LFt[j]
+        cp2j = LBt[j+1]
+        if j>0 :
+            hj = Lh[j] + h
+            rhj = Lh[j + 1] - Lh[j]
+            (p1x,p1y) = (X[j-1] + cp1j*np.cos(hj),Y[j-1] - cp1j*np.sin(hj))
+            (p2x,p2y) = (X[j] + cp2j*np.cos(hj + rhj),Y[j] - cp2*np.sin(hj+rhj))
+            k=0
+            while k < (len(cw)):
+                xc = (cw[k][2]+cw[k][4])/2
+                yc = (cw[k][3]+cw[k][5])/2
+                if ( min(X[j-1],X[j],p1x,p2x) <= xc < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= yc < max(Y[j-1],Y[j],p1y,p2y) ) :
+                    cwj_local.append(cw.pop(k))
+                else : k+=1
+            k=0
+            while k < (len(Stl)):
+                if ( min(X[j-1],X[j],p1x,p2x) <= Stl[k][4] < max(X[j-1],X[j],p1x,p2x) ) and ( min(Y[j-1],Y[j],p1y,p2y) <= Stl[k][5] < max(Y[j-1],Y[j],p1y,p2y) ) :
+                    Stlj_local.append(Stl.pop(k))
+                else : k+=1
+
+            cwj.append(cwj_local)
+            Stlj.append(Stlj_local)
+    k=0
+    cwj_local  = []
+    Stlj_local = []
+    while k < (len(cw)):
+        cwj_local.append(cw.pop(k))
+    while k < (len(Stl)):
+        Stlj_local.append(Stl.pop(k))
+    cwj.append(cwj_local)
+    Stlj.append(Stlj_local)
 
 
-    for j in range(i+1):
+    for j in range(i+1): # Now we create the curved roads
         print('j =')
         print(j)
 
@@ -309,7 +309,7 @@ def get_flex(s, id):
                                    Lh[j + 1] - Lh[j], LFt[j], LBt[j + 1],
                                    (Lx[j + 1] - Lx[j]) * np.cos(-Lh[j]) - (Ly[j + 1] - Ly[j]) * np.sin(-Lh[j]),
                                    (Lx[j + 1] - Lx[j]) * np.sin(-Lh[j]) + (Ly[j + 1] - Ly[j]) * np.cos(-Lh[j]),
-                                   lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, [], [])
+                                   lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stlj[j], cwj[j])
 
         CurvedRoads[Lid[j]] = NewCurvedRoad
     return CurvedRoads

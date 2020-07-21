@@ -120,7 +120,7 @@ def get_bend(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -161,7 +161,7 @@ def get_curved(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -210,7 +210,7 @@ def get_flex(s, id): # a flex road is created with several curved roads
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -224,6 +224,7 @@ def get_flex(s, id): # a flex road is created with several curved roads
             x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
             y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
+
 
     Lid.append(id)
     Lx.append(0)
@@ -387,7 +388,7 @@ def get_straight(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -449,7 +450,7 @@ def get_entry(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -491,7 +492,7 @@ def get_exit(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
             cl = float(R.get('CrossingLength'))
@@ -531,7 +532,7 @@ def get_adapter(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
             if "PedestrianMarkingGeneric" in str(R.get('id')) :
                 hw = float(R[1].get('Heading'))*np.pi/180
                 cl = float(R.get('CrossingLength'))
@@ -575,7 +576,7 @@ def get_xcross(s, id):
         y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x3 = (x1+x2)/2
         y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
@@ -624,7 +625,7 @@ def get_ycross(s, id):
         y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
         x3 = (x1+x2)/2
         y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i]))
+        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :

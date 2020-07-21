@@ -107,7 +107,7 @@ class StaticalObjectProcessor(object):
         StatObjects = self.StatObjects
         tflLight = []
         for id in StatObjects.keys():
-            if "TrafficLight" in id:
+            if "Light" in id:
                 tflLight.append(StatObjects[id])
         self.TrfLight = tflLight
 

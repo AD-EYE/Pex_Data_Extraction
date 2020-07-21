@@ -272,7 +272,12 @@ class VectorMap:
                         PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
                         PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
                         LineID = self.line.create(PointID1,PointID2)
-                        StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
+                        lineLength = dist( (tab[i][0],tab[i][1]) , (tab[i][2],tab[i][3]) )
+                        signID = 1
+                        while round(lineLength,2) > tab[i][7] :
+                            signID += 1
+                            lineLength -= tab[i][7]
+                        StoplineID = self.stopline.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
     def make_Area(self, crosswalk):
         '''

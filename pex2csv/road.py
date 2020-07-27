@@ -144,6 +144,173 @@ class BendRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+class ClothoidRoads (Road):
+    '''
+    This is a representation of Spiral roads (Clothoïd) in Prescan. An Euler Spiral is used to represent it
+
+    :param id: Unique id.
+    :type id: String
+
+    :param x0: The x coordinate of the starting point of spiral
+    :type x0: Float
+
+    :param y0: The y coordinate of the starting point of the spiral
+    :type y0: Float
+
+    :param h: Global heading of the bezier curve at its starting point
+    :type h: Float
+
+    :param C2 : constant describing the spiral. If R the radius of the spiral at the curvilinear abscissa L, R*L =C**2, and C2 = C**2
+    :type C2 = Float
+
+    :Lstart: curvilinear abscissa of the start of the spiral
+    :type Lstart: Float
+
+    :Lstart: curvilinear abscissa of the end of the spiral
+    :type Lend: Float
+
+    :flipped: boolean that indicates if the orientation of the spiral is flipped
+    :type flipped: Boolean
+
+    :param lw: Lane width.
+    :type lw: Float
+
+    :param nbr_of_lanes: Number of lanes.
+    :type nbr_of_lanes: Integer
+
+    :param lanes_in_x_dir: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
+    :type nbr_of_lanes: Integer
+
+    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
+    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+
+    :param cw: Tab of tabs with relevant points (3 points per tab) describing a crosswalk
+    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
+    '''
+    def __init__(self, id, x0, y0, h, C2, Lstart, Lend, flipped, lw, nbr_of_lanes, lanes_in_x_dir, Tabpointcon, SpeedL, RefS, cw, Stl):
+
+        # General Initialization
+
+        Road.__init__(self, id)
+        self.SpeedLimit = SpeedL
+        self.RefSpeed = RefS
+        self.stopline = Stl
+        self.crosswalk = cw
+        self.DefinedSpeed = self.SpeedProfil[2]
+
+
+        # we calculate clothoid roads with an integration, so, step by step, the error increases and the last point
+        # of the clothoid is one of two meter away of where it shoul be. In order to correct it, we calculate 2
+        # spirals : one starting from (x0,y0) going in the x direction, and one starting from the end of the road
+        # (xend2, yend2) and going in the reverse x direction. Then we obtain the good spiral by making the average
+        # spiral of the 2 spirals calculated. The average is weigh by the curvilinear abscissa of the point we calculate.
+        # (xend, yend) is the (x0,y0) of the road attached to the end of the spiral road
+        diff = nbr_of_lanes/2
+        center1 = Clothoid(x0, y0, h, C2, 1.0, Lstart, Lend)
+        cent1 = []
+        for (x,y) in center1 :
+            cent1.append([x,y])
+            xend, yend = x,y
+
+        if flipped == True : # if the spiral road is flipped, (xend,yend) is the axial symmetric of (xend,yend) calculated.  symmetry axis : line with heading = h and going through (x0,y0)
+            a1 = np.tan(h)
+            b1 = y0 - a1*x0
+            a2 = np.tan(h+np.pi/2)
+            b2 = cent1[len(cent1)-1][1] - a2*cent1[len(cent1)-1][0]
+            xi = (b2-b1)/(a1-a2)
+            yi = a1*xi + b1
+            cent1[len(cent1)-1][0] = 2*xi - cent1[len(cent1)-1][0]
+            cent1[len(cent1)-1][1] = 2*yi - cent1[len(cent1)-1][1]
+
+
+        xend, yend = cent1[len(cent1)-1][0], cent1[len(cent1)-1][1]
+        xend2, yend2 = xend + 1000, yend - 1000
+        for k in range (len(Tabpointcon)): # here we find (xend2, yend2)
+            if Tabpointcon[k] != []:
+                (x, y) = Tabpointcon[k][0]
+                if dist((x,y),(xend,yend)) < dist((xend2,yend2),(xend,yend)) :
+                    xend2, yend2 = x,y
+        if dist((xend2,yend2),(xend,yend))>5 : # if the end of the spiral road is not connected to the start of an other road
+            print ("The rules of the wiki aren't followed : you should connect the end of a spiral road to the start of an other road (except crossroads/roundabouts)")
+
+        center2 =  Clothoid(xend2, yend2, h, C2, -1.0, Lend, Lstart) # spiral driving backwards
+        cent2 = []
+        for (x,y) in center2 :
+            cent2.append([x,y])
+
+        if flipped == True : # reverses the spiral (cf line 215)
+            c =[cent1,cent2]
+            a1 = np.tan(h)
+            a2 = np.tan(h+np.pi/2)
+            for elem in c :
+                b1 = elem[0][1] - a1*elem[0][0]
+                for k in range (len(elem)):
+                    b2 = elem[k][1] - a2*elem[k][0]
+                    xi = (b2-b1)/(a1-a2)
+                    yi = a1*xi + b1
+                    elem[k][0] = 2*xi - elem[k][0]
+                    elem[k][1] = 2*yi - elem[k][1]
+
+        cent = []
+        nbr = min(len(cent1),len(cent2))
+        for k in range(nbr): # average of the two spirals
+            x1, y1 = cent1[k]
+            x2, y2 = cent2[nbr-1-k]
+            x = (x1*(nbr-k-1) + x2*k)/(nbr-1)
+            y = (y1*(nbr-k-1) + y2*k)/(nbr-1)
+            cent.append([x,y])
+
+        if (h>np.pi/2) and (h<3*np.pi/2) :
+            cent.reverse()
+
+
+        for i in range (nbr_of_lanes): # now we add the lanes
+            lane = []
+            count = 0
+            angle = h
+            for (x,y) in cent :
+                if count>0:
+                    pt0 = (cent[count-1])
+                    pt1 = (cent[count])
+
+                else :
+                    pt0 = cent[0]
+                    pt1 = cent[1]
+                H = dist(pt0,pt1)
+                A = abs(pt0[0]-pt1[0])
+                if H != 0:
+                    angle = np.arccos( A / H )
+                    if pt0[0]< pt1[0]:
+                        if pt1[1]< pt0[1]:
+                            angle = -angle
+                        x1 = x - lw*(i+0.5-diff)*np.sin(angle)
+                        y1 = y + lw*(i+0.5-diff)*np.cos(angle)
+
+                    else:
+                        if pt1[1]> pt0[1]:
+                            angle = -angle
+                        x1 = x + lw*(i+0.5-diff)*np.sin(angle)
+                        y1 = y - lw*(i+0.5-diff)*np.cos(angle)
+                    lane.append([x1,y1])
+                count += 1
+            self.l.append(lane)
+
+
+        if nbr_of_lanes-lanes_in_x_dir>0: # reverse the lanes driving backwards
+            for j in range(nbr_of_lanes-lanes_in_x_dir):
+                lane=[]
+                for (x, y) in self.l[j+lanes_in_x_dir]:
+                    lane.append([x, y])
+                lane = lane[::-1]
+                self.l[j+lanes_in_x_dir] = lane
+
+
+
+
+
+
+
+
 
 class CurvedRoad(Road):
     '''

@@ -83,6 +83,8 @@ def get_roads(path='./data/roads.pex'):
             roads.update(get_flex(s, id))
         elif (type == 'PedestrianCrossing'):
             roads[id] = get_crosswalk(s, id)
+        elif (type == 'ClothoidRoad'):
+            roads[id] = get_clothoid(s, id, connections, path)
     return roads
 
     # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
@@ -176,6 +178,73 @@ def get_curved(s, id):
             y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
+
+def get_clothoid(s, id, connections, path):
+    x0 = float(s[0].get('X'))
+    y0 = float(s[0].get('Y'))
+    Vmax = s.get('MaxSpeed')
+    h = float(s[1].get('Heading')) * np.pi / 180
+    lw = float(s.get('LaneWidth'))
+    nbr_of_lanes = int(s.get('NumberOfLanes'))
+    lanes_in_x_dir = int(s.get('DirectionChangeAfterLane'))
+    RoadMarking = s[16]
+    Stl = []
+    cw = []
+    ClothoidSection = s[20]
+
+    C2 = float(ClothoidSection[0].get('R')) * float(ClothoidSection[0].get('L'))
+    if ClothoidSection.get('R0') == 'INF' :
+        Lstart = 0
+    else :
+        Lstart = C2 / float(ClothoidSection.get('R0'))
+    if ClothoidSection.get('R1') == 'INF' :
+        Lend = 0
+    else :
+        Lend = C2 / float(ClothoidSection.get('R1'))
+    if ClothoidSection[0].get('FlippedCurve') == 'false' :
+        flipped = False
+    else :
+        flipped = True
+
+    for R in RoadMarking:
+        if "BitmapRoadMarker" in str(R.get('id')) :
+            hStop = float(R[1].get('Heading'))* np.pi / 180
+            x1 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 - (lw/2) * np.sin(hStop+h)
+            y1 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0 + (lw/2)*np.cos(hStop+h)
+            x2 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0 + (lw/2) * np.sin(hStop+h)
+            y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw/2) * np.cos(hStop+h)
+            x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
+            y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
+        if "PedestrianMarkingGeneric" in str(R.get('id')) :
+            hw = float(R[1].get('Heading'))*np.pi/180
+            cl = float(R.get('CrossingLength'))
+            cwh = float(R.get('CrossingWidth'))
+            xl = float(R[0].get('X'))
+            yl = float(R[0].get('Y'))
+            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
+            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
+            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
+            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
+            cw.append([x1,y1,x2,y2,x3,y3])
+
+    TabConnect = [0,0]
+    for connection in connections:
+        idA = connection.get('Road_A_UniqueId')
+        idB = connection.get('Road_B_UniqueId')
+        if (id in idA):
+
+            TabConnect[int(connection.get('Joint_A_Id'))] = idB
+        elif (id in idB):
+
+            TabConnect[int(connection.get('Joint_B_Id'))] = idA
+    Tabpointcon = []
+    for i in range(len(TabConnect)):
+        Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))
+
+    return ClothoidRoads(id, x0, y0, h, C2, Lstart, Lend, flipped, lw, nbr_of_lanes, lanes_in_x_dir, Tabpointcon, Vmax, Vmax, cw, Stl)
 
 def get_flex(s, id): # a flex road is created with several curved roads
     x0 = float(s[0].get('X'))

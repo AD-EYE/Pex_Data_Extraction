@@ -453,10 +453,10 @@ class VectorMap:
             y, x = self.point[self.node[l.get_node_start()].get_point()].get_xy()
             if x < xmin :
                  xmin = x
-            elif y < ymin :
-                ymin = y
             elif x > xmax :
                 xmax = x
+            if y < ymin :
+                ymin = y
             elif y > ymax :
                 ymax = y
         plt.axis ([xmin-2, xmax+2, ymin-2, ymax+2])
@@ -500,6 +500,46 @@ class VectorMap:
         self.stopline.export('./csv/stopline.csv')
         self.Crosswalk.export('./csv/crosswalk.csv')
         self.Area.export('./csv/area.csv')
+
+    def readfiles (self, Files):
+        '''
+        read the .csv files. Creates nodes and points. Saves dtlanes and lanes datas in arrays.
+        '''
+        count = 0
+        l = []
+        dt = []
+        for file in Files :
+            File1 = open(file, "r")
+            content = File1.readlines()
+            for i in range(1,len(content)) :
+                line = []
+                value = ""
+                for j in range(len(content[i]))  :
+                    char = content[i][j]
+                    if (char != " ") and (char != "\n") and (char != ","):
+                        value += char
+                    if (char == " ") or j == (len(content[i])-1) or (char == ",") :
+                        val = float(value)
+                        value = ""
+                        line.append(val)
+                if count == 0 :
+                    self.__new_node(line[5], line[4])
+                elif count == 1 :
+                    l.append(line)
+                elif count == 2 :
+                    dt.append(line)
+            count += 1
+        return(l,dt)
+
+    def create_lanes (self, lanes, dtlanes):
+        '''
+        creates lanes and dt lanes from an array of data
+        '''
+        for lane in lanes :
+            self.lane.create(lane[18], lane[18], int(lane[1]), int(lane[4]), int(lane[5]), int(lane[2]), int(lane[3]), lane[14])
+        for dt in dtlanes :
+            self.dtlane.create(int(dt[2]), dt[1], dt[3])
+
 
 class VMList:
     '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.

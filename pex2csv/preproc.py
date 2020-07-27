@@ -156,6 +156,7 @@ class RoadProcessor(object):
         self.__create_exit_roads(roads)
         self.__create_adapter_roads(roads)
         self.__create_crosswalksR(roads)
+        self.__create_clothoid(roads)
 
     # Creates lanes traveling from each roundabout until the path meets
     # another roundabout, xcrossing or a dead end
@@ -196,6 +197,7 @@ class RoadProcessor(object):
             self.crosswalk.append(bezierroad.crosswalk)
             road = roads.pop(bezierroad.id, None)
             self.__add_segment(road)
+
 
     # Creates straight roads
     def __create_straight_roads(self, roads):
@@ -249,6 +251,16 @@ class RoadProcessor(object):
             self.crosswalk.append(adapterroad.crosswalk)
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
+
+
+    # Creates spiral roads
+    def __create_clothoid(self, roads):
+        clothoids = self.__get_clothoids()
+        for clotho in clothoids :
+            self.crosswalk.append(clotho.crosswalk)
+            self.stoplines.append(clotho.stopline)
+            road = roads.pop(clotho.id, None)
+            self.__add_segment(road)
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
@@ -388,6 +400,15 @@ class RoadProcessor(object):
             if "CurvedRoad" in id or "FlexRoad" in id:
                 bezier.append(roads[id])
         return bezier
+
+    # Fetches all Spiral road in the road network
+    def __get_clothoids(self):
+        roads =self.roads
+        clo = []
+        for id in roads.keys():
+            if "ClothoidRoad" in id :
+                clo.append(roads[id])
+        return clo
 
     # Fetches all Entry road in the road network
     def __get_entryroads(self):

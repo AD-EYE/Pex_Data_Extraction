@@ -170,3 +170,40 @@ def Intersection_Circle(C1, C2):
     ys2 = ym + h*dx/d
 
     return (xs1,ys1),(xs2,ys2)
+
+def polynom(p1,p2,p3):
+    '''
+    if a*x**2 + b*x + c is the polynom going through p1, p2 and p3, it returns a, b and c
+    '''
+    if (p1==p2) or (p2==p3) or (p1==p3):
+        return None
+    else :
+        x1, y1 = p1[0], p1[1]
+        x2, y2 = p2[0], p2[1]
+        x3, y3 = p3[0], p3[1]
+        A = np.array( [ [x1**2, x1, 1], [x2**2, x2, 1], [x3**2, x3, 1] ] )
+        B = np.array( [ [y1], [y2], [y3] ] )
+        Ainv = np.linalg.inv(A)
+        Res = np.dot(Ainv,B)
+        return (Res[0][0], Res[1][0], Res[2][0])
+
+def offset_point(poly,p1,p2):
+    '''
+    takes a polynom and 2 points. Returns the point on the polynom at a distance of 1 meter from p1
+    '''
+    a, b, c = poly[0], poly[1], poly[2]
+    x1 = p1[0]
+    x2 = p2[0]
+    p3 = p2
+    if dist(p1,p2)<0.99 :
+        return (p2)
+    else :
+        while (dist(p1,p3)<0.99) or (dist(p1,p3)>1.01):
+            x3 = (x1+x2)/2
+            y3 = a*x3**2 + b*x3 + c
+            p3 = (x3,y3)
+            if dist(p1,p3) > 1 :
+                x2 = x3
+            else :
+                x1 = x3
+    return(p3)

@@ -323,8 +323,6 @@ def get_flex(s, id): # a flex road is created with several curved roads
     Lh.append(rh)
 
     CurvedRoads = {}
-    print('i =')
-    print(i)
     X = []
     Y = []
     cwj = []
@@ -369,8 +367,6 @@ def get_flex(s, id): # a flex road is created with several curved roads
 
 
     for j in range(i+1): # Now we create the curved roads
-        print('j =')
-        print(j)
 
         NewCurvedRoad = CurvedRoad(Lid[j],
                                    x0 + Lx[j] * np.cos(h) - Ly[j] * np.sin(h),

@@ -1312,7 +1312,7 @@ class AdapterRoad(Road):
                             counter_addLine+=1
                     self.l.append(Current_Lane1)
                     k +=1
-            else :
+            elif lanes_min_x > lanes_max_x :
                 # This happens for example in this case :
                 #
                 #________________ __________________
@@ -1428,6 +1428,56 @@ class AdapterRoad(Road):
                             counter_addLine+=1
                     self.l.append(Current_Lane1)
                     i +=1
+            else :
+                while (k < lanes_max_x):
+                    (x4,y4) = (lanes_min[len(lanes_min)-lanes_min_x+k][0][0] , lanes_min[len(lanes_min)-lanes_min_x+k][0][1])
+                    (x2,y2) = (lanes_min[len(lanes_min)-lanes_min_x+k][3][0] , lanes_min[len(lanes_min)-lanes_min_x+k][3][1])
+
+                    (x1,y1) = (lanes_max[len(lanes_max)-lanes_max_x + k][3][0] , lanes_max[len(lanes_max)-lanes_max_x + k][3][1])
+                    (x5,y5) = (lanes_max[len(lanes_max)-lanes_max_x + k][0][0] , lanes_max[len(lanes_max)-lanes_max_x + k][0][1])
+
+                    (x3,y3) = Intersection_Lines(lanes_min[len(lanes_min)-lanes_min_x+k],lanes_max[len(lanes_max)-lanes_max_x + k])
+
+                    if len(lanes_before)>len(lanes_after) :
+                        xs1 = [x5, x1, x1, x3]
+                        ys1 = [y5, y1, y1, y3]
+                        xs2 = [x3, x4, x4, x2]
+                        ys2 = [y3, y4, y4, y2]
+
+                    else :
+                        xs1 = [x4, x2, x2, x3]
+                        ys1 = [y4, y2, y2, y3]
+                        xs2 = [x3, x5, x5, x1]
+                        ys2 = [y3, y5, y5, y1]
+
+
+                    l1 = Curve(xs1, ys1, 0)
+                    l2 = Curve(xs2, ys2, 0)
+                    Current_Lane1 = []
+                    counter_addLine = -1
+                    for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                        if counter_addLine>-1 :
+                            if (round(x,4),round(y,4)) != (round(Current_Lane1[counter_addLine][0],4),round(Current_Lane1[counter_addLine][1],4)) :
+                                Current_Lane1.append([x, y])
+                                counter_addLine+=1
+                        else :
+                            Current_Lane1.append([x, y])
+                            counter_addLine+=1
+                    self.l.append(Current_Lane1)
+
+                    Current_Lane1 = []
+                    counter_addLine = -1
+                    for (x,y) in l2: #we add the new lane but we check in the same time that 2 points aren't the same
+                        if counter_addLine>-1 :
+                            if (round(x,4),round(y,4)) != (round(Current_Lane1[counter_addLine][0],4),round(Current_Lane1[counter_addLine][1],4)) :
+                                Current_Lane1.append([x, y])
+                                counter_addLine+=1
+                        else :
+                            Current_Lane1.append([x, y])
+                            counter_addLine+=1
+                    self.l.append(Current_Lane1)
+                    k +=1
+
 
 
         # Now we connect the lanes going in the opposite x direction (same as the x direction but we reverse everything)
@@ -1482,7 +1532,7 @@ class AdapterRoad(Road):
             a =np.tan(h)
             k = len(lanes_max) - lanes_max_x-1
             i = len(lanes_min) - lanes_min_x-1
-            if i <= k :
+            if i < k :
                 while (k >-1) and (i>0):
                     (x2,y2) = (lanes_min[i][3][0] , lanes_min[i][3][1])
                     (x4,y4) = (lanes_min[i][0][0] , lanes_min[i][0][1])
@@ -1495,7 +1545,7 @@ class AdapterRoad(Road):
                     b = y1 - a*x1
                     y2bis = a*x2 + b
 
-                    if round(y2,4) == round(y2bis,4): # if the 2 lanes are in front of each other, then i = i+1
+                    if round(y2,4) == round(y2bis,4): # if the 2 lanes are in front of each other, then i = i-1
                         i-=1
 
 
@@ -1587,7 +1637,7 @@ class AdapterRoad(Road):
                     self.l.append(Current_Lane1)
                     k -=1
 
-            else :
+            elif i > k :
                 while (k >0) and (i>-1):
                     (x2,y2) = (lanes_min[i][3][0] , lanes_min[i][3][1])
                     (x4,y4) = (lanes_min[i][0][0] , lanes_min[i][0][1])
@@ -1692,6 +1742,54 @@ class AdapterRoad(Road):
                             counter_addLine+=1
                     self.l.append(Current_Lane1)
                     i -=1
+            else :
+                while k> -1 :
+                    (x2,y2) = (lanes_min[k][3][0] , lanes_min[k][3][1])
+                    (x4,y4) = (lanes_min[k][0][0] , lanes_min[k][0][1])
+
+                    (x1,y1) = (lanes_max[k][3][0] , lanes_max[k][3][1])
+                    (x5,y5) = (lanes_max[k][0][0] , lanes_max[k][0][1])
+
+                    (x3,y3) = Intersection_Lines(lanes_min[k],lanes_max[k])
+
+                    if len(lanes_before)<len(lanes_after) :
+                        xs1 = [x5, x1, x1, x3]
+                        ys1 = [y5, y1, y1, y3]
+                        xs2 = [x3, x4, x4, x2]
+                        ys2 = [y3, y4, y4, y2]
+
+                    else :
+                        xs1 = [x4, x2, x2, x3]
+                        ys1 = [y4, y2, y2, y3]
+                        xs2 = [x3, x5, x5, x1]
+                        ys2 = [y3, y5, y5, y1]
+
+                    l1 = Curve(xs1, ys1, 0)
+                    l2 = Curve(xs2, ys2, 0)
+                    Current_Lane1 = []
+                    counter_addLine = -1
+                    for (x,y) in l1: #we add the new lane but we check in the same time that 2 points aren't the same
+                        if counter_addLine>-1 :
+                            if (round(x,4),round(y,4)) != (round(Current_Lane1[counter_addLine][0],4),round(Current_Lane1[counter_addLine][1],4)) :
+                                Current_Lane1.append([x, y])
+                                counter_addLine+=1
+                        else :
+                            Current_Lane1.append([x, y])
+                            counter_addLine+=1
+                    self.l.append(Current_Lane1)
+
+                    Current_Lane1 = []
+                    counter_addLine = -1
+                    for (x,y) in l2: #we add the new lane but we check in the same time that 2 points aren't the same
+                        if counter_addLine>-1 :
+                            if (round(x,4),round(y,4)) != (round(Current_Lane1[counter_addLine][0],4),round(Current_Lane1[counter_addLine][1],4)) :
+                                Current_Lane1.append([x, y])
+                                counter_addLine+=1
+                        else :
+                            Current_Lane1.append([x, y])
+                            counter_addLine+=1
+                    self.l.append(Current_Lane1)
+                    k -=1
 
 
 

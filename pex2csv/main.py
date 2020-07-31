@@ -2,11 +2,12 @@ from preproc import StaticalObjectProcessor,RoadProcessor
 from vmap import VectorMap
 import numpy as np
 import parse
+import sys
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W01_Base_Map/Simulation/W01_Base_Map.pex"
+PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W00_global_test_world/Simulation/Experiment/Experiment.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
-OnlyVisualisation = True # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
+OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
                          # False if if you want to create the vector map of PEX_FILE_LOCATION
 
 if OnlyVisualisation == False :
@@ -40,7 +41,9 @@ if OnlyVisualisation == False :
         #    vm.make_line(center.get_lanes(), line_type='CENTER')
         vm.make_crosswalk(cross)
         vm.make_Stoplines(rproc.stoplines)
-        vm.make_TrafficLight(rproc2.TrfLight)
+        error = vm.make_TrafficLight(rproc2.TrfLight)
+        if error == True :
+            sys.exit()
         vm.merge_redundant_points()
         vm.rebuild_lane_conections()
         vm.export()

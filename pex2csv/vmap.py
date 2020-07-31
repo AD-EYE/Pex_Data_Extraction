@@ -330,6 +330,11 @@ class VectorMap:
             # Going throught the list of traffic Lights in the simulationS
 
             n = len(TrafficLightList)
+            error = False
+
+            if n > len(self.stopline):
+                print("error : traffic lights must always be linked to a stopline")
+                error = True
 
             for i in range(n):
 
@@ -348,34 +353,41 @@ class VectorMap:
                         stoplines_id = j
                         nb_clones = self.stopline[j].SignID
                         lane_id = self.stopline[j].LinkID
+                if min_dist>10:
+                    print("error : the traffic light at the coordinates", Orign_Point, " is too far away from the stopline linked to it")
+                    error = True
 
-                stopline_number = stoplines_id
+                if error == False :
+                    stopline_number = stoplines_id
 
-                for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
+                    for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
 
-                    pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                    pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                    pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
+                        pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
+                        pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
+                        pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
 
-                    VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                    VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                    VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
+                        VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
+                        VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
+                        VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
-                    SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
-                    SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
+                        SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
+                        SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
+                        SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
 
 
 
-                    # Linking Stopline
+                        # Linking Stopline
 
-                    self.stopline[stopline_number].set_TLID(SignDataID1)
+                        self.stopline[stopline_number].set_TLID(SignDataID1)
 
-                    stopline_number +=1
+                        stopline_number +=1
 
+            if error == True :
+                return(error)
 
             for p in range(len(self.stopline)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
                 self.stopline[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
+            return(error)
 
 
     # Returns the drivable lane data in the format:

@@ -7,7 +7,7 @@ import sys
 # config
 PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W00_global_test_world/Simulation/Experiment/Experiment.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
-OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
+OnlyVisualisation = True # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
                          # False if if you want to create the vector map of PEX_FILE_LOCATION
 
 if OnlyVisualisation == False :
@@ -52,8 +52,7 @@ if OnlyVisualisation == False :
 else :
     vm = VectorMap()
     Files = [VECTORMAP_FILES_FOLDER+"point.csv",VECTORMAP_FILES_FOLDER+"lane.csv",VECTORMAP_FILES_FOLDER+"dtlane.csv"]
-    lanes, dtlanes = vm.readfiles(Files)
-    vm.create_lanes (lanes, dtlanes)
+    vm.readfiles(Files)
     vm.merge_redundant_points()
     vm.rebuild_lane_conections()
     vm.plot()

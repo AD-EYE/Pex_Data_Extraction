@@ -515,7 +515,7 @@ class VectorMap:
 
     def readfiles (self, Files):
         '''
-        read the .csv files. Creates nodes and points. Saves dtlanes and lanes datas in arrays.
+        read the .csv files. Creates nodes, points, lanes and dt_lanes
         '''
         count = 0
         l = []
@@ -537,20 +537,11 @@ class VectorMap:
                 if count == 0 :
                     self.__new_node(line[5], line[4])
                 elif count == 1 :
-                    l.append(line)
+                    self.lane.create(line[18], line[18], int(line[1]), int(line[4]), int(line[5]), int(line[2]), int(line[3]), line[14])
                 elif count == 2 :
-                    dt.append(line)
+                    self.dtlane.create(int(line[2]), line[1], line[3])
             count += 1
-        return(l,dt)
 
-    def create_lanes (self, lanes, dtlanes):
-        '''
-        creates lanes and dt lanes from an array of data
-        '''
-        for lane in lanes :
-            self.lane.create(lane[18], lane[18], int(lane[1]), int(lane[4]), int(lane[5]), int(lane[2]), int(lane[3]), lane[14])
-        for dt in dtlanes :
-            self.dtlane.create(int(dt[2]), dt[1], dt[3])
 
 
 class VMList:

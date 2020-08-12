@@ -293,52 +293,9 @@ class ClothoidRoads (Road):
                         y1 = y - lw*(i+0.5-diff)*np.cos(angle)
                     lane.append([x1,y1])
                 count += 1
+            self.l.append(lane)
 
-            p1 = lane[0]
-            interval_lane = [p1]
-            k = 1
-            while k+1< len(lane):  # we replace the points so that each lane will have a length as close as possible of 1
-                p2 = lane[k]
-                if (dist(p1,p2)>0.99) and (dist(p1,p2)<1.01):
-                    p1 = p2
-                    if p1 != interval_lane[len(interval_lane)-1]:
-                        interval_lane.append(p1)
-                else :
-                    if dist(p1,p2)< 0.99 : # if p1 and p2 are too close, the new point is outside [p1,p2]
-                        p3 = lane[k+1]
-                        poly = polynom (p1,p2,p3)
-                        if poly != None : # if poly == None, p1 = p2
-                            p1 = offset_point(poly,p1,p3)
-                        if p1 != interval_lane[len(interval_lane)-1]:
-                            interval_lane.append(p1)
-                    else : # if the distance between p1 and p2 >1, then the point is in [p1,p2]
-                        while dist(p1,p2)>1.01:
-                            p12 = ( (p1[0]+p2[0])/2, (p1[1]+p2[1])/2 )
-                            if (dist(p1,p12)>0.99) and (dist(p1,p12)<1.01):
-                                p1 = p12
-                            else :
-                                poly = polynom(p1,p12,p2)
-                                if poly != None :
-                                    p1 = offset_point(poly,p1,p2)
-                            if p1 != interval_lane[len(interval_lane)-1]:
-                                interval_lane.append(p1)
-                k += 1
-            p2 = lane[len(lane)-1]
-            while dist(p1,p2)>1.01:
-                p12 = ( (p1[0]+p2[0])/2, (p1[1]+p2[1])/2 )
-                if (dist(p1,p12)>0.99) and (dist(p1,p12)<1.01):
-                    p1 = p12
-                else :
-                    poly = polynom(p1,p12,p2)
-                    if poly != None :
-                        p1 = offset_point(poly,p1,p2)
-                if p1 != interval_lane[len(interval_lane)-1]:
-                    interval_lane.append(p1)
 
-            if p2 != interval_lane[len(interval_lane)-1]:
-                interval_lane.append(p2)
-
-            self.l.append(interval_lane)
 
 
         if nbr_of_lanes-lanes_in_x_dir>0: # reverse the lanes driving backwards
@@ -441,54 +398,7 @@ class CurvedRoad(Road):
         lwi = -(nbr_of_lanes - 1) * lw / 2
         for _ in range(nbr_of_lanes):
             lane = Curve(xs,ys,lwi)
-            lane1 = []
-            for (x,y) in lane :
-                lane1.append([x,y])
-            p1 = lane1[0]
-            interval_lane = [p1]
-            k = 1
-            while k+1< len(lane1):  # we replace the points so that each lane will have a length as close as possible of 1
-                p2 = lane1[k]
-                if (dist(p1,p2)>0.99) and (dist(p1,p2)<1.01):
-                    p1 = p2
-                    if p1 != interval_lane[len(interval_lane)-1]:
-                        interval_lane.append(p1)
-                else :
-                    if dist(p1,p2)< 0.99 : # if p1 and p2 are too close, the new point is outside [p1,p2]
-                        p3 = lane1[k+1]
-                        poly = polynom (p1,p2,p3)
-                        if poly != None : # if poly == None, p1 = p2
-                            p1 = offset_point(poly,p1,p3)
-                        if p1 != interval_lane[len(interval_lane)-1]:
-                            interval_lane.append(p1)
-                    else : # if the distance between p1 and p2 >1, then the point is in [p1,p2]
-                        while dist(p1,p2)>1.01:
-                            p12 = ( (p1[0]+p2[0])/2, (p1[1]+p2[1])/2 )
-                            if (dist(p1,p12)>0.99) and (dist(p1,p12)<1.01):
-                                p1 = p12
-                            else :
-                                poly = polynom(p1,p12,p2)
-                                if poly != None :
-                                    p1 = offset_point(poly,p1,p2)
-                            if p1 != interval_lane[len(interval_lane)-1]:
-                                interval_lane.append(p1)
-                k += 1
-            p2 = lane1[len(lane1)-1]
-            while dist(p1,p2)>1.01:
-                p12 = ( (p1[0]+p2[0])/2, (p1[1]+p2[1])/2 )
-                if (dist(p1,p12)>0.99) and (dist(p1,p12)<1.01):
-                    p1 = p12
-                else :
-                    poly = polynom(p1,p12,p2)
-                    if poly != None :
-                        p1 = offset_point(poly,p1,p2)
-                if p1 != interval_lane[len(interval_lane)-1]:
-                    interval_lane.append(p1)
-
-            if p2 != interval_lane[len(interval_lane)-1]:
-                interval_lane.append(p2)
-
-            self.l.append(interval_lane)
+            self.l.append(lane)
             lwi += lw
 
         #This changes the direction of the lanes that drive backwards

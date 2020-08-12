@@ -461,8 +461,13 @@ class VectorMap:
         xmax = -1000
         ymin = 1000
         ymax = -1000
-        for l in self.lane:
-            y, x = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+
+        for x, y, m, d, ec, fc in self.__aggregate_lanes():
+            plt.arrow(
+                x, y, m * np.sin(d), m * np.cos(d),
+                head_width=0.25, head_length=0.2, fc=fc, ec=ec,
+                width=0.1, length_includes_head=True
+            )
             if x < xmin :
                  xmin = x
             elif x > xmax :
@@ -472,12 +477,7 @@ class VectorMap:
             elif y > ymax :
                 ymax = y
         plt.axis ([xmin-2, xmax+2, ymin-2, ymax+2])
-        for x, y, m, d, ec, fc in self.__aggregate_lanes():
-            plt.arrow(
-                x, y, m * np.sin(d), m * np.cos(d),
-                head_width=0.25, head_length=0.2, fc=fc, ec=ec,
-                width=0.1, length_includes_head=True
-            )
+
         lines = self.__aggregate_lines()
         if lines is not None:
             for line in lines:

@@ -294,7 +294,7 @@ class VectorMap:
 
         empty.reverse()
 
-        for j in empty :
+        for j in empty :  # removing empty lists from the list of lists crosswalk
             del crosswalk[j]
 
         cross = []

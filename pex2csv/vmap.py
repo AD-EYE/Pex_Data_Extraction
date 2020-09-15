@@ -7,6 +7,7 @@ The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class
 '''
 import numpy as np
 from utils import dist
+import os
 
 class VectorMap:
     '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
@@ -23,6 +24,8 @@ class VectorMap:
         self.vector     = VMList(Vector)
         self.signaldata = VMList(SignalData)
         self.stopline   = VMList(Stopline)
+        self.Area       = VMList(Area)
+        self.Crosswalk  = VMList(Crosswalk)
 
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
@@ -105,7 +108,7 @@ class VectorMap:
         direction = self.point[point_start].direction_to(self.point[point_end])
         return (magnitude, direction)
 
-    def make_lane(self, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
+    def make_lane(self, cross, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
         '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
@@ -144,7 +147,10 @@ class VectorMap:
                 lane_before = lane_previous,
                 dtlane_before = dtlane_previous
             )
-
+            for tab in cross :          #here we try to find if a crosswalk crosses the lane to set CrossID of the lane (0 if there is no crosswalk)
+                for i in range (3):
+                    if dist ((x,y),(tab[i+1],tab[i+2]))<2 :
+                        setattr(self.lane[0], 'CrossID', tab[0])
 
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
@@ -263,10 +269,58 @@ class VectorMap:
                     if closest_node == self.lane[k].FNID:
                         lane_id = self.lane[k].BLID
 
-                PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
-                PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
-                LineID = self.line.create(PointID1,PointID2)
-                StoplineID = self.stopline.create(LineID, 0, tab[i][-1], lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
+                        PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
+                        PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
+                        LineID = self.line.create(PointID1,PointID2)
+                        lineLength = dist( (tab[i][0],tab[i][1]) , (tab[i][2],tab[i][3]) )
+                        signID = 1
+                        while round(lineLength,2) > tab[i][7] :
+                            signID += 1
+                            lineLength -= tab[i][7]
+                        StoplineID = self.stopline.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
+
+    def make_Area(self, crosswalk):
+        '''
+        This method takes an array of tab representing every 3 points for a crosswalk.
+        It returns an array of the crosswalks ID and the coordinates of the points describing them --> will be usefull to set CrossID in Lane
+        cross = [CrossID, Point1 x, Point1 y, Point2 x, Point2 y, Point3 x, Point3 y]
+        '''
+        empty = [] #list filled with indexes k where crosswalk[k]==[]
+        k=0
+        for tab in crosswalk :
+            if tab == []:
+                empty.append(k)
+            k=k+1
+
+        empty.reverse()
+
+        for j in empty :  # removing empty lists from the list of lists crosswalk
+            del crosswalk[j]
+
+        cross = []
+        k = 0
+        for tab in crosswalk :
+            cross.append([k,tab[0][0],tab[0][1],tab[0][2],tab[0][3],tab[0][4],tab[0][5]])
+            k=k+1
+
+        return cross
+
+    def make_crosswalk(self,cross):
+        '''
+        this method creates the area and the crosswalks (and the corresponding points and lines)
+        '''
+        for tab in cross :
+            PID1=self.point.create(tab[1],tab[2],0)
+            PID2=self.point.create(tab[3],tab[4],0)
+            PID3=self.point.create(tab[5],tab[6],0)
+
+            LineID1=self.line.create(PID1,PID2)
+            LineID2=self.line.create(PID2,PID3)
+            LineID3=self.line.create(PID3,PID1)
+
+            AreaID=self.Area.create(LineID1,LineID3)
+            CrosswalkID=self.Crosswalk.create(AreaID)
+
 
 
 
@@ -276,6 +330,11 @@ class VectorMap:
             # Going throught the list of traffic Lights in the simulationS
 
             n = len(TrafficLightList)
+            error = False
+
+            if n > len(self.stopline):
+                print("error : traffic lights must always be linked to a stopline")
+                error = True
 
             for i in range(n):
 
@@ -294,34 +353,41 @@ class VectorMap:
                         stoplines_id = j
                         nb_clones = self.stopline[j].SignID
                         lane_id = self.stopline[j].LinkID
+                if min_dist>10:
+                    print("error : the traffic light at the coordinates", Orign_Point, " is too far away from the stopline linked to it")
+                    error = True
 
-                stopline_number = stoplines_id
+                if error == False :
+                    stopline_number = stoplines_id
 
-                for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
+                    for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
 
-                    pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                    pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                    pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
+                        pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
+                        pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
+                        pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
 
-                    VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                    VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                    VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
+                        VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
+                        VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
+                        VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                    SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
-                    SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
-                    SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
+                        SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
+                        SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
+                        SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
 
 
 
-                    # Linking Stopline
+                        # Linking Stopline
 
-                    self.stopline[stopline_number].set_TLID(SignDataID1)
+                        self.stopline[stopline_number].set_TLID(SignDataID1)
 
-                    stopline_number +=1
+                        stopline_number +=1
 
+            if error == True :
+                return(error)
 
             for p in range(len(self.stopline)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
                 self.stopline[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
+            return(error)
 
 
     # Returns the drivable lane data in the format:
@@ -390,14 +456,28 @@ class VectorMap:
         '''
         from matplotlib import pyplot as plt
         plt.figure('Vector Map')
-        plt.axis('equal')
         plt.grid(True)
+        xmin = 1000
+        xmax = -1000
+        ymin = 1000
+        ymax = -1000
+
         for x, y, m, d, ec, fc in self.__aggregate_lanes():
             plt.arrow(
                 x, y, m * np.sin(d), m * np.cos(d),
                 head_width=0.25, head_length=0.2, fc=fc, ec=ec,
                 width=0.1, length_includes_head=True
             )
+            if x < xmin :
+                 xmin = x
+            elif x > xmax :
+                xmax = x
+            if y < ymin :
+                ymin = y
+            elif y > ymax :
+                ymax = y
+        plt.axis ([xmin-2, xmax+2, ymin-2, ymax+2])
+
         lines = self.__aggregate_lines()
         if lines is not None:
             for line in lines:
@@ -408,6 +488,7 @@ class VectorMap:
             for edge in edges:
                 edge = np.array(edge)
                 plt.plot(edge[:,0], edge[:,1], 'b-')
+
         plt.show()
 
     def export(self):
@@ -416,6 +497,9 @@ class VectorMap:
         .. warning:: This will overwrite the contents of ./csv.
 
         '''
+        if os.path.isdir('./csv/') == False : # checks if the csv file exists and creates it if not
+            os.mkdir('./csv/')
+
         self.point.export('./csv/point.csv')
         self.node.export('./csv/node.csv')
         self.line.export('./csv/line.csv')
@@ -426,6 +510,39 @@ class VectorMap:
         self.vector.export('./csv/vector.csv')
         self.signaldata.export('./csv/signaldata.csv')
         self.stopline.export('./csv/stopline.csv')
+        self.Crosswalk.export('./csv/crosswalk.csv')
+        self.Area.export('./csv/area.csv')
+
+    def readfiles (self, Files):
+        '''
+        read the .csv files. Creates nodes, points, lanes and dt_lanes
+        '''
+        count = 0
+        l = []
+        dt = []
+        for file in Files :
+            File1 = open(file, "r")
+            content = File1.readlines()
+            for i in range(1,len(content)) :
+                line = []
+                value = ""
+                for j in range(len(content[i]))  :
+                    char = content[i][j]
+                    if (char != " ") and (char != "\n") and (char != ","):
+                        value += char
+                    if (char == " ") or j == (len(content[i])-1) or (char == ",") :
+                        val = float(value)
+                        value = ""
+                        line.append(val)
+                if count == 0 :
+                    self.__new_node(line[5], line[4])
+                elif count == 1 :
+                    self.lane.create(line[18], line[18], int(line[1]), int(line[4]), int(line[5]), int(line[2]), int(line[3]), line[14])
+                elif count == 2 :
+                    self.dtlane.create(int(line[2]), line[1], line[3])
+            count += 1
+
+
 
 class VMList:
     '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
@@ -608,7 +725,7 @@ class Lane:
 
     '''
     def __init__(self, SpeedLimit, RefSpeed, dtlane=0, node_start=0, node_end=0, lane_before=0,
-            lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT'):
+            lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT',cross=0):
         self.DID = dtlane           # Corresponding DTLane ID
         self.BLID = lane_before     # Preceding Lane ID
         self.FLID = lane_after      # Following Lane ID
@@ -620,7 +737,7 @@ class Lane:
         self.FLID2 = 0
         self.FLID3 = 0
         self.FLID4 = 0
-        self.CrossID = 0
+        self.CrossID = cross        # ID of the crosswalk crossing the lane
         self.Span = length          # Lane lengh (between Nodes)
         self.LCnt = 1
         self.Lno = 1
@@ -846,3 +963,51 @@ class Stopline:
     def __str__(self):
         data = [self.LID, self.TLID, self.SignID, self.LinkID]
         return ','.join(map(str, data))
+class Area:
+    '''Vector map data saved to area.csv.
+
+    :param line: the corresponding "class line" ID
+    :type line: int
+
+    :param area: the Area ID
+    :type area: int
+
+    '''
+
+    def __init__(self,SLID,ELID):                # Area ID
+        self.SLID = SLID                # ID of the first (start) line of the Area
+        self.ELID = ELID                # ID of the last (end) line of the Area
+
+    def set_SLID(self,line):
+        self.SLID = line
+
+    def set_ELID(self,line):
+        self.ELID = line
+
+    def __str__(self):
+        data = [self.SLID, self.ELID]
+        return ','.join(map(str, data))
+
+class Crosswalk:
+        '''Vector map data saved to crosswalk.csv
+
+        :param cw: the crosswalk ID
+        :type cw: int
+
+        :param area: the corresponding "class area" ID
+        :type area: int
+
+        '''
+
+        def __init__(self,AID):
+            self.AID = AID
+            self.Type = 1
+            self.BdID = 0
+            self.LinkID = 0
+
+        def set_AID(self,area):
+            self.AID = area
+
+        def __str__(self):
+            data = [self.AID, self.Type, self.BdID, self.LinkID]
+            return ','.join(map(str,data))

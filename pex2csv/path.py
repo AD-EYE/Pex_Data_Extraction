@@ -82,6 +82,40 @@ class Bend(Path):
         return (self.x0 + self.r * np.cos(self.a0 + np.sign(self.da) * t),
                 self.y0 + self.r * np.sin(self.a0 + np.sign(self.da) * t))
 
+
+class Clothoid (Path):
+    '''
+    This path is represented with an Euler Spiral
+
+    :param C2 : constant describing the spiral. If R the radius of the spiral at the curvilinear abscissa L, R*L =C**2, and C2 = C**2
+    :type C2 = Float
+
+    :param values : Tab of the x and y coordinates of the Spiral
+    :type values : [(Float,Float)]
+
+    :param dir :1 if we calculate the spiral in the x direction, -1 if it is the spiral in the reverse x direction
+    :type dir : Integer
+    '''
+    def __init__(self, x0, y0, h, C2, dir, Lstart, Lend) :
+        self.x0 = x0
+        self.y0 = y0
+        self.dL = 1.0
+        self.h = h
+        self.C2 = C2
+        self.Lstart = Lstart
+        self.Lend = Lend
+        self.values = [(x0,y0)]
+        self.dir = dir
+        Path.__init__(self,self.dL,abs(Lend-Lstart))
+
+    def eval(self, L):
+        index = len(self.values) -1
+        phi = (self.dir*L+self.Lstart)**2/(2*self.C2)
+        x = self.values[index][0] + self.dir*np.cos(phi + self.h)
+        y = self.values[index][1] + self.dir*np.sin(phi + self.h)
+        self.values.append((x,y))
+        return (self.values[index][0], self.values[index][1])
+
 class Curve(Path):
     '''
     This path is represented with a bezier curve.

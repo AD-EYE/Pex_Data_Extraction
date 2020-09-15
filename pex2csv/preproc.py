@@ -107,7 +107,7 @@ class StaticalObjectProcessor(object):
         StatObjects = self.StatObjects
         tflLight = []
         for id in StatObjects.keys():
-            if "TrafficLight" in id:
+            if "Light" in id:
                 tflLight.append(StatObjects[id])
         self.TrfLight = tflLight
 
@@ -133,6 +133,10 @@ class RoadProcessor(object):
 
         self.stoplines = []
 
+        # filled with relevant information for crosswalks
+
+        self.crosswalk = []
+
         #Fill up the Roads tab
         self.roads = roads
 
@@ -151,12 +155,15 @@ class RoadProcessor(object):
         self.__create_entry_roads(roads)
         self.__create_exit_roads(roads)
         self.__create_adapter_roads(roads)
+        self.__create_crosswalksR(roads)
+        self.__create_clothoid(roads)
 
     # Creates lanes traveling from each roundabout until the path meets
     # another roundabout, xcrossing or a dead end
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
         for roundabout in roundabouts:
+            self.crosswalk.append(roundabout.crosswalk)
             self.__add_roundabout(roundabout)
             roads.pop(roundabout.id, None)
 
@@ -166,6 +173,7 @@ class RoadProcessor(object):
         xcrossings = self.__get_xcrossings()
         for xcrossing in xcrossings:
             self.stoplines.append(xcrossing.stopline)
+            self.crosswalk.append(xcrossing.crosswalk)
             road = roads.pop(xcrossing.id, None)
             self.__add_segment(xcrossing)
             roads.pop(xcrossing.id, None)
@@ -176,6 +184,7 @@ class RoadProcessor(object):
         ycrossings = self.__get_ycrossings()
         for ycrossing in ycrossings:
             self.stoplines.append(ycrossing.stopline)
+            self.crosswalk.append(ycrossing.crosswalk)
             road = roads.pop(ycrossing.id, None)
             self.__add_segment(ycrossing)
             roads.pop(ycrossing.id, None)
@@ -185,22 +194,34 @@ class RoadProcessor(object):
         bezierroads = self.__get_bezierroads()
         for bezierroad in bezierroads:
             self.stoplines.append(bezierroad.stopline)
+            self.crosswalk.append(bezierroad.crosswalk)
             road = roads.pop(bezierroad.id, None)
             self.__add_segment(road)
+
 
     # Creates straight roads
     def __create_straight_roads(self, roads):
         straightroads = self.__get_straightroads()
         for straightroad in straightroads:
             self.stoplines.append(straightroad.stopline)
+            self.crosswalk.append(straightroad.crosswalk)
             road = roads.pop(straightroad.id, None)
             self.__add_segment(road)
+
+    # Creates crosswalk roads
+    def __create_crosswalksR(self, roads):
+        crosswalks = self.__get_crosswalksR()
+        for crosswalkR in crosswalks:
+            self.crosswalk.append(crosswalkR.crosswalk)
+            road = roads.pop(crosswalkR.id, None)
+            self.__add_segment(crosswalkR)
 
     # Creates bend roads
     def __create_bend_roads(self, roads):
         bendroads = self.__get_bendroads()
         for bendroad in bendroads:
             self.stoplines.append(bendroad.stopline)
+            self.crosswalk.append(bendroad.crosswalk)
             road = roads.pop(bendroad.id, None)
             self.__add_segment(road)
 
@@ -209,6 +230,7 @@ class RoadProcessor(object):
         entryroads = self.__get_entryroads()
         for entryroad in entryroads:
             self.stoplines.append(entryroad.stopline)
+            self.crosswalk.append(entryroad.crosswalk)
             road = roads.pop(entryroad.id, None)
             self.__add_entry(road)
 
@@ -217,6 +239,7 @@ class RoadProcessor(object):
         exitroads = self.__get_exitroads()
         for exitroad in exitroads:
             self.stoplines.append(exitroad.stopline)
+            self.crosswalk.append(exitroad.crosswalk)
             road = roads.pop(exitroad.id, None)
             self.__add_exit(road)
 
@@ -225,8 +248,19 @@ class RoadProcessor(object):
         adapterroads = self.__get_adapterroads()
         for adapterroad in adapterroads:
             self.stoplines.append(adapterroad.stopline)
+            self.crosswalk.append(adapterroad.crosswalk)
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
+
+
+    # Creates spiral roads
+    def __create_clothoid(self, roads):
+        clothoids = self.__get_clothoids()
+        for clotho in clothoids :
+            self.crosswalk.append(clotho.crosswalk)
+            self.stoplines.append(clotho.stopline)
+            road = roads.pop(clotho.id, None)
+            self.__add_segment(road)
 
     # Creates a lane which consists of a single path of x and y coordinates.
     # The path can have a junction end or start
@@ -340,6 +374,15 @@ class RoadProcessor(object):
                 straights.append(roads[id])
         return straights
 
+    # Fetches all crosswalks in the road network
+    def __get_crosswalksR(self):
+        roads = self.roads
+        cross = []
+        for id in roads.keys():
+            if "PedestrianCrossing" in id:
+                cross.append(roads[id])
+        return cross
+
     # Fetches all Bend road in the road network
     def __get_bendroads(self):
         roads = self.roads
@@ -357,6 +400,15 @@ class RoadProcessor(object):
             if "CurvedRoad" in id or "FlexRoad" in id:
                 bezier.append(roads[id])
         return bezier
+
+    # Fetches all Spiral road in the road network
+    def __get_clothoids(self):
+        roads =self.roads
+        clo = []
+        for id in roads.keys():
+            if "ClothoidRoad" in id :
+                clo.append(roads[id])
+        return clo
 
     # Fetches all Entry road in the road network
     def __get_entryroads(self):

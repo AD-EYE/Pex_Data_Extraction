@@ -491,27 +491,27 @@ class VectorMap:
 
         plt.show()
 
-    def export(self):
+    def export(self, folder):
         '''Saves the entire vector map to the appropriate .csv files to the directory ./csv.
 
         .. warning:: This will overwrite the contents of ./csv.
 
         '''
-        if os.path.isdir('./csv/') == False : # checks if the csv file exists and creates it if not
-            os.mkdir('./csv/')
+        if os.path.isdir(folder) == False : # checks if the csv file exists and creates it if not
+            os.mkdir(folder)
 
-        self.point.export('./csv/point.csv')
-        self.node.export('./csv/node.csv')
-        self.line.export('./csv/line.csv')
-        self.dtlane.export('./csv/dtlane.csv')
-        self.lane.export('./csv/lane.csv')
-        self.whiteline.export('./csv/whiteline.csv')
-        self.roadedge.export('./csv/roadedge.csv')
-        self.vector.export('./csv/vector.csv')
-        self.signaldata.export('./csv/signaldata.csv')
-        self.stopline.export('./csv/stopline.csv')
-        self.Crosswalk.export('./csv/crosswalk.csv')
-        self.Area.export('./csv/area.csv')
+        self.point.export(folder+'point.csv')
+        self.node.export(folder+'node.csv')
+        self.line.export(folder+'line.csv')
+        self.dtlane.export(folder+'dtlane.csv')
+        self.lane.export(folder+'lane.csv')
+        self.whiteline.export(folder+'whiteline.csv')
+        self.roadedge.export(folder+'roadedge.csv')
+        self.vector.export(folder+'vector.csv')
+        self.signaldata.export(folder+'signaldata.csv')
+        self.stopline.export(folder+'stopline.csv')
+        self.Crosswalk.export(folder+'crosswalk.csv')
+        self.Area.export(folder+'area.csv')
 
     def readfiles (self, Files):
         '''

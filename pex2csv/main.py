@@ -1,11 +1,11 @@
-from preproc import StaticalObjectProcessor,RoadProcessor
+from preproc import StaticObjectProcessor,RoadProcessor
 from vmap import VectorMap
 import numpy as np
 import parse
 import sys
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/KTH_pedestrian_autoware/Simulation/KTH_pedestrian_autoware.pex"
+PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestSmallest.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
 OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
                          # False if if you want to create the vector map of PEX_FILE_LOCATION
@@ -17,12 +17,12 @@ if OnlyVisualisation == False :
         Take_Speed_Prescan = True
 
         roads = parse.get_roads(path=PEX_FILE_LOCATION)
-        statobj = parse.get_staticalobject(path=PEX_FILE_LOCATION)
+        statobj = parse.get_staticobject(path=PEX_FILE_LOCATION)
         rproc = RoadProcessor(roads)
         rproc.create_lanes()
-        rproc2 = StaticalObjectProcessor()
-        rproc2.add_staticalobject(statobj)
-        rproc2.create_statical_object()
+        rproc2 = StaticObjectProcessor()
+        rproc2.add_staticobject(statobj)
+        rproc2.create_static_object()
         vm = VectorMap()
         cross = vm.make_Area(rproc.crosswalk)
         for lane in rproc.lanes:

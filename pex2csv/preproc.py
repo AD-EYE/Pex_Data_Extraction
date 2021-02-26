@@ -82,25 +82,25 @@ class Lane(object):
                 break
 
 
-class StaticalObjectProcessor(object):
+class StaticObjectProcessor(object):
     '''
-    Class responsible for processing the Statical Object for the vmap module
+    Class responsible for processing the Static Object for the vmap module
 
-    :param TrfLight: Tab of Traffic Light Object define in staticalobject.py
+    :param TrfLight: Tab of Traffic Light Object define in staticobject.py
     :type TrfLight: [TrafficLightRoadSide1, TrafficLightJapanStyle1...]
 
-    :param StatObject: Tab of StaticalObject Object (define in staticalobject.py)
-    :type StatObject: [StaticalObject1, StaticalObject2....]
+    :param StatObject: Tab of StaticObject Object (define in staticobject.py)
+    :type StatObject: [StaticObject1, StaticObject2....]
 
     '''
     def __init__(self):
         self.TrfLight = []    # If you want to take into account other Stat Object just add a tab and code the different create and get function
         self.StatObjects = []
 
-    def add_staticalobject(self, statobjects):
+    def add_staticobject(self, statobjects):
         self.StatObjects = statobjects
 
-    def create_statical_object(self):
+    def create_static_object(self):
         self.create_Traffic_Light()
 
     def create_Traffic_Light(self):

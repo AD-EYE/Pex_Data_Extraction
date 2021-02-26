@@ -1,23 +1,23 @@
-'''This module contains all of the code defining the structure of different statical object. By taking initial values from the parser the classes calculate a mathematical definition of the statical object.
+'''This module contains all of the code defining the structure of different static object. By taking initial values from the parser the classes calculate a mathematical definition of the static object.
 
 .. moduleauthor:: Nicolas Helleboid <nicohe@kth.se>
 
 '''
 
 
-class StaticalObject:
-    '''This is the interface class for all the Statical Objects. Every statical object has certain things in common such as coordinates of its orign and heading.
+class StaticObject:
+    '''This is the interface class for all the Static Objects. Every static object has certain things in common such as coordinates of its orign and heading.
 
-        :param id: represent the ID of the statical object (TrafficLightRoadSideNL, UnitedSet...).The exact ID can be found in the pex file.
+        :param id: represent the ID of the static object (TrafficLightRoadSideNL, UnitedSet...).The exact ID can be found in the pex file.
         :type id: string
 
-        :param x0: The x coordinate of orign of the Statical Object
+        :param x0: The x coordinate of orign of the Static Object
         :type x0: Float
 
-        :param y0: The y coordinate of orign of the Statical Object
+        :param y0: The y coordinate of orign of the Static Object
         :type y0: Float
 
-        :param h: Heading of the Statical Object
+        :param h: Heading of the Static Object
         :type h: Float
 
     '''
@@ -29,19 +29,19 @@ class StaticalObject:
 
 
     def getOrignPoint(self):
-        '''This method returns the orign coordinates of the statical object.
+        '''This method returns the orign coordinates of the static object.
         :returns (Float, Float)
         '''
         return (self.x0, self.y0)
 
     def getHeading(self):
-        '''This method returns the orign coordinates of the statical object.
+        '''This method returns the orign coordinates of the static object.
 
         :returns Float
         '''
         return self.h
 
-class TrafficLight(StaticalObject):
+class TrafficLight(StaticObject):
     '''
     This a representation of the Traffic Light in Prescan.
 
@@ -64,7 +64,7 @@ class TrafficLight(StaticalObject):
 
     '''
     def __init__(self, id, x0, y0, h, s):
-        StaticalObject.__init__(self, id)
+        StaticObject.__init__(self, id)
         self.x0 = x0
         self.y0 = y0
         self.h = h

@@ -7,10 +7,10 @@ the VectorMapping format(done in Vmap.py)
 
 from lxml import etree
 from road import *
-from staticalobject import *
+from staticobject import *
 import numpy as np
 
-def get_staticalobject(path='./data/roads.pex'):
+def get_staticobject(path='./data/roads.pex'):
     '''
     This fonction go fetch the list of traffic Light that make up the simulation in the pex file.
     To do so, the fonction search in the  part of the pex files, and then use the id
@@ -24,19 +24,19 @@ def get_staticalobject(path='./data/roads.pex'):
     # eTree module fetch the Roads in the Pex file
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
-    # staticalobject_In_Simu = tree.findall('//InfraOther')
-    staticalobject_In_Simu = tree.findall('//Actor')
-    staticalobject = {}
+    # staticobject_In_Simu = tree.findall('//InfraOther')
+    staticobject_In_Simu = tree.findall('//Actor')
+    staticobject = {}
 
     # For each Traffic Light in the simulation we produce a corresponding TrafficLight in the TrafLight list
 
-    for t in staticalobject_In_Simu:
+    for t in staticobject_In_Simu:
         description = t.get('Description')
 
         id = t.get('id')
         if ('Roadside' in description):
-            staticalobject[id] = get_TLight(t, id)
-    return staticalobject
+            staticobject[id] = get_TLight(t, id)
+    return staticobject
 
 
 def get_roads(path='./data/roads.pex'):
@@ -87,7 +87,7 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_clothoid(s, id, connections, path)
     return roads
 
-    # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
+    # The following fonctions are called by get_staticobject and return the static object with the right parameters define in staticobject.py corresponding to the static object id in the input. #
 
 def get_TLight(t, id):
     x0 = float(t[0].get('X'))

@@ -119,25 +119,14 @@ class RoadProcessor(object):
     '''
     def __init__(self, roads):
 
-        # All of the following tab will be filled with Lane Object
-
+        # All of the following list will be filled with Lane Objects
         self.lanes = []
         self.centers = []
         self.edges = []
-
-        # Excpect this one which will be fed with RoadType Object define in Road.py
-
-        self.roads = []
-
-        # And this will be filled with relevant information for stoplines
-
         self.stoplines = []
+        self.crosswalks = []
 
-        # filled with relevant information for crosswalks
-
-        self.crosswalk = []
-
-        #Fill up the Roads tab
+        # Fill up the Roads list with information from the parse module
         self.roads = roads
 
 
@@ -163,7 +152,7 @@ class RoadProcessor(object):
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
         for roundabout in roundabouts:
-            self.crosswalk.append(roundabout.crosswalk)
+            self.crosswalks.append(roundabout.crosswalk)
             self.__add_roundabout(roundabout)
             roads.pop(roundabout.id, None)
 
@@ -173,8 +162,8 @@ class RoadProcessor(object):
         xcrossings = self.__get_xcrossings()
         for xcrossing in xcrossings:
             self.stoplines.append(xcrossing.stopline)
-            self.crosswalk.append(xcrossing.crosswalk)
-            road = roads.pop(xcrossing.id, None)
+            self.crosswalks.append(xcrossing.crosswalk)
+            roads.pop(xcrossing.id, None)
             self.__add_segment(xcrossing)
             roads.pop(xcrossing.id, None)
 
@@ -184,8 +173,8 @@ class RoadProcessor(object):
         ycrossings = self.__get_ycrossings()
         for ycrossing in ycrossings:
             self.stoplines.append(ycrossing.stopline)
-            self.crosswalk.append(ycrossing.crosswalk)
-            road = roads.pop(ycrossing.id, None)
+            self.crosswalks.append(ycrossing.crosswalk)
+            roads.pop(ycrossing.id, None)
             self.__add_segment(ycrossing)
             roads.pop(ycrossing.id, None)
 
@@ -194,7 +183,7 @@ class RoadProcessor(object):
         bezierroads = self.__get_bezierroads()
         for bezierroad in bezierroads:
             self.stoplines.append(bezierroad.stopline)
-            self.crosswalk.append(bezierroad.crosswalk)
+            self.crosswalks.append(bezierroad.crosswalk)
             road = roads.pop(bezierroad.id, None)
             self.__add_segment(road)
 
@@ -204,7 +193,7 @@ class RoadProcessor(object):
         straightroads = self.__get_straightroads()
         for straightroad in straightroads:
             self.stoplines.append(straightroad.stopline)
-            self.crosswalk.append(straightroad.crosswalk)
+            self.crosswalks.append(straightroad.crosswalk)
             road = roads.pop(straightroad.id, None)
             self.__add_segment(road)
 
@@ -212,8 +201,8 @@ class RoadProcessor(object):
     def __create_crosswalksR(self, roads):
         crosswalks = self.__get_crosswalksR()
         for crosswalkR in crosswalks:
-            self.crosswalk.append(crosswalkR.crosswalk)
-            road = roads.pop(crosswalkR.id, None)
+            self.crosswalks.append(crosswalkR.crosswalk)
+            roads.pop(crosswalkR.id, None)
             self.__add_segment(crosswalkR)
 
     # Creates bend roads
@@ -221,7 +210,7 @@ class RoadProcessor(object):
         bendroads = self.__get_bendroads()
         for bendroad in bendroads:
             self.stoplines.append(bendroad.stopline)
-            self.crosswalk.append(bendroad.crosswalk)
+            self.crosswalks.append(bendroad.crosswalk)
             road = roads.pop(bendroad.id, None)
             self.__add_segment(road)
 
@@ -230,7 +219,7 @@ class RoadProcessor(object):
         entryroads = self.__get_entryroads()
         for entryroad in entryroads:
             self.stoplines.append(entryroad.stopline)
-            self.crosswalk.append(entryroad.crosswalk)
+            self.crosswalks.append(entryroad.crosswalk)
             road = roads.pop(entryroad.id, None)
             self.__add_entry(road)
 
@@ -239,7 +228,7 @@ class RoadProcessor(object):
         exitroads = self.__get_exitroads()
         for exitroad in exitroads:
             self.stoplines.append(exitroad.stopline)
-            self.crosswalk.append(exitroad.crosswalk)
+            self.crosswalks.append(exitroad.crosswalk)
             road = roads.pop(exitroad.id, None)
             self.__add_exit(road)
 
@@ -248,7 +237,7 @@ class RoadProcessor(object):
         adapterroads = self.__get_adapterroads()
         for adapterroad in adapterroads:
             self.stoplines.append(adapterroad.stopline)
-            self.crosswalk.append(adapterroad.crosswalk)
+            self.crosswalks.append(adapterroad.crosswalk)
             road = roads.pop(adapterroad.id, None)
             self.__add_adapter(road)
 
@@ -257,7 +246,7 @@ class RoadProcessor(object):
     def __create_clothoid(self, roads):
         clothoids = self.__get_clothoids()
         for clotho in clothoids :
-            self.crosswalk.append(clotho.crosswalk)
+            self.crosswalks.append(clotho.crosswalk)
             self.stoplines.append(clotho.stopline)
             road = roads.pop(clotho.id, None)
             self.__add_segment(road)

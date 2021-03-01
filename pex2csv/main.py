@@ -8,6 +8,7 @@ from vmap import VectorMap
 
 # config
 PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestSmallest.pex"
+# PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W05_KTH/Simulation/W05_KTH.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
 OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
                          # False if if you want to create the vector map of PEX_FILE_LOCATION
@@ -25,7 +26,7 @@ if OnlyVisualisation == False :
         static_objects_processor.add_staticobject(static_objects)
         static_objects_processor.create_static_object()
         vector_map = VectorMap()
-        crosswalks = vector_map.make_Area(roads_processor.crosswalk)
+        crosswalks = vector_map.make_Area(roads_processor.crosswalks)
         for lane in roads_processor.lanes:
             if USE_PRESCAN_SPEED:
                 vector_map.make_lane(crosswalks, lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
@@ -48,7 +49,7 @@ if OnlyVisualisation == False :
         vector_map.merge_redundant_points()
         vector_map.rebuild_lane_conections()
         vector_map.export(VECTORMAP_FILES_FOLDER)
-        vector_map.plot()
+        # vector_map.plot()
 
 else :
     vector_map = VectorMap()

@@ -5,10 +5,12 @@ the VectorMapping format(done in Vmap.py)
 '''
 
 
+import numpy as np
 from lxml import etree
+
 from road import *
 from staticobject import *
-import numpy as np
+
 
 def get_staticobject(path='./data/roads.pex'):
     '''
@@ -24,7 +26,6 @@ def get_staticobject(path='./data/roads.pex'):
     # eTree module fetch the Roads in the Pex file
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
-    # staticobject_In_Simu = tree.findall('//InfraOther')
     staticobject_In_Simu = tree.findall('//Actor')
     staticobject = {}
 
@@ -597,7 +598,7 @@ def get_adapter(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes_start-lanes_in_x_dir_start,lw))
             if "PedestrianMarkingGeneric" in str(R.get('id')) :
                 hw = float(R[1].get('Heading'))*np.pi/180
                 cl = float(R.get('CrossingLength'))
@@ -709,10 +710,6 @@ def get_ycross(s, id):
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
-
-
-# The following fonction is usefull to get the linking point of roundabout #
-
 def get_links_points_roundabout(id,path):
     '''
     This function go and take the orign point of the road connected to the crosssection of the roundabout
@@ -738,6 +735,3 @@ def get_links_points_roundabout(id,path):
 
 
     return point
-
-# Support for multi lane stop line and tfl :
-#

@@ -7,7 +7,8 @@ from vmap import VectorMap
 
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestSmallest.pex"
+# PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestKTH2.pex"
+PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestTwo1.pex"
 # PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W05_KTH/Simulation/W05_KTH.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
 OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
@@ -47,9 +48,10 @@ if OnlyVisualisation == False :
         if error == True :
             sys.exit()
         vector_map.merge_redundant_points()
+        vector_map.remove_one_point_lanes()
         vector_map.rebuild_lane_conections()
-        vector_map.export(VECTORMAP_FILES_FOLDER)
-        # vector_map.plot()
+        # vector_map.export(VECTORMAP_FILES_FOLDER)
+        vector_map.plot()
 
 else :
     vector_map = VectorMap()

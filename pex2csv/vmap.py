@@ -217,6 +217,43 @@ class VectorMap:
                     if k == 3: self.lanes[i].BLID3 = self.lanes[j].DID
                     if k == 4: self.lanes[i].BLID4 = self.lanes[j].DID
 
+    def remove_one_point_lanes(self): # to avoid having lanes having p0 - p0 as a result of merge_redundant_points
+        lanes_to_delete = []
+        for i in range(len(self.lanes)):
+            if self.lanes[i].BNID == self.lanes[i].FNID:
+                lanes_to_delete.append(i)
+        lanes_to_delete.reverse() # need to do it backward so that we remove the actual index (removing one element changes the index of all the ones after)
+        print(lanes_to_delete)
+        for index in lanes_to_delete:
+            self.lanes.remove_element(index)
+            self.dtlanes.remove_element(index)
+            self.decrement_lane_id(index)
+
+    def decrement_lane_id(self, decrement_threshold_index): # to make sure that the lane indexes has no holes after one point lane removal
+        for lane in self.lanes:
+            if lane.DID >= decrement_threshold_index:
+                lane.DID -= 1
+            if lane.BLID >= decrement_threshold_index:
+                lane.BLID -= 1
+            if lane.BLID2 >= decrement_threshold_index:
+                lane.BLID2 -= 1
+            if lane.BLID3 >= decrement_threshold_index:
+                lane.BLID3 -= 1
+            if lane.BLID4 >= decrement_threshold_index:
+                lane.BLID4 -= 1
+            if lane.FLID >= decrement_threshold_index:
+                lane.FLID -= 1
+            if lane.FLID2 >= decrement_threshold_index:
+                lane.FLID2 -= 1
+            if lane.FLID3 >= decrement_threshold_index:
+                lane.FLID3 -= 1
+            if lane.FLID4 >= decrement_threshold_index:
+                lane.FLID4 -= 1
+
+                        
+
+
+
     def merge_redundant_points(self):
         c = 0
         for i in range(len(self.lanes)):
@@ -230,6 +267,8 @@ class VectorMap:
                             c = c+1
                             print('Case ' + str(c) + ': x = ' + str(self.points[PID_i].Ly) + ', y = ' + str(self.points[PID_i].Bx))
                             print('       ' + ': x = ' + str(self.points[PID_j].Ly) + ', y = ' + str(self.points[PID_j].Bx))
+            if self.lanes[i].BNID == self.lanes[i].FNID:
+                print("issue with lane " + str(self.lanes[i].DID))
 
     def square_distance(self, PID_1, PID_2):
         return ((self.points[PID_1].Bx - self.points[PID_2].Bx)**2 + (self.points[PID_1].Ly - self.points[PID_2].Ly)**2 + (self.points[PID_1].H - self.points[PID_2].H)**2)
@@ -239,6 +278,15 @@ class VectorMap:
             if self.dtlanes[i].PID == PID_2:
                 self.dtlanes[i].PID = PID_1
         for i in range(len(self.lanes)):
+            # if (self.lanes[i].BNID == PID_1 and self.lanes[i].FNID == PID_2) or (self.lanes[i].BNID == PID_2 and self.lanes[i].FNID == PID_1):
+            #     self.lanes.remove_element(i) # delete the lane
+            #     self.dtlanes.remove_element(i)
+            # else:
+            #     if self.lanes[i].BNID == PID_2:
+            #         self.lanes[i].BNID = PID_1
+            #     if self.lanes[i].FNID == PID_2:
+            #         self.lanes[i].FNID = PID_1
+
             if self.lanes[i].BNID == PID_2:
                 self.lanes[i].BNID = PID_1
             if self.lanes[i].FNID == PID_2:
@@ -577,6 +625,11 @@ class VMList:
 
     def __len__(self):
         return len(self.__data)
+
+    def remove_element(self, index):
+        del self.__data[index-1]
+
+
 
     def create(self, *args, **kwargs):
         '''Creates a new object of the class declared on this objects's construction. Arguments and keyword arguments passed in here will be passed directly to the new object's constructor.

@@ -14,18 +14,18 @@ class VectorMap:
 
     '''
     def __init__(self):
-        self.point      = VMList(Point)
-        self.node       = VMList(Node)
-        self.line       = VMList(Line)
-        self.dtlane     = VMList(DTLane)
-        self.lane       = VMList(Lane)
-        self.whiteline  = VMList(WhiteLine)
-        self.roadedge   = VMList(RoadEdge)
-        self.vector     = VMList(Vector)
-        self.signaldata = VMList(SignalData)
-        self.stopline   = VMList(Stopline)
-        self.Area       = VMList(Area)
-        self.Crosswalk  = VMList(Crosswalk)
+        self.points      = VMList(Point)
+        self.nodes       = VMList(Node)
+        self.lines       = VMList(Line)
+        self.dtlanes     = VMList(DTLane)
+        self.lanes       = VMList(Lane)
+        self.whitelines  = VMList(WhiteLine)
+        self.roadedges   = VMList(RoadEdge)
+        self.vectors     = VMList(Vector)
+        self.signaldatas = VMList(SignalData)
+        self.stoplines   = VMList(Stopline)
+        self.areas       = VMList(Area)
+        self.crosswalks  = VMList(Crosswalk)
 
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
@@ -34,8 +34,8 @@ class VectorMap:
     # Returns the Node ID of the new Node.
     def __new_node(self, x, y):
         # Create a new Point and corresponding Node.
-        point_id = self.point.create(x, y, 0.0)
-        node_id = self.node.create(point_id)
+        point_id = self.points.create(x, y, 0.0)
+        node_id = self.nodes.create(point_id)
         # Add entry to Node map.
         self.__xy_node_map[(x, y)] = node_id
         return node_id
@@ -62,50 +62,50 @@ class VectorMap:
             node_end    = node_end
         )
         if dtlane_before is not None:
-            distance = self.dtlane[dtlane_before].get_length() + mag
+            distance = self.dtlanes[dtlane_before].get_length() + mag
         else: distance = mag
-        dtlane_id = self.dtlane.create(
-            point       = self.node[node_end].get_point(),
+        dtlane_id = self.dtlanes.create(
+            point       = self.nodes[node_end].get_point(),
             length      = distance,
             direction   = dir
         )
-        lane_id = self.lane.create(
+        lane_id = self.lanes.create(
             SpeedLimit,
             RefSpeed,
-            dtlane      = len(self.dtlane),
+            dtlane      = len(self.dtlanes),
             node_start  = node_start,
             node_end    = node_end,
             length      = mag
         )
         if lane_before is not None:
-            self.lane[lane_id].set_lane_before(lane_before)
-            self.lane[lane_before].set_lane_after(lane_id)
+            self.lanes[lane_id].set_lane_before(lane_before)
+            self.lanes[lane_before].set_lane_after(lane_id)
 
         return (lane_id, dtlane_id)
 
     # Creates a new Line between the last two points. Returns ID of new Line.
     def __new_line(self, node_start=0, node_end=0, line_before=None,
             line_type='EDGE'):
-        line_id = self.line.create(
-            point_start = self.node[node_start].get_point(),
-            point_end   = self.node[node_end].get_point()
+        line_id = self.lines.create(
+            point_start = self.nodes[node_start].get_point(),
+            point_end   = self.nodes[node_end].get_point()
         )
         if line_type == 'CENTER':
-            self.whiteline.create(line = len(self.line), node = node_start)
+            self.whitelines.create(line = len(self.lines), node = node_start)
         elif line_type == 'EDGE':
-            self.roadedge.create(line = len(self.line), node = node_start)
+            self.roadedges.create(line = len(self.lines), node = node_start)
         else: raise ValueError('__new_line: line_type=' + str(line_type))
         if line_before is not None:
-            self.line[-1].set_line_before(line_before)
-            self.line[line_before].set_line_after(len(self.line))
+            self.lines[-1].set_line_before(line_before)
+            self.lines[line_before].set_line_after(len(self.lines))
         return line_id
 
     # Returns the distance and direction between two Nodes.
     def __compute_vector(self, node_start=0, node_end=0):
-        point_start = self.node[node_start].get_point()
-        point_end = self.node[node_end].get_point()
-        magnitude = self.point[point_start].distance_to(self.point[point_end])
-        direction = self.point[point_start].direction_to(self.point[point_end])
+        point_start = self.nodes[node_start].get_point()
+        point_end = self.nodes[node_end].get_point()
+        magnitude = self.points[point_start].distance_to(self.points[point_end])
+        direction = self.points[point_start].direction_to(self.points[point_end])
         return (magnitude, direction)
 
     def make_lane(self, cross, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
@@ -150,7 +150,7 @@ class VectorMap:
             for tab in cross :          #here we try to find if a crosswalk crosses the lane to set CrossID of the lane (0 if there is no crosswalk)
                 for i in range (3):
                     if dist ((x,y),(tab[i+1],tab[i+2]))<2 :
-                        setattr(self.lane[0], 'CrossID', tab[0])
+                        setattr(self.lanes[0], 'CrossID', tab[0])
 
             # If this is the first Lane, remember the ID. Else, link the
             # previous Lane to the new one.
@@ -159,10 +159,10 @@ class VectorMap:
 
 
         # Mark junctions and turns provided by caller.
-        self.lane[lane_first].set_junction(junction_start)
-        self.lane[lane_first].set_turn(turn_start)
-        self.lane[lane_previous].set_junction(junction_end)
-        self.lane[lane_previous].set_turn(turn_end)
+        self.lanes[lane_first].set_junction(junction_start)
+        self.lanes[lane_first].set_turn(turn_start)
+        self.lanes[lane_previous].set_junction(junction_end)
+        self.lanes[lane_previous].set_turn(turn_end)
 
 
 
@@ -197,51 +197,52 @@ class VectorMap:
             line_previous = line_current
 
     def rebuild_lane_conections(self):
-        for i in range(len(self.lane)):                                 # Check every lane
+        for i in range(len(self.lanes)):                                 # Check every lane
             k = 0
-            for j in range(len(self.lane)):                         # Check them against all the other lanes
-                if self.lane[i].FNID == self.lane[j].BNID:
+            for j in range(len(self.lanes)):                         # Check them against all the other lanes
+                if self.lanes[i].FNID == self.lanes[j].BNID:
                     k = k+1
-                    if k == 1: self.lane[i].FLID = self.lane[j].DID
-                    if k == 2: self.lane[i].FLID2 = self.lane[j].DID
-                    if k == 3: self.lane[i].FLID3 = self.lane[j].DID
-                    if k == 4: self.lane[i].FLID4 = self.lane[j].DID
+                    if k == 1: self.lanes[i].FLID = self.lanes[j].DID
+                    if k == 2: self.lanes[i].FLID2 = self.lanes[j].DID
+                    if k == 3: self.lanes[i].FLID3 = self.lanes[j].DID
+                    if k == 4: self.lanes[i].FLID4 = self.lanes[j].DID
 
-        for i in range(len(self.lane)):
+        for i in range(len(self.lanes)):
             k = 0
-            for j in range(len(self.lane)):
-                if self.lane[i].BNID == self.lane[j].FNID:
+            for j in range(len(self.lanes)):
+                if self.lanes[i].BNID == self.lanes[j].FNID:
                     k = k+1
-                    if k == 1: self.lane[i].BLID = self.lane[j].DID
-                    if k == 2: self.lane[i].BLID2 = self.lane[j].DID
-                    if k == 3: self.lane[i].BLID3 = self.lane[j].DID
-                    if k == 4: self.lane[i].BLID4 = self.lane[j].DID
+                    if k == 1: self.lanes[i].BLID = self.lanes[j].DID
+                    if k == 2: self.lanes[i].BLID2 = self.lanes[j].DID
+                    if k == 3: self.lanes[i].BLID3 = self.lanes[j].DID
+                    if k == 4: self.lanes[i].BLID4 = self.lanes[j].DID
 
     def merge_redundant_points(self):
         c = 0
-        for i in range(len(self.lane)):
-            if self.lane[i].FLID == 0:
-                PID_i = self.lane[i].FNID         #This works because NID = PID
-                for j in range(len(self.point)):
+        for i in range(len(self.lanes)):
+            if self.lanes[i].FLID == 0:
+                PID_i = self.lanes[i].FNID         #This works because NID = PID
+                for j in range(len(self.points)):
                     PID_j = j
                     if PID_i != PID_j:
                         if self.square_distance(PID_i, PID_j) < 0.0001:
                             self.merge_two_points(PID_i, PID_j)
                             c = c+1
-                            print('Case ' + str(c) + ': x = ' + str(self.point[PID_i].Ly) + ', y = ' + str(self.point[PID_i].Bx))
+                            print('Case ' + str(c) + ': x = ' + str(self.points[PID_i].Ly) + ', y = ' + str(self.points[PID_i].Bx))
+                            print('       ' + ': x = ' + str(self.points[PID_j].Ly) + ', y = ' + str(self.points[PID_j].Bx))
 
     def square_distance(self, PID_1, PID_2):
-        return ((self.point[PID_1].Bx - self.point[PID_2].Bx)**2 + (self.point[PID_1].Ly - self.point[PID_2].Ly)**2 + (self.point[PID_1].H - self.point[PID_2].H)**2)
+        return ((self.points[PID_1].Bx - self.points[PID_2].Bx)**2 + (self.points[PID_1].Ly - self.points[PID_2].Ly)**2 + (self.points[PID_1].H - self.points[PID_2].H)**2)
 
     def merge_two_points(self, PID_1, PID_2):
-        for i in range(len(self.dtlane)):
-            if self.dtlane[i].PID == PID_2:
-                self.dtlane[i].PID = PID_1
-        for i in range(len(self.lane)):
-            if self.lane[i].BNID == PID_2:
-                self.lane[i].BNID = PID_1
-            if self.lane[i].FNID == PID_2:
-                self.lane[i].FNID = PID_1
+        for i in range(len(self.dtlanes)):
+            if self.dtlanes[i].PID == PID_2:
+                self.dtlanes[i].PID = PID_1
+        for i in range(len(self.lanes)):
+            if self.lanes[i].BNID == PID_2:
+                self.lanes[i].BNID = PID_1
+            if self.lanes[i].FNID == PID_2:
+                self.lanes[i].FNID = PID_1
 
     def make_Stoplines(self, Stoplines):
         '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
@@ -255,9 +256,9 @@ class VectorMap:
 
                 Middle_Point = (tab[i][4],tab[i][5])
                 min_dist = 1000
-                for j in range(len(self.point)):
-                    x = self.point[j].Ly
-                    y = self.point[j].Bx
+                for j in range(len(self.points)):
+                    x = self.points[j].Ly
+                    y = self.points[j].Bx
                     point_of_interest = (x,y)
                     distance = dist(point_of_interest,Middle_Point)
                     if min_dist > distance:
@@ -265,19 +266,19 @@ class VectorMap:
                         closest_point = point_of_interest
                         closest_node = j
 
-                for k in range(len(self.lane)):
-                    if closest_node == self.lane[k].FNID:
-                        lane_id = self.lane[k].BLID
+                for k in range(len(self.lanes)):
+                    if closest_node == self.lanes[k].FNID:
+                        lane_id = self.lanes[k].BLID
 
-                        PointID1 = self.point.create(tab[i][0], tab[i][1], 0)
-                        PointID2 = self.point.create(tab[i][2], tab[i][3], 0)
-                        LineID = self.line.create(PointID1,PointID2)
+                        PointID1 = self.points.create(tab[i][0], tab[i][1], 0)
+                        PointID2 = self.points.create(tab[i][2], tab[i][3], 0)
+                        LineID = self.lines.create(PointID1,PointID2)
                         lineLength = dist( (tab[i][0],tab[i][1]) , (tab[i][2],tab[i][3]) )
                         signID = 1
                         while round(lineLength,2) > tab[i][7] :
                             signID += 1
                             lineLength -= tab[i][7]
-                        StoplineID = self.stopline.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
+                        StoplineID = self.stoplines.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
     def make_Area(self, crosswalk):
         '''
@@ -310,16 +311,16 @@ class VectorMap:
         this method creates the area and the crosswalks (and the corresponding points and lines)
         '''
         for tab in cross :
-            PID1=self.point.create(tab[1],tab[2],0)
-            PID2=self.point.create(tab[3],tab[4],0)
-            PID3=self.point.create(tab[5],tab[6],0)
+            PID1=self.points.create(tab[1],tab[2],0)
+            PID2=self.points.create(tab[3],tab[4],0)
+            PID3=self.points.create(tab[5],tab[6],0)
 
-            LineID1=self.line.create(PID1,PID2)
-            LineID2=self.line.create(PID2,PID3)
-            LineID3=self.line.create(PID3,PID1)
+            LineID1=self.lines.create(PID1,PID2)
+            LineID2=self.lines.create(PID2,PID3)
+            LineID3=self.lines.create(PID3,PID1)
 
-            AreaID=self.Area.create(LineID1,LineID3)
-            CrosswalkID=self.Crosswalk.create(AreaID)
+            AreaID=self.areas.create(LineID1,LineID3)
+            CrosswalkID=self.crosswalks.create(AreaID)
 
 
 
@@ -332,7 +333,7 @@ class VectorMap:
             n = len(TrafficLightList)
             error = False
 
-            if n > len(self.stopline):
+            if n > len(self.stoplines):
                 print("error : traffic lights must always be linked to a stopline")
                 error = True
 
@@ -342,17 +343,17 @@ class VectorMap:
 
                 min_dist=1000
                 Orign_Point = (TrafficLightList[i].x0,TrafficLightList[i].y0)
-                for j in range(len(self.stopline)):
+                for j in range(len(self.stoplines)):
 
-                    x1 =self.point[self.line[self.stopline[j].LID].BPID].Ly
-                    y1= self.point[self.line[self.stopline[j].LID].BPID].Bx
+                    x1 =self.points[self.lines[self.stoplines[j].LID].BPID].Ly
+                    y1= self.points[self.lines[self.stoplines[j].LID].BPID].Bx
                     point_of_interest = (x1,y1)
                     distance = dist(point_of_interest,Orign_Point)
                     if min_dist > distance:
                         min_dist = distance
                         stoplines_id = j
-                        nb_clones = self.stopline[j].SignID
-                        lane_id = self.stopline[j].LinkID
+                        nb_clones = self.stoplines[j].SignID
+                        lane_id = self.stoplines[j].LinkID
                 if min_dist>10:
                     print("error : the traffic light at the coordinates", Orign_Point, " is too far away from the stopline linked to it")
                     error = True
@@ -362,31 +363,31 @@ class VectorMap:
 
                     for k in range(nb_clones): # Since a stopline and a traffic light can only be linked to one lane, we have to make clones if the road has more than 1 lane
 
-                        pointID1 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
-                        pointID2 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
-                        pointID3 = self.point.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
+                        pointID1 = self.points.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.6)
+                        pointID2 = self.points.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.3)
+                        pointID3 = self.points.create(TrafficLightList[i].x0, TrafficLightList[i].y0, 3.0)
 
-                        VectorID1 = self.vector.create(pointID1, TrafficLightList[i].h*180/np.pi)
-                        VectorID2 = self.vector.create(pointID2, TrafficLightList[i].h*180/np.pi)
-                        VectorID3 = self.vector.create(pointID3, TrafficLightList[i].h*180/np.pi)
+                        VectorID1 = self.vectors.create(pointID1, TrafficLightList[i].h*180/np.pi)
+                        VectorID2 = self.vectors.create(pointID2, TrafficLightList[i].h*180/np.pi)
+                        VectorID3 = self.vectors.create(pointID3, TrafficLightList[i].h*180/np.pi)
 
-                        SignDataID1 = self.signaldata.create(VectorID1, 0, 1, self.stopline[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
-                        SignDataID2 = self.signaldata.create(VectorID2, 0, 3, self.stopline[stopline_number].LinkID)
-                        SignDataID3 = self.signaldata.create(VectorID3, 0, 2, self.stopline[stopline_number].LinkID)
+                        SignDataID1 = self.signaldatas.create(VectorID1, 0, 1, self.stoplines[stopline_number].LinkID)  # That why creating stoplines in a specific order is important if not done then tfl and stoplines can be misslink
+                        SignDataID2 = self.signaldatas.create(VectorID2, 0, 3, self.stoplines[stopline_number].LinkID)
+                        SignDataID3 = self.signaldatas.create(VectorID3, 0, 2, self.stoplines[stopline_number].LinkID)
 
 
 
                         # Linking Stopline
 
-                        self.stopline[stopline_number].set_TLID(SignDataID1)
+                        self.stoplines[stopline_number].set_TLID(SignDataID1)
 
                         stopline_number +=1
 
             if error == True :
                 return(error)
 
-            for p in range(len(self.stopline)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
-                self.stopline[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
+            for p in range(len(self.stoplines)):  # Now that evreything is done we have to put SIgnId of each stoplines to 0
+                self.stoplines[p].set_SignID(0)   # Since SignID are not yet used, we assign them here and put them at 0
             return(error)
 
 
@@ -396,10 +397,10 @@ class VectorMap:
     # Colors are used in the plot() method to generate graphical arrows.
     def __aggregate_lanes(self):
         data = []
-        for l in self.lane:
-            y, x = self.point[self.node[l.get_node_start()].get_point()].get_xy()
+        for l in self.lanes:
+            y, x = self.points[self.nodes[l.get_node_start()].get_point()].get_xy()
             magnitude = l.get_length()
-            direction = self.dtlane[l.get_dtlane()].get_direction()
+            direction = self.dtlanes[l.get_dtlane()].get_direction()
             if l.get_turn() == 'RIGHT_TURN':
                 edge_color = 'r'
                 face_color = 'r'
@@ -424,11 +425,11 @@ class VectorMap:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
     def __aggregate_lines(self):
         data = [[]]
-        for wl in self.whiteline:
-            p0 = self.line[wl.get_line()].get_point_start()
-            p1 = self.line[wl.get_line()].get_point_end()
-            x0, y0 = self.point[p0].get_xy()
-            x1, y1 = self.point[p1].get_xy()
+        for wl in self.whitelines:
+            p0 = self.lines[wl.get_line()].get_point_start()
+            p1 = self.lines[wl.get_line()].get_point_end()
+            x0, y0 = self.points[p0].get_xy()
+            x1, y1 = self.points[p1].get_xy()
             if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
             elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
             else: data.append([[x0, y0], [x1, y1]])
@@ -439,11 +440,11 @@ class VectorMap:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
     def __aggregate_edges(self):
         data = [[]]
-        for re in self.roadedge:
-            p0 = self.line[re.get_line()].get_point_start()
-            p1 = self.line[re.get_line()].get_point_end()
-            x0, y0 = self.point[p0].get_xy()
-            x1, y1 = self.point[p1].get_xy()
+        for re in self.roadedges:
+            p0 = self.lines[re.get_line()].get_point_start()
+            p1 = self.lines[re.get_line()].get_point_end()
+            x0, y0 = self.points[p0].get_xy()
+            x1, y1 = self.points[p1].get_xy()
             if len(data[-1]) == 0: data[-1] = [[x0, y0], [x1, y1]]
             elif data[-1][-1] == [x0, y0]: data[-1].append([x1, y1])
             else: data.append([[x0, y0], [x1, y1]])
@@ -500,18 +501,18 @@ class VectorMap:
         if os.path.isdir(folder) == False : # checks if the csv file exists and creates it if not
             os.mkdir(folder)
 
-        self.point.export(folder+'point.csv')
-        self.node.export(folder+'node.csv')
-        self.line.export(folder+'line.csv')
-        self.dtlane.export(folder+'dtlane.csv')
-        self.lane.export(folder+'lane.csv')
-        self.whiteline.export(folder+'whiteline.csv')
-        self.roadedge.export(folder+'roadedge.csv')
-        self.vector.export(folder+'vector.csv')
-        self.signaldata.export(folder+'signaldata.csv')
-        self.stopline.export(folder+'stopline.csv')
-        self.Crosswalk.export(folder+'crosswalk.csv')
-        self.Area.export(folder+'area.csv')
+        self.points.export(folder+'point.csv')
+        self.nodes.export(folder+'node.csv')
+        self.lines.export(folder+'line.csv')
+        self.dtlanes.export(folder+'dtlane.csv')
+        self.lanes.export(folder+'lane.csv')
+        self.whitelines.export(folder+'whiteline.csv')
+        self.roadedges.export(folder+'roadedge.csv')
+        self.vectors.export(folder+'vector.csv')
+        self.signaldatas.export(folder+'signaldata.csv')
+        self.stoplines.export(folder+'stopline.csv')
+        self.crosswalks.export(folder+'crosswalk.csv')
+        self.areas.export(folder+'area.csv')
 
     def readfiles (self, Files):
         '''
@@ -537,9 +538,9 @@ class VectorMap:
                 if count == 0 :
                     self.__new_node(line[5], line[4])
                 elif count == 1 :
-                    self.lane.create(line[18], line[18], int(line[1]), int(line[4]), int(line[5]), int(line[2]), int(line[3]), line[14])
+                    self.lanes.create(line[18], line[18], int(line[1]), int(line[4]), int(line[5]), int(line[2]), int(line[3]), line[14])
                 elif count == 2 :
-                    self.dtlane.create(int(line[2]), line[1], line[3])
+                    self.dtlanes.create(int(line[2]), line[1], line[3])
             count += 1
 
 

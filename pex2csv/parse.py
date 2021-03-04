@@ -5,12 +5,14 @@ the VectorMapping format(done in Vmap.py)
 '''
 
 
-from lxml import etree
-from road import *
-from staticalobject import *
 import numpy as np
+from lxml import etree
 
-def get_staticalobject(path='./data/roads.pex'):
+from road import *
+from staticobject import *
+
+
+def get_staticobject(path='./data/roads.pex'):
     '''
     This fonction go fetch the list of traffic Light that make up the simulation in the pex file.
     To do so, the fonction search in the  part of the pex files, and then use the id
@@ -24,19 +26,18 @@ def get_staticalobject(path='./data/roads.pex'):
     # eTree module fetch the Roads in the Pex file
     ns = {'xsi': "http://www.w3.org/2001/XMLSchema-instance"}
     tree = etree.parse(path)
-    # staticalobject_In_Simu = tree.findall('//InfraOther')
-    staticalobject_In_Simu = tree.findall('//Actor')
-    staticalobject = {}
+    staticobject_In_Simu = tree.findall('//Actor')
+    staticobject = {}
 
     # For each Traffic Light in the simulation we produce a corresponding TrafficLight in the TrafLight list
 
-    for t in staticalobject_In_Simu:
+    for t in staticobject_In_Simu:
         description = t.get('Description')
 
         id = t.get('id')
         if ('Roadside' in description):
-            staticalobject[id] = get_TLight(t, id)
-    return staticalobject
+            staticobject[id] = get_TLight(t, id)
+    return staticobject
 
 
 def get_roads(path='./data/roads.pex'):
@@ -87,7 +88,7 @@ def get_roads(path='./data/roads.pex'):
             roads[id] = get_clothoid(s, id, connections, path)
     return roads
 
-    # The following fonctions are called by get_staticalobject and return the statical object with the right parameters define in staticalobject.py corresponding to the statical object id in the input. #
+    # The following fonctions are called by get_staticobject and return the static object with the right parameters define in staticobject.py corresponding to the static object id in the input. #
 
 def get_TLight(t, id):
     x0 = float(t[0].get('X'))
@@ -597,7 +598,7 @@ def get_adapter(s, id):
             y2 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0  - (lw*0.5) * np.cos(h)
             x3 = -float(R[0].get('Y'))*np.sin(h) + float(R[0].get('X'))*np.cos(h)  + x0
             y3 = float(R[0].get('X'))*np.sin(h) + float(R[0].get('Y'))*np.cos(h) +y0
-            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes-lanes_in_x_dir,lw))
+            Stl.append((x1, y1, x2, y2, x3, y3,nbr_of_lanes_start-lanes_in_x_dir_start,lw))
             if "PedestrianMarkingGeneric" in str(R.get('id')) :
                 hw = float(R[1].get('Heading'))*np.pi/180
                 cl = float(R.get('CrossingLength'))
@@ -709,10 +710,6 @@ def get_ycross(s, id):
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
-
-
-# The following fonction is usefull to get the linking point of roundabout #
-
 def get_links_points_roundabout(id,path):
     '''
     This function go and take the orign point of the road connected to the crosssection of the roundabout
@@ -738,6 +735,3 @@ def get_links_points_roundabout(id,path):
 
 
     return point
-
-# Support for multi lane stop line and tfl :
-#

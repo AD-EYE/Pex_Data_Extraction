@@ -7,8 +7,7 @@ from vmap import VectorMap
 
 
 # config
-PEX_FILE_LOCATION = "/home/adeye/Downloads/VectorMapTestSmallest.pex"
-# PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W05_KTH/Simulation/W05_KTH.pex"
+PEX_FILE_LOCATION = "/home/adeye/AD-EYE_Core/AD-EYE/Experiments/W05_KTH/Simulation/W05_KTH.pex"
 VECTORMAP_FILES_FOLDER = "/home/adeye/AD-EYE_Core/Pex_Data_Extraction/pex2csv/csv/"
 OnlyVisualisation = False # True if you want to generate the visualisation of the files from VECTORMAP_FILES_FOLDER,
                          # False if if you want to create the vector map of PEX_FILE_LOCATION
@@ -17,14 +16,18 @@ USE_PRESCAN_SPEED = True
 if OnlyVisualisation == False :
     if __name__ == '__main__':
 
-
+        print("-> Parsing pex file")
         roads = parse.get_roads(path=PEX_FILE_LOCATION)
         static_objects = parse.get_staticobject(path=PEX_FILE_LOCATION)
+
+        print("-> Processing parsed roads and objects")
         roads_processor = RoadProcessor(roads)
         roads_processor.create_lanes()
         static_objects_processor = StaticObjectProcessor()
         static_objects_processor.add_staticobject(static_objects)
         static_objects_processor.create_static_object()
+
+        print("-> Creating vector map components")
         vector_map = VectorMap()
         crosswalks = vector_map.make_Area(roads_processor.crosswalks)
         for lane in roads_processor.lanes:
@@ -32,10 +35,6 @@ if OnlyVisualisation == False :
                 vector_map.make_lane(crosswalks, lane.SpeedLimit, lane.RefSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
             else:
                 vector_map.make_lane(crosswalks, lane.DefinedSpeed, lane.DefinedSpeed, lane.get_lanes(), junction_end=lane.get_junction_end(), junction_start=lane.get_junction_start())
-
-
-
-
         # Commented out since centers and edges seem to crash autoware
         # for edge in roads_processor.edges:
         #     vector_map.make_line(edge.get_lanes(), line_type='EDGE')
@@ -46,10 +45,17 @@ if OnlyVisualisation == False :
         error = vector_map.make_TrafficLight(static_objects_processor.TrfLight)
         if error == True :
             sys.exit()
+
+
+        print("-> Merging points that are too close")
         vector_map.merge_redundant_points()
+        print("-> Removing lanes with only one point")
+        vector_map.remove_one_point_lanes()
+        print("-> Rebuilding lanes connections")
         vector_map.rebuild_lane_conections()
+        print("-> Writing csv files")
         vector_map.export(VECTORMAP_FILES_FOLDER)
-        # vector_map.plot()
+        vector_map.plot()
 
 else :
     vector_map = VectorMap()

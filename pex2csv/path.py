@@ -30,7 +30,7 @@ class Path:
         self.t = 0.0
         return self
 
-    def __next__(self):
+    def __next__(self): # we want to have he last point exactly at the end of the segment to follow the less than 1m recomendation
         if self.t == self.t1:
             self.flag = True
         if self.t > self.t1 and self.flag == False:

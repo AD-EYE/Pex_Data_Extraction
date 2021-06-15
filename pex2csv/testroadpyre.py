@@ -1,8 +1,6 @@
-'''This file was created to see if parse.py ´s support of Speedlimit work. This Test file will use a simulation made with prescan with different RT and differente SL per RT.
+##This file was created to see if parse.py ´s support of Speedlimit work. This Test file will use a simulation made with prescan with different RT and differente SL per RT.
+##author:: Nicolas Helleboid
 
-.. author:: Nicolas Helleboid
-
-'''
 import numpy as np
 import parse
 import matplotlib.pyplot as plt

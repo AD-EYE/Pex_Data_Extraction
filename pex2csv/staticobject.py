@@ -1,68 +1,65 @@
-'''This module contains all of the code defining the structure of different static object. By taking initial values from the parser the classes calculate a mathematical definition of the static object.
-
-.. moduleauthor:: Nicolas Helleboid <nicohe@kth.se>
-
-'''
+##This module contains all of the code defining the structure of different statical object. By taking initial values from the parser the classes calculate a mathematical definition of the statical object.
+##.. moduleauthor:: Nicolas Helleboid <nicohe@kth.se>
 
 
+##This is the interface class for all the Statical Objects. Every statical object has certain things in common such as coordinates of its orign and heading.
+#
+#The attributes are :
+#
+#id : a string. Represents the ID of the statical object (TrafficLightRoadSideNL, UnitedSet...).The exact ID can be found in the pex file.id: represent the ID of the statical object (TrafficLightRoadSideNL, UnitedSet...).The exact ID can be found in the pex file.
+#
+#x0 : a float. The x coordinate of orign of the Statical Object
+#
+#y0 : a float. The y coordinate of orign of the Statical Object
+#
+#h : a float. Heading of the Statical Object
 class StaticObject:
-    '''This is the interface class for all the Static Objects. Every static object has certain things in common such as coordinates of its orign and heading.
 
-        :param id: represent the ID of the static object (TrafficLightRoadSideNL, UnitedSet...).The exact ID can be found in the pex file.
-        :type id: string
-
-        :param x0: The x coordinate of orign of the Static Object
-        :type x0: Float
-
-        :param y0: The y coordinate of orign of the Static Object
-        :type y0: Float
-
-        :param h: Heading of the Static Object
-        :type h: Float
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param id A string. The id of the object
     def __init__(self, id):
         self.id = id
         self.x0 = 0
         self.y0 = 0
         self.h = 0
 
-
+    ##This method returns the orign coordinates of the statical object.
+    #returns (Float, Float)
+    #@param self The object pointer
     def getOrignPoint(self):
-        '''This method returns the orign coordinates of the static object.
-        :returns (Float, Float)
-        '''
         return (self.x0, self.y0)
 
+    ##This method returns the orign coordinates of the statical object.
+    #returns Float
+    #@param self The object pointer
     def getHeading(self):
-        '''This method returns the orign coordinates of the static object.
-
-        :returns Float
-        '''
         return self.h
 
+##This a representation of the Traffic Light in Prescan.
+#
+#The attributes are :
+#
+#id : A string. The Unique id
+#
+#x0 : A Float. The x coordinate of orign of the Traffic Light
+#
+#y0 : A Float. The y coordinate of orign of the Traffic Light
+#
+#h : A Float. Heading of the Traffic Light
+#
+#s : An Integer. Style of the Traffic Light (RoadSide, Japan overhead and so on...). Cf Parse.py for the converting-list integer to style.
+
 class TrafficLight(StaticObject):
-    '''
-    This a representation of the Traffic Light in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of orign of the Traffic Light
-    :type x0: Float
-
-    :param y0: The y coordinate of orign of the Traffic Light
-    :type y0: Float
-
-    :param h: Heading of the Traffic Light
-    :type h: Float
-
-    :param s: Style of the Traffic Light (RoadSide, Japan overhead and so on...). Cf Parse.py for the converting-list integer to style.
-    :type s: Integer
-
-
-
-    '''
+    ##The constructor
+    #
+    #@param self The object pointer
+    #@param id A string. The id of the object
+    #@param x0 A Float. The x coordinate of orign of the Traffic Light
+    #@param y0 A Float. The y coordinate of orign of the Traffic Light
+    #@param h A Float. Heading of the Traffic Light
+    #@param s An Integer. Style of the Traffic Light
     def __init__(self, id, x0, y0, h, s):
         StaticObject.__init__(self, id)
         self.x0 = x0

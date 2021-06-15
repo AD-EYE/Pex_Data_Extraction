@@ -1,20 +1,14 @@
-'''This module is a mathematical toolbox
-It define functon that will be usefull for representing road like bend, curve etc
-'''
+##This module is a mathematical toolbox
+##It defines functions that will be useful for representing road types like bend, curve etc
+
 
 import numpy as np
 
+##A function that returns the position of the center of the circle that passes through point 1 and point2 with a radius of r
+#@param p1 A Tuple representing the point's coordinates
+#@param p2 A Tuple representing the point's coordinates
+#@param r A Float
 def circles_from_p1p2r(p1, p2, r):
-    '''
-    Return the position of the center of the circle that passes through point 1 and point2 with a radius of r
-
-    :param p1/p2: coordinate of a point
-    :type p1/p2: (x,y)
-
-    :param r: radius of the circle
-    :type r: Float
-
-    '''
     #Check if r not 0
     if r == 0.0:
         raise ValueError('radius of zero')
@@ -27,40 +21,26 @@ def circles_from_p1p2r(p1, p2, r):
 
     return (x3 + d*dy/q, y3 - d*dx/q)
 
+##A function that returns the radius of the circle that passes through point 1 and point2, with the angle between (p1-centerofcircle) and (p2-centerofcircle)is the parameter angle.
+#@param p1 A Tuple representing the point's coordinates
+#@param p2 A Tuple representing the point's coordinates
+#@param angle A Float
 def radius_of_circle(p1, p2, angle):
-    '''
-    Return the radius of the circle that passes through point 1 and point2, with the angle between (p1-centerofcircle) and (p2-centerofcircle)
-    is the parameter angle.
 
-    :param p1/p2: coordinate of a point
-    :type p1/p2: (x,y)
-
-    :param angle: angle between (p1-centerofcircle) and (p2-centerofcircle)
-    :type angle: Float
-
-    '''
     (x1, y1), (x2, y2) = p1, p2
     a = np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
     return 0.5 * a / np.sin(0.5 * angle)
 
+##A function that returns the distance between point1 and point2
+#@param p1 A Tuple representing the point's coordinates
+#@param p2 A Tuple representing the point's coordinates
 def dist(p1, p2):
-    '''
-    Return the distance between point1 and point2
-
-    :param p1/p2: coordinate of a point
-    :type p1/p2: (x,y)
-
-    '''
     return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
+##A function that returns the point of intersection of 2 lines L1 et L2
+#@param L1 A list of 2 points representing the line
+#@param L2 A list of 2 points representing the line
 def Intersection_Lines(L1, L2):
-    '''
-    Return the point of intersection of 2 lines L1 et L2
-
-    :param L1/L2: Tab of a point
-    :type L1/L2: [(x,y)]
-
-    '''
 
 
     if L1[1][0] == L1[0][0]:    # x cst for L1
@@ -131,15 +111,10 @@ def Intersection_Lines(L1, L2):
 
     return (xinter,yinter)
 
-
+##A function that returns the point of intersection of 2 circles C1 et C2
+#@param C1 A list containing the coordinate of the center of the circle and its radius
+#@param C2 A list containing the coordinate of the center of the circle and its radius
 def Intersection_Circle(C1, C2):
-    '''
-    Return the point of intersection of 2 circles C1 et C2
-
-    :param C1/C2: List containing the coordinate of the center of the circle and its radius
-    :type C1/C2: [(xc,yc,r)]
-
-    '''
 
     x1 = C1[0]
     y1 = C1[1]
@@ -171,10 +146,12 @@ def Intersection_Circle(C1, C2):
 
     return (xs1,ys1),(xs2,ys2)
 
+##if a*x**2 + b*x + c is the polynom going through p1, p2 and p3, This function returns a, b and c
+#@param p1 A Tuple representing the point's coordinates
+#@param p2 A Tuple representing the point's coordinates
+#@param p3 A Tuple representing the point's coordinates
 def polynom(p1,p2,p3):
-    '''
-    if a*x**2 + b*x + c is the polynom going through p1, p2 and p3, it returns a, b and c
-    '''
+
     if (p1==p2) or (p2==p3) or (p1==p3):
         return None
     else :
@@ -187,10 +164,12 @@ def polynom(p1,p2,p3):
         Res = np.dot(Ainv,B)
         return (Res[0][0], Res[1][0], Res[2][0])
 
+##A function that takes a polynom and 2 points. Returns the point on the polynom at a distance of 1 meter from p1
+#@param poly a list of coefficients
+#@param p1 A Tuple representing the point's coordinates
+#@param p2 A Tuple representing the point's coordinates
 def offset_point(poly,p1,p2):
-    '''
-    takes a polynom and 2 points. Returns the point on the polynom at a distance of 1 meter from p1
-    '''
+
     a, b, c = poly[0], poly[1], poly[2]
     x1 = p1[0]
     x2 = p2[0]

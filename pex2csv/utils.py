@@ -1,10 +1,11 @@
-##This module is a mathematical toolbox
-##It defines functions that will be useful for representing road types like bend, curve etc
+##@package utils
+#This module is a mathematical toolbox
+#It defines functions that will be useful for representing road types like bend, curve etc
 
 
 import numpy as np
 
-##A function that returns the position of the center of the circle that passes through point 1 and point2 with a radius of r
+##A function that returns the position of the center of the circle that passes through point1 and point2 with a radius of r
 #@param p1 A Tuple representing the point's coordinates
 #@param p2 A Tuple representing the point's coordinates
 #@param r A Float
@@ -21,7 +22,7 @@ def circles_from_p1p2r(p1, p2, r):
 
     return (x3 + d*dy/q, y3 - d*dx/q)
 
-##A function that returns the radius of the circle that passes through point 1 and point2, with the angle between (p1-centerofcircle) and (p2-centerofcircle)is the parameter angle.
+##A function that returns the radius of the circle that passes through point 1 and point2, where the angle between (p1-centerofcircle) and (p2-centerofcircle) is the parameter angle.
 #@param p1 A Tuple representing the point's coordinates
 #@param p2 A Tuple representing the point's coordinates
 #@param angle A Float
@@ -165,7 +166,7 @@ def polynom(p1,p2,p3):
         return (Res[0][0], Res[1][0], Res[2][0])
 
 ##A function that takes a polynom and 2 points. Returns the point on the polynom at a distance of 1 meter from p1
-#@param poly a list of coefficients
+#@param poly A list of coefficients
 #@param p1 A Tuple representing the point's coordinates
 #@param p2 A Tuple representing the point's coordinates
 def offset_point(poly,p1,p2):

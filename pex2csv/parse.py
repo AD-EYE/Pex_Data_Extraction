@@ -1,6 +1,7 @@
-##This module contains all of the code that parse the simulation.
-##It will extract roads from the simulation in order to convert those road into
-##the VectorMapping format(done in Vmap.py)
+##@package parse
+#This module contains all of the code that parse the simulation.
+#It will extract roads from the simulation in order to convert those road into
+#the VectorMapping format(done in Vmap.py)
 
 
 
@@ -10,10 +11,10 @@ from lxml import etree
 from road import *
 from staticobject import *
 
-##This fonction go fetch the list of traffic Light that make up the simulation in the pex file.
-##To do so, the fonction search in the  part of the pex files, and then use the id
-##of each  to add them to a list of  using the get_X function define in this module.
-#@param path A string whith the './data/roads.pex' default value. this path points to the pex file
+##This fonction fetches the list of traffic Light that make up the simulation in the pex file.
+#To do so, the fonction searches in the Actor part of the pex file, and then uses the id
+#of each traffic light to add them to a list using the get_X function define in this module.
+#@param path A string whith the './data/roads.pex' default value. This path points to the pex file
 def get_staticobject(path='./data/roads.pex'):
 
     # eTree module fetch the Roads in the Pex file
@@ -32,9 +33,9 @@ def get_staticobject(path='./data/roads.pex'):
             staticobject[id] = get_TLight(t, id)
     return staticobject
 
-##This fonction go fetch the list of road that make up the simulation in the pex file.
-##To do so, the fonction search in the RoadSegment part of the pex files, and then use the id
-##of each roads to add them to a list of Roads using the get_X function define in this module.
+##This fonction fetches the list of road that make up the simulation in the pex file.
+#To do so, the fonction searches in the RoadSegment part of the pex file, and then uses the id
+#of each road to add them to a list of Roads using the get_X function define in this module.
 #@param path A string whith the './data/roads.pex' default value. this path points to the pex file
 def get_roads(path='./data/roads.pex'):
 
@@ -91,7 +92,7 @@ def get_TLight(t, id):
 
     # The following fonctions are called by get_roads #
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the BendRoad object defined in the road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_bend(s, id):
@@ -132,7 +133,7 @@ def get_bend(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return BendRoad(id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the CurvedRoad object defined in the road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_curved(s, id):
@@ -176,7 +177,7 @@ def get_curved(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return CurvedRoad(id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the ClothoidRoads object defined in the road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_clothoid(s, id, connections, path):
@@ -246,8 +247,7 @@ def get_clothoid(s, id, connections, path):
 
     return ClothoidRoads(id, x0, y0, h, C2, Lstart, Lend, flipped, lw, nbr_of_lanes, lanes_in_x_dir, Tabpointcon, Vmax, Vmax, cw, Stl)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
-#A flex road is created with several curved roads
+##This function returns a flex road, which is a dictionary made of several CurvedRoad objects
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_flex(s, id): 
@@ -384,7 +384,7 @@ def get_flex(s, id):
         CurvedRoads[Lid[j]] = NewCurvedRoad
     return CurvedRoads
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the RoundaboutRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 #@param connections The list of connections to other roads
@@ -441,7 +441,7 @@ def get_roundabout(s, id, connections, path):
 
     return RoundaboutRoad(id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the StraightRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_straight(s, id):
@@ -481,7 +481,7 @@ def get_straight(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return StraightRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the Crosswalkr object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_crosswalk(s, id):
@@ -506,7 +506,7 @@ def get_crosswalk(s, id):
 
     return Crosswalkr(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, Vmax, Vmax, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the EntryRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_entry(s, id):
@@ -551,7 +551,7 @@ def get_entry(s, id):
 
     return EntryRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, entry_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the ExitRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_exit(s, id):
@@ -594,7 +594,7 @@ def get_exit(s, id):
             cw.append([x1,y1,x2,y2,x3,y3])
     return ExitRoad(id, x0, y0, h, l, lw, nbr_of_lanes, lanes_in_x_dir, exit_road_angle, apron_length, side_road_length, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the AdapterRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_adapter(s, id):
@@ -637,7 +637,7 @@ def get_adapter(s, id):
                 cw.append([x1,y1,x2,y2,x3,y3])
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw, lane_offset)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the XCrossRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_xcross(s, id):
@@ -687,7 +687,7 @@ def get_xcross(s, id):
 
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
-##This function returns the road type with the right parameters defined in the Road file corresponding to the road id in the input.
+##This function returns the YCrossRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 def get_ycross(s, id):
@@ -739,7 +739,7 @@ def get_ycross(s, id):
 
     return YCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
-##This function go and take the orign point of the road connected to the crosssection of the roundabout
+##This function finds the orign point of the roads connected to the crosssections of the roundabout
 #@param id A string. The id of the road type
 #@param path The path to the .pex file
 def get_links_points_roundabout(id,path):

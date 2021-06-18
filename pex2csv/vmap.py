@@ -1,6 +1,6 @@
 ##@package vmap
-#This module contains all of the code defining the structure of the output .csv files for the vector map. The :class:`VectorMap` class is the only one which should be accessed externally. Its public methods provide the interfaces to generate a 2D vector map from (x, y) coordinate data and export the data to the appropriate files.
-#The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class:`Lane`, :class:`DTLane`, :class:`WhiteLine` and :class:`RoadEdge` use the same private member names that are used in the vector map documentation circulated in the Autoware community. Some of these fields are given default values for unknown reasons or have a completely unknown purpose. This is because the vector map format is not officially documented.
+#This module contains all of the code defining the structure of the output .csv files for the vector map. The `VectorMap` class is the only one which should be accessed externally. Its public methods provide the interfaces to generate a 2D vector map from (x, y) coordinate data and export the data to the appropriate files.
+#The vector map data classes `Point`, `Node`, `Line`, `Lane`, `DTLane`, `WhiteLine` and `RoadEdge` use the same private member names that are used in the vector map documentation circulated in the Autoware community. Some of these fields are given default values for unknown reasons or have a completely unknown purpose. This is because the vector map format is not officially documented.
 #
 # moduleauthor:: Samuel Lindemer <lindemer@kth.se>
 
@@ -868,7 +868,7 @@ class Lane:
     #@param length A float. The distance between the start and end.
     #@param junction A string. Can take the values NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
     #@param turn A string. Can take the values STRAIGHT, LEFT_TURN, RIGHT_TURN.
-    #@param cross
+    #@param cross An integer. The ID of the crosswalk crossing the lane
     def __init__(self, SpeedLimit, RefSpeed, dtlane=0, node_start=0, node_end=0, lane_before=0,
             lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT',cross=0):
         ##An integer. Corresponding DTLane ID
@@ -901,9 +901,9 @@ class Lane:
         self.LCnt = 1
         ##An integer.
         self.Lno = 1
-        ##A float.
+        ##A float. The speed limit
         self.LimitVel = SpeedLimit
-        ##A float.
+        ##A float. The reference speed
         self.RefVel = RefSpeed
         ##An integer.
         self.RoadSecID = 0
@@ -913,36 +913,62 @@ class Lane:
         self.set_junction(junction)
         self.set_turn(turn)
 
+    ##Returns the corresponding Dtlane ID
+    #@param self The object pointer
     def get_dtlane(self):
         return self.DID
 
+    ##Returns the speed limit
+    #@param self The object pointer
     def get_LimitVel(self):
         return self.LimitVel
 
+    ##Returns the reference speed
+    #@param self The object pointer
     def get_RefVel(self):
         return self.RefVel
 
+    ##Returns the length of the lane
+    #@param self The object pointer
     def get_length(self):
         return self.Span
 
+    ##Returns the starting node's ID
+    #@param self The object pointer
     def get_node_start(self):
         return self.BNID
 
+    ##Returns the ending node's ID
+    #@param self The object pointer
     def get_node_end(self):
         return self.FNID
 
+    ##Sets the ID of the lane before this one.
+    #@param self The object pointer
+    #@param lane_before An integer. The ID of the lane before this one
     def set_lane_before(self, lane_before):
         self.BLID = lane_before
 
+    ##Sets the ID of the lane after this one.
+    #@param self The object pointer
+    #@param lane_after An integer. The ID of the lane after this one
     def set_lane_after(self, lane_after):
         self.FLID = lane_after
 
+    ##Sets the speed limit
+    #@param self The object pointer
+    #@param Value A float. The new speed limit
     def set_LimitVel(self, Value):
         self.LimitVel = Value
 
+    ##Sets the reference speed
+    #@param self The object pointer
+    #@param Value A float. The new reference speed
     def set_RefVel(self, Value):
         self.RefVel = Value
 
+    ##Returns the junction's type
+    #@param self The object pointer
     def get_junction(self):
         if self.JCT == 0: return 'NORMAL'
         elif self.JCT == 1: return 'LEFT_BRANCHING'
@@ -952,12 +978,17 @@ class Lane:
         elif self.JCT == 5: return 'COMPOSITION'
         else: raise ValueError('Junction ' + str(self.JCT) + ' not valid.')
 
+    ##Returns the turn's type
+    #@param self The object pointer
     def get_turn(self):
         if self.LaneType == 0: return 'STRAIGHT'
         elif self.LaneType == 1: return 'LEFT_TURN'
         elif self.LaneType == 2: return 'RIGHT_TURN'
         else: raise ValueError('Turn ' + self.LaneType + ' not valid.')
 
+    ##Sets the junction's type
+    #@param self The object pointer
+    #@param type A string. Can take the values NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
     def set_junction(self, type):
         if type == 'NORMAL':                self.JCT = 0
         elif type == 'LEFT_BRANCHING':      self.JCT = 1
@@ -967,6 +998,9 @@ class Lane:
         elif type == 'COMPOSITION':         self.JCT = 5
         else: raise ValueError('Junction type ' + type + ' not valid.')
 
+    ##Sets the junction's type
+    #@param self The object pointer
+    #@param type A string. Can take the values STRAIGHT, LEFT_TURN, RIGHT_TURN.
     def set_turn(self, type):
         if type == 'STRAIGHT':              self.LaneType = 0
         elif type == 'LEFT_TURN':           self.LaneType = 1
@@ -994,7 +1028,7 @@ class DTLane:
     def __init__(self, point=0, length=0.0, direction=0.0):
         ##An integer. Corresponding Point ID
         self.PID = point             
-        ##A float. TOTAL distance to path start
+        ##A float. TOTAL distance to the path's start
         self.Dist = length           
         ##A float. Direction in radians
         self.Dir = direction   
@@ -1011,8 +1045,7 @@ class DTLane:
         ##A float. 
         self.RW = 1.75
 
-    ##DTLane records the cumulative distance to the start of the lane, so each
-    ##new DTLane must check the previous. Returns the distance
+    ##Returns the total distance from the path's start
     #@param self The object pointer
     def get_length(self):
         return self.Dist
@@ -1174,17 +1207,23 @@ class Area:
 
     ##The constructor
     #@param self The object pointer
-    #@param SLID An integer.
-    #@param ELID An integer.
+    #@param SLID An integer. ID of the first (start) line of the Area
+    #@param ELID An integer. ID of the last (end) line of the Area
     def __init__(self,SLID,ELID):                
         ##An integer. ID of the first (start) line of the Area
         self.SLID = SLID                
         ##An integer. ID of the last (end) line of the Area
         self.ELID = ELID                
 
+    ##Sets the start line's ID
+    #@param self The object pointer
+    #@param line An integer. The first line's ID
     def set_SLID(self,line):
         self.SLID = line
 
+    ##Sets the end line's ID
+    #@param self The object pointer
+    #@param line An integer. The end line's ID
     def set_ELID(self,line):
         self.ELID = line
 
@@ -1210,6 +1249,9 @@ class Crosswalk:
         ##An integer.
         self.LinkID = 0
 
+    ##Sets the area's ID
+    #@param self The object pointer
+    #@param area An integer. The area's ID
     def set_AID(self,area):
         self.AID = area
 

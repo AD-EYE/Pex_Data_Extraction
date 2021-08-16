@@ -627,22 +627,30 @@ def get_xcross(s, id):
     cs_nbr_of_lanes = []
     cs_lanes_in_x_dir = []
     cs_l = []
+    cs_road_end_marker = []
     for c in cs:
+        
         cs_h.append((float(c.get('Heading'))) * np.pi / 180)
         cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
+        cs_road_end_marker.append(str(c.get('RoadEndMarker')))
+        
     Stl = []
     cw = []
+
     for i in range(4):
-        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x3 = (x1+x2)/2
-        y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+       
+        if cs_road_end_marker[i] == "Solid" :
+            x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x3 = (x1+x2)/2
+            y3 = (y1+y2)/2
+            Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+       
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
@@ -659,6 +667,7 @@ def get_xcross(s, id):
             y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
+     
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
 def get_ycross(s, id):
@@ -674,24 +683,27 @@ def get_ycross(s, id):
     cs_nbr_of_lanes = []
     cs_lanes_in_x_dir = []
     cs_l = []
+    cs_road_end_marker = []
     for c in cs:
         cs_h.append((float(c.get('Heading'))) * np.pi / 180)
         cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
+        cs_road_end_marker.append(str(c.get('RoadEndMarker')))
 
     Stl = []
     cw = []
 
     for i in range(3):
-        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x3 = (x1+x2)/2
-        y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+        if cs_road_end_marker[i] == "Solid" :
+            x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x3 = (x1+x2)/2
+            y3 = (y1+y2)/2
+            Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :

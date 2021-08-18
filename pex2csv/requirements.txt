@@ -1,0 +1,5 @@
+numpy==1.17.2
+matplotlib==3.0.3
+lxml==4.4.1
+bezier==0.10.0
+progress==1.5

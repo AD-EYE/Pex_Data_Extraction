@@ -179,7 +179,7 @@ class ClothoidRoads (Road):
     :type nbr_of_lanes: Integer
 
     :param lanes_in_x_dir: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
-    :type nbr_of_lanes: Integer
+    :type number_of_lanes: Integer
 
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
@@ -352,7 +352,7 @@ class CurvedRoad(Road):
     :type nbr_of_lanes: Integer
 
     :param lanes_going_OUT: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
-    :type nbr_of_lanes: Integer
+    :type number_of_lanes: Integer
 
     :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
     :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
@@ -417,49 +417,50 @@ class RoundaboutRoad(Road):
     :param id: Unique id.
     :type id: String
 
-    :param x0: The x coordinate of the center of the roundabout.
-    :type x0: Float
+    :param origin_x0: The x coordinate of the center of the roundabout.
+    :type origin_x0: Float
 
-    :param y0: The y coordinate of the center of the roundabout.
-    :type y0: Float
+    :param origin_y0: The y coordinate of the center of the roundabout.
+    :type origin_y0: Float
 
-    :param r: Distance from the center of the roundabout to the center lane.
-    :type r: Float
+    :param radius: Distance from the center of the roundabout to the center lane.
+    :type radius: Float
 
-    :param lw: Lane width.
-    :type lw: Float
+    :param lane_width: Lane width.
+    :type lane_width: Float
 
     :param chs: List of headings for each road cross section (the exit and entrance of the RA).
     :type chs: [Float]
 
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
+    :param number_of_lanes: Number of lanes.
+    :type number_of_lanes: Integer
 
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
+    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofile in the Road Class)
     :type DefinedSpeed: Float
 
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2] ] with x and y float
+    :param cross_walk: Tab of tabs containing relevant points (3 points per tab) describing the 3 lines describing a crosswalk
+    :type cross_walk:[ [x1,y1,x2,y2] ] with x and y float
 
     '''
-    def __init__(self, id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, SpeedL, RefS, TabConnect, cw):
+    def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points, cross_walk):
 
         # General Initialization
 
         Road.__init__(self, id)
         self.SpeedLimit = SpeedL
         self.RefSpeed = RefS
-        self.TabConnect = TabConnect
+        self.connection_roads = mid_crosssection_points
         self.DefinedSpeed = self.SpeedProfil[3]
-        self.crosswalk = cw
+        self.crosswalk = cross_walk
 
         # Creating every circles
 
-        lwhalf = lw/2
-        r1 = r
-        for i in range(nbr_of_lanes):
-            l1 =Bend( x0, y0 - (r1 - lwhalf), 0, 2 * np.pi, r1 - lwhalf)
-            r1 = (r1 - lw)
+        lane_width_half = lane_width / 2
+        r1 = radius
+        for lane_index in range(number_of_lanes):
+            #file = open("/home/adeye/Desktop/file8.txt", "a")
+            l1 =Bend(origin_x0, origin_y0 - (r1 - lane_width_half), 0, 2 * np.pi, r1 - lane_width_half)
+            r1 = (r1 - lane_width)
             Current_Lane1 = []
             for (x,y) in l1:
                 Current_Lane1.append([x, y])
@@ -467,62 +468,59 @@ class RoundaboutRoad(Road):
 
 
 
-        # Creation of Exit and entry lane
+        # For each cross section,there is an entry and exit lane.To create the lane, we use the parameters line number_of_lanes,fillet_radius,number_of_entry_lanes and number_of_exit_lanes
 
-        for j in range(4):
+        for crosssection_index in range(4):
 
-            nb_of_lanes = cs_nb_of_lanes[j]
-            nb_lanes_going_out = cs_nb_of_lane_x_direction[j]
-            nb_of_lanes_going_IN = nb_of_lanes - nb_lanes_going_out
-            fillet_radius = cs_filletradius[j]
+            number_of_lanes = number_of_lanes_of_crossection[crosssection_index]
+            number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
+            number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
+            fillet_radius = filletradius_of_crosssection[crosssection_index]
 
-            # Creation of the 2 starting points
+            # First we  calculate the starting points for both entry and exit lanes
 
-            starting_point = TabConnect[j]
-            print(starting_point)
-            starting_point_right = (starting_point[0][0]- (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] + (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
-            starting_point_left = (starting_point[0][0]+ (nb_of_lanes/2)*lw*np.sin(cs_h[j]),starting_point[0][1] - (nb_of_lanes/2)*lw*np.cos(cs_h[j]))
+            starting_point = mid_crosssection_points[crosssection_index]
+
+            starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
+            starting_point_of_exit_lane = (starting_point[0][0] + (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] - (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
 
 
             # Entry access
 
+            counter = 0
+            for lane_index in range(number_of_entry_lanes):
 
-            counter =0
-            for k in range(nb_of_lanes_going_IN):
+                center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
 
+                circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
 
-                center_of_the_circle_right = ( starting_point_right[0]-r*(fillet_radius/100)*np.sin(cs_h[j]), starting_point_right[1]+(r*(fillet_radius/100))*np.cos(cs_h[j]))
+                main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)] # main circle
 
+                (x1,y1) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index])) # Staring point of the Lane
 
-                circle1 = [center_of_the_circle_right[0], center_of_the_circle_right[1], r*(fillet_radius/100) + (k+1)*lw] # Circle describe by the entry access
-                circle2 = [x0, y0, (r-lw/2)] # main circle
-
-
-                (x1,y1) = (starting_point_right[0]+ (k+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_right[1] - (k+1+counter)*(lw/2)*np.cos(cs_h[j])) # Staring point of the Lane
-
-
-
-
-                (x2,y2) = Intersection_Circle(circle1,circle2)[1]     # Point that of instersection betwenn main circle and circle descibe by the entry access
+                (x2,y2) = Intersection_Circle(circle_entry_lane,main_circle)[1]     # Point that of instersection between main circle and circle descibe by the entry access
 
                 # We find here the closest point on the circle to (x2,y2)
-                min= 100
+                min = dist(self.l[0][0],(x2,y2))
                 index_min = 0
                 for n in range(len(self.l[0])):
-
                     if dist(self.l[0][n],(x2,y2)) < min:
                         min = dist(self.l[0][n],(x2,y2))
                         index_min = n
 
-                # And then create a curve
-
+                # And then create a curve for lane going in
+                file = open("/home/adeye/Desktop/file16.txt", "a")
                 (xs, ys) = self.l[0][index_min+5]
+                #file.write(','.join(map(str,(xs,ys))))
+                #file.write ('\n')
+
                 (xs1,ys1) = self.l[0][index_min+3]
+
                 (xs2,ys2) = self.l[0][index_min]
 
 
-
                 xs = [x1, xs2, xs1, xs]
+
                 ys = [y1, ys2, ys1, ys]
 
 
@@ -533,25 +531,22 @@ class RoundaboutRoad(Road):
                 counter +=1
                 self.l.append(Current_Lane1)
 
-
-
             # Exit access
 
-            # Same expect tfor the math
+            # Same expect for the math
             counter =0
-            for p in range(nb_lanes_going_out):
+            for p in range(number_of_exit_lanes):
 
 
-                center_of_the_circle_left = ( starting_point_left[0]+r*(fillet_radius/100)*np.sin(cs_h[j]), starting_point_left[1]-(r*(fillet_radius/100))*np.cos(cs_h[j]))
+                center_of_circle_of_exitlane = (starting_point_of_exit_lane[0] + radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_exit_lane[1] - (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
 
+                circle_exit_lane = [center_of_circle_of_exitlane[0], center_of_circle_of_exitlane[1], radius * (fillet_radius / 100) + (p + 1) * lane_width]
 
-                circle1 = [center_of_the_circle_left[0], center_of_the_circle_left[1], r*(fillet_radius/100) + (p+1)*lw]
-                circle2 = [x0, y0, (r-lw/2)]
+                main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)]
 
+                (x1,y1) = (starting_point_of_exit_lane[0] - (p+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_exit_lane[1] + (p + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))
 
-                (x1,y1) = (starting_point_left[0]- (p+1+counter)*(lw/2)*np.sin(cs_h[j]),starting_point_left[1] + (p+1+counter)*(lw/2)*np.cos(cs_h[j]))
-
-                (x2,y2) = Intersection_Circle(circle1,circle2)[0]
+                (x2,y2) = Intersection_Circle(circle_exit_lane,main_circle)[0]
 
 
                 min= 100
@@ -1977,8 +1972,8 @@ class XCrossRoad(Road):
     :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
     :type len_till_stop: Float
 
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
+    :param number_of_lanes: Number of lanes.
+    :type number_of_lanes: Integer
 
     :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
     :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
@@ -2360,8 +2355,8 @@ class YCrossRoad(Road):
     :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
     :type len_till_stop: Float
 
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
+    :param number_of_lanes: Number of lanes.
+    :type number_of_lanes: Integer
 
     :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
     :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float

@@ -382,26 +382,26 @@ def get_flex(s, id): # a flex road is created with several curved roads
     return CurvedRoads
 
 def get_roundabout(s, id, connections, path):
-    x0 = float(s[0].get('X'))
-    y0 = float(s[0].get('Y'))
+    origin_x0 = float(s[0].get('X'))
+    origin_y0 = float(s[0].get('Y'))
     Vmax = s.get('MaxSpeed')
-    h = float(s[1].get('Heading'))
-    r = float(s.get('Radius'))
-    lw = float(s.get('LaneWidth'))
-    nbr_of_lanes = int(s.get('NumberOfLanes'))
-    cs = s[18]
+    heading = float(s[1].get('Heading'))
+    radius = float(s.get('Radius'))
+    lane_width = float(s.get('LaneWidth'))
+    number_of_lanes = int(s.get('NumberOfLanes'))
+    RoadCrossSection = s[18]
     RoadMarking = s[16]
-    cs_h = []
-    cs_filletradius = []
-    cs_nb_of_lanes = []
-    cs_nb_of_lane_x_direction = []
-    for s in cs:
-        cs_h.append((float(s.get('Heading')) + h) * np.pi / 180)
-        cs_filletradius.append((float(s.get('FilletRadiusPercentage'))))
-        cs_nb_of_lanes.append((int(s.get('NumberOfLanes'))))
-        cs_nb_of_lane_x_direction.append((int(s.get('DirectionChangeAfterLane'))))
+    heading_of_crosssection = []
+    filletradius_of_crosssection = []
+    number_of_lanes_of_crosssection = []
+    number_of_lanes_in_xdirection_in_crosssection = []
+    for s in RoadCrossSection:
+        heading_of_crosssection.append((float(s.get('Heading')) + heading) * np.pi / 180)
+        filletradius_of_crosssection.append((float(s.get('FilletRadiusPercentage'))))
+        number_of_lanes_of_crosssection.append((int(s.get('NumberOfLanes'))))
+        number_of_lanes_in_xdirection_in_crosssection.append((int(s.get('DirectionChangeAfterLane'))))
 
-    cw = []
+    cross_walk = []
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
@@ -409,29 +409,40 @@ def get_roundabout(s, id, connections, path):
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
             yl = float(R[0].get('Y'))
-            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
-            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
-            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-            cw.append([x1,y1,x2,y2,x3,y3])
+            x1 = origin_x0 + (xl - (cl/2)*np.sin(hw))*np.cos(heading) - (yl + (cl/2)*np.cos(hw))*np.sin(heading)
+            y1 = origin_y0 + (xl - (cl/2)*np.sin(hw))*np.sin(heading) + (yl + (cl/2)*np.cos(hw))*np.cos(heading)
+            x2 = origin_x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(heading) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(heading)
+            y2 = origin_y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(heading) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(heading)
+            x3 = origin_x0 + (xl + (cl/2)*np.sin(hw))*np.cos(heading) - (yl + (cl/2)*np.cos(hw))*np.sin(heading)
+            y3 = origin_y0 + (xl + (cl/2)*np.sin(hw))*np.sin(heading) + (yl + (cl/2)*np.cos(hw))*np.cos(heading)
+            cross_walk.append([x1,y1,x2,y2,x3,y3])
 
-    TabConnect = [0,0,0,0]
+    connection_roads = [0,0,0,0]
+
     for connection in connections:
+        file = open("/home/adeye/Desktop/file17.txt", "a")
         idA = connection.get('Road_A_UniqueId')
         idB = connection.get('Road_B_UniqueId')
+        #file.write(connection.get('Road_A_UniqueId'))
+        #file.write(connection.get('Road_B_UniqueId'))
         if (id in idA):
-
-            TabConnect[int(connection.get('Joint_A_Id'))] = idB
+            
+            connection_roads[int(connection.get('Joint_A_Id'))] = idB
+            #file.write(id)
+            #file.write('\n')
         elif (id in idB):
+            
+            connection_roads[int(connection.get('Joint_B_Id'))] = idA
 
-            TabConnect[int(connection.get('Joint_B_Id'))] = idA
-    Tabpointcon = []
-    for i in range(len(TabConnect)):
-        Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))
-
-    return RoundaboutRoad(id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon, cw)
+    file.write(','.join(map(str,connection_roads)))
+    file.write ('\n')        
+    mid_crosssection_points = []
+    for i in range(len(connection_roads)):
+        mid_crosssection_points.append(get_links_points_roundabout(connection_roads[i],path))
+        #file.write(','.join(map(str,Tabpointcon)))
+        #file.write("%i\n" %i)
+        #file.write ('\n')
+    return RoundaboutRoad(id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crosssection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, Vmax, Vmax, mid_crosssection_points, cross_walk)
 
 def get_straight(s, id):
     x0 = float(s[0].get('X'))

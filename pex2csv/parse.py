@@ -420,28 +420,22 @@ def get_roundabout(s, id, connections, path):
     connection_roads = [0,0,0,0]
 
     for connection in connections:
-        file = open("/home/adeye/Desktop/file17.txt", "a")
-        idA = connection.get('Road_A_UniqueId')
-        idB = connection.get('Road_B_UniqueId')
-        #file.write(connection.get('Road_A_UniqueId'))
-        #file.write(connection.get('Road_B_UniqueId'))
-        if (id in idA):
+        
+        id_of_Road_A = connection.get('Road_A_UniqueId')
+        id_of_Road_B = connection.get('Road_B_UniqueId')
+        
+        if (id in id_of_Road_A):
             
-            connection_roads[int(connection.get('Joint_A_Id'))] = idB
-            #file.write(id)
-            #file.write('\n')
-        elif (id in idB):
+            connection_roads[int(connection.get('Joint_A_Id'))] = id_of_Road_B
             
-            connection_roads[int(connection.get('Joint_B_Id'))] = idA
+        elif (id in id_of_Road_B):
+            
+            connection_roads[int(connection.get('Joint_B_Id'))] = id_of_Road_A
 
-    file.write(','.join(map(str,connection_roads)))
-    file.write ('\n')        
     mid_crosssection_points = []
     for i in range(len(connection_roads)):
         mid_crosssection_points.append(get_links_points_roundabout(connection_roads[i],path))
-        #file.write(','.join(map(str,Tabpointcon)))
-        #file.write("%i\n" %i)
-        #file.write ('\n')
+        
     return RoundaboutRoad(id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crosssection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, Vmax, Vmax, mid_crosssection_points, cross_walk)
 
 def get_straight(s, id):
@@ -654,12 +648,14 @@ def get_xcross(s, id):
     for i in range(4):
        
         if cs_road_end_marker[i] == "Solid" :
+            
             x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
             y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
             x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
             y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
             x3 = (x1+x2)/2
             y3 = (y1+y2)/2
+            
             Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
        
 

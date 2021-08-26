@@ -458,7 +458,7 @@ class RoundaboutRoad(Road):
         lane_width_half = lane_width / 2
         r1 = radius
         for lane_index in range(number_of_lanes):
-            #file = open("/home/adeye/Desktop/file8.txt", "a")
+            
             l1 =Bend(origin_x0, origin_y0 - (r1 - lane_width_half), 0, 2 * np.pi, r1 - lane_width_half)
             r1 = (r1 - lane_width)
             Current_Lane1 = []
@@ -509,10 +509,9 @@ class RoundaboutRoad(Road):
                         index_min = n
 
                 # And then create a curve for lane going in
-                file = open("/home/adeye/Desktop/file16.txt", "a")
+
                 (xs, ys) = self.l[0][index_min+5]
-                #file.write(','.join(map(str,(xs,ys))))
-                #file.write ('\n')
+
 
                 (xs1,ys1) = self.l[0][index_min+3]
 
@@ -530,6 +529,59 @@ class RoundaboutRoad(Road):
                     Current_Lane1.append([x, y])
                 counter +=1
                 self.l.append(Current_Lane1)
+        #Calculation of stop line
+        lane_width_half = lane_width / 2
+        r1 = radius
+        for lane_index in range(number_of_lanes):
+
+            l1 = Bend(origin_x0, (origin_y0 - r1), 0, 2 * np.pi, r1)
+            r1 = (r1 - lane_width)
+            Current_Lane1 = []
+            for (x, y) in l1:
+                Current_Lane1.append([x, y])
+            self.l.append(Current_Lane1)
+        for crosssection_index in range(4):
+
+            number_of_lanes = number_of_lanes_of_crossection[crosssection_index]
+            number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
+            number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
+            fillet_radius = filletradius_of_crosssection[crosssection_index]
+
+            starting_point = mid_crosssection_points[crosssection_index]
+
+            starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes / 2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]),starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
+            starting_point_of_exit_lane = (starting_point[0][0] + (number_of_lanes / 2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]),starting_point[0][1] - (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
+
+
+            
+            for lane_index in range(number_of_entry_lanes):
+
+                center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]),starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
+
+                circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1],radius * (fillet_radius / 100) + (lane_index + 1) * lane_width]  # Circle describe by the entry access
+
+                main_circle = [origin_x0, origin_y0, radius ]  # main circle
+
+                (x1, y1) = (starting_point_of_entry_lane[0] + (lane_index + 1 + counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))  # Staring point of the Lane
+
+                (x2, y2) = Intersection_Circle(circle_entry_lane, main_circle)[1]  # Point that of instersection between main circle and circle descibe by the entry access
+
+                # We find here the closest point on the circle to (x2,y2)
+                min = dist(self.l[0][0], (x2, y2))
+                index_min = 0
+                for n in range(len(self.l[0])):
+                    if dist(self.l[0][n], (x2, y2)) < min:
+                        min = dist(self.l[0][n], (x2, y2))
+                        index_min = n
+
+                # And then create a curve for lane going in
+
+                (xs, ys) = self.l[0][index_min + 5]
+
+                (xs1, ys1) = self.l[0][index_min + 3]
+
+                (xs2, ys2) = self.l[0][index_min]
+
 
             # Exit access
 

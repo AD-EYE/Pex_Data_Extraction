@@ -442,7 +442,7 @@ class RoundaboutRoad(Road):
     :type cross_walk:[ [x1,y1,x2,y2] ] with x and y float
 
     '''
-    def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points, road_end_marker_in_crossection, cross_walk):
+    def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points, cross_walk):
 
         # General Initialization
 
@@ -452,7 +452,7 @@ class RoundaboutRoad(Road):
         self.connection_roads = mid_crosssection_points
         self.DefinedSpeed = self.SpeedProfil[3]
         self.crosswalk = cross_walk
-
+        
         # Creating every circles
 
         lane_width_half = lane_width / 2
@@ -576,62 +576,52 @@ class RoundaboutRoad(Road):
                 self.l.append(Current_Lane1)
                 counter +=1
 
-        #Calculation of stopline
-        #Stl=[]
-        
+        #Calculation of stopline         
+        L2 = []
+        r2 = radius
+        for lane_index in range(number_of_lanes):
+            l2 =Bend(origin_x0, origin_y0 - (r2), 0, 2 * np.pi, r2)
+            r2 = (r2 - lane_width)
+            Current_Lane2 = []
+            for (x,y) in l2:
+                Current_Lane2.append([x, y])
+                L2.append(Current_Lane2)
         for crosssection_index in range(4):
-            if road_end_marker_in_crossection[crosssection_index]== "Solid" :
-                L2 = []
-                r2 = radius
-                for lane_index in range(number_of_lanes):
-                    l2 =Bend(origin_x0, origin_y0 - (r2), 0, 2 * np.pi, r2)
-                    r2 = (r2 - lane_width)
-                    Current_Lane2 = []
-                    for (x,y) in l2:
-                        Current_Lane2.append([x, y])
-                    L2.append(Current_Lane2)
-                for crosssection_index in range(4):
                     
-                    number_of_lanes = number_of_lanes_of_crossection[crosssection_index]
-                    number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
-                    number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
-                    fillet_radius = filletradius_of_crosssection[crosssection_index]
-                    starting_point = mid_crosssection_points[crosssection_index]
+            number_of_lanes = number_of_lanes_of_crossection[crosssection_index]
+            number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
+            number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
+            fillet_radius = filletradius_of_crosssection[crosssection_index]
+            starting_point = mid_crosssection_points[crosssection_index]       
+            starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))        
+            counter = 0
+            for lane_index in range(number_of_entry_lanes):
+                        
+                center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
+                        
+                circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
+                        
+                main_circle = [origin_x0, origin_y0, radius] 
                     
-                    starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
-                    starting_point_of_exit_lane = (starting_point[0][0] + (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] - (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
-                    counter = 0
-                    for lane_index in range(number_of_entry_lanes):
+                (x1,y1) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index])) # Staring point of the Lane
                         
-                        center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
+                (x2,y2) = Intersection_Circle(circle_entry_lane,main_circle)[1]         
+                min = 100
+                index_min = 0
+                for n in range(len(L2[0])):
+                    if dist(L2[0][n],(x2,y2)) < min:
+                        min = dist(L2[0][n],(x2,y2))
+                        index_min = n
+
+                (a1, b1) = L2[0][index_min+5]             
+
+                (a2,b2) = L2[0][index_min]
                         
-                        circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
-                        
-                        main_circle = [origin_x0, origin_y0, radius] # main circle
-                    
-                        (x1,y1) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index])) # Staring point of the Lane
-                        
-                        (x2,y2) = Intersection_Circle(circle_entry_lane,main_circle)[1]     # Point that of instersection between main circle and circle descibe by the entry access
-                        
+                (a3,b3)= (((a1+a2)/2),((b1+b2)/2))            
                 
-                        min = 100
-                        index_min = 0
-                        for n in range(len(L2[0])):
-                            if dist(L2[0][n],(x2,y2)) < min:
-                                min = dist(L2[0][n],(x2,y2))
-                                index_min = n
-
-                        (a1, b1) = L2[0][index_min+5]             
-
-                        (a2,b2) = L2[0][index_min]
-                        
-                        (a3,b3)= (((a1+a2)/2),((b1+b2)/2))
-                        
-                        counter +=1
-                file = open("/home/adeye/Desktop/file25.txt", "a")
-                self.stopline.append((a1,b1,a2,b2,a3,b3,number_of_lanes,number_of_lanes_in_xdirection_in_crosssection,lane_width))        
-                
-
+                self.stopline.append((a1,b1,a2,b2,a3,b3,number_of_lanes,number_of_exit_lanes,lane_width))            
+                counter +=1
+                print(self.stopline)
 
 
 

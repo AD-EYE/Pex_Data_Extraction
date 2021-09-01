@@ -430,7 +430,7 @@ class RoundaboutRoad(Road):
     :type lane_width: Float
 
     :param heading_of_crossection: List of headings for each road cross section (the exit and entrance of the RA).
-    :type chs: [Float]
+    :type heading_of_crossection: [Float]
 
     :param number_of_lanes: Number of lanes.
     :type number_of_lanes: Integer
@@ -454,16 +454,21 @@ class RoundaboutRoad(Road):
         self.crosswalk = cross_walk
         
         # Creating the lanes of roundabout using circles defining the lanes.
-        radius_of_circles_defining_roundabout = radius   #For the first circle, we take radius as the same radius of roundabout.
+        # For the first lane, we take radius as the same radius of roundabout and calculate the lane points
+        radius_of_circles_defining_roundabout = radius
         for lane_index in range(number_of_lanes):
-            lane_geometry =Bend(origin_x0, origin_y0 - (radius_of_circles_defining_roundabout - lane_width/2), 0, 2 * np.pi, radius_of_circles_defining_roundabout - lane_width/2) # From path.py we find the geometry related to bend road which defines the roundabout
-            radius_of_circles_defining_roundabout = (radius_of_circles_defining_roundabout - lane_width)    #For the second circle we take the radius subtracting the lane width
+            # From path.py we find the geometry related to bend road which defines the roundabout
+            lane_geometry =Bend(origin_x0, origin_y0 - (radius_of_circles_defining_roundabout - lane_width/2), 0, 2 * np.pi, radius_of_circles_defining_roundabout - lane_width/2)
+            # For the second lane we take the radius subtracting the lane width,and calculate the lane points
+            radius_of_circles_defining_roundabout = (radius_of_circles_defining_roundabout - lane_width)
+            #Next we append the lane points to the current lane.
             points_of_the_current_lane = []
             for (x,y) in lane_geometry:
-                points_of_the_current_lane.append([x, y])        #Here we append the lane_geometry points to the current lane.
+                points_of_the_current_lane.append([x, y])
             self.l.append(points_of_the_current_lane)
 
-        # For each cross section,there is an entry and exit lane.To create the lane, we use the parameters line number_of_lanes,fillet_radius,number_of_entry_lanes and number_of_exit_lanes
+        # A Roundabout road has four crosssections,for each cross section,there is an entry and exit lane.
+        # To create each of these lanes, we use these parameters defined below.
 
         for crosssection_index in range(4):
 
@@ -480,37 +485,46 @@ class RoundaboutRoad(Road):
             starting_point_of_exit_lane = (starting_point[0][0] + (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] - (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
 
 
-            # Entry access- Here we calculate the centre of the circle defining the entry lane,and then using that centre we define the circle.
+            #  The following math is used for forming the entry lane.
 
             counter = 0
             for lane_index in range(number_of_entry_lanes):
 
+                #Here we calculate the centre of the circle defining the entry lane,and then using that centre we define the circle.
                 center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
-
                 circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
 
-                main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)]          # main circle
+                # main circle of the roundabout
+                main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)]
 
-                (x1,y1) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))     # Staring point of the Lane
+                # Starting point of the entry Lane
+                (x_position_of_lane_startingpoint, y_position_of_lane_startingpoint) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))
 
-                (x2,y2) = Intersection_Circle(circle_entry_lane,main_circle)[1]     # Point of instersection between main circle and circle descibed by the entry lane
+                # Point of instersection between main circle and circle described by the entry lane
+                (x_position_of_intersection,y_position_of_intersection) = Intersection_Circle(circle_entry_lane,main_circle)[1]
 
-                #Here we find  the closest point on the main circle to the point of intersection.
-                #To find that we keep on calculating the distance between the two points,and take the point which returns the minimum distance value.
-                minimum_distance = dist(self.l[0][0],(x2,y2))    #set one point as the minimum distance initially
+                #Next we find  the  point on the main circle which is closest to the point of intersection.
+                #To find that we keep on calculating the distance between  two points,and take the point which returns the minimum distance value,as the closest.
+                # Initially we set the  distance between first point of the lane point as the minimum distance and calculate the distance of that point to the point of intersection.
+                minimum_distance = dist(self.l[0][0],(x_position_of_intersection,y_position_of_intersection))
                 index_value_of_closest_point = 0
                 for n in range(len(self.l[0])):
-                    if dist(self.l[0][n],(x2,y2)) < minimum_distance:  #Calculating the distance using dist function and comparing it with the set value of minimum distance
-                        minimum_distance = dist(self.l[0][n],(x2,y2))
+                    # Calculating the distance using dist function and comparing it with the initial value
+                    if dist(self.l[0][n],(x_position_of_intersection,y_position_of_intersection)) < minimum_distance:
+                        minimum_distance = dist(self.l[0][n],(x_position_of_intersection,y_position_of_intersection))
                         index_value_of_closest_point = n
 
-                #Creating a curve for entry lane
-                (xs, ys) = self.l[0][index_value_of_closest_point+5]
-                (xs1,ys1) = self.l[0][index_value_of_closest_point+3]
-                (xs2,ys2) = self.l[0][index_value_of_closest_point]
-                xs = [x1, xs2, xs1, xs]
-                ys = [y1, ys2, ys1, ys]
-                lane_geometry = Curve(xs, ys, 0)
+                #Next we define the three points for forming the curve road, which defines the entry lane
+
+                (x_position_of_firstpoint, y_position_of_firstpoint) = self.l[0][index_value_of_closest_point+5]
+                (x_position_of_secondpoint,y_position_of_secondpoint) = self.l[0][index_value_of_closest_point+3]
+                (x_position_of_thirdpoint,y_position_of_thirdpoint) = self.l[0][index_value_of_closest_point]
+
+                x_position_for_defining_curve = [x_position_of_lane_startingpoint, x_position_of_thirdpoint, x_position_of_secondpoint, x_position_of_firstpoint]
+                y_position_for_defining_curve = [y_position_of_lane_startingpoint, y_position_of_thirdpoint, y_position_of_secondpoint, y_position_of_firstpoint]
+
+                # From path.py, we find out the lane geometry related to curved road and append the points to the lane,which ultimately forms the entry lane.
+                lane_geometry = Curve(x_position_for_defining_curve, y_position_for_defining_curve, 0)
                 points_of_the_current_lane = []
                 for (x,y) in lane_geometry:
                     points_of_the_current_lane.append([x, y])
@@ -518,7 +532,7 @@ class RoundaboutRoad(Road):
                 self.l.append(points_of_the_current_lane)
        
             # Exit access
-            # Same expect for the math
+            # Here we follow the same method used in calculating entry lane expect for the math
             counter =0
             for lane_index in range(number_of_exit_lanes):
 
@@ -528,26 +542,26 @@ class RoundaboutRoad(Road):
 
                 main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)]
 
-                (x1,y1) = (starting_point_of_exit_lane[0] - (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_exit_lane[1] + (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))
+                (x_position_of_lane_startingpoint,y_position_of_lane_startingpoint) = (starting_point_of_exit_lane[0] - (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_exit_lane[1] + (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))
 
-                (x2,y2) = Intersection_Circle(circle_exit_lane,main_circle)[0]
+                (x_position_of_intersection,y_position_of_intersection) = Intersection_Circle(circle_exit_lane,main_circle)[0]
 
-                minimum_distance= dist(self.l[0][0],(x2,y2))
+                minimum_distance= dist(self.l[0][0],(x_position_of_intersection,y_position_of_intersection))
                 index_value_of_closest_point = 0
                 for n in range(len(self.l[0])):
 
-                    if dist(self.l[0][n],(x2,y2)) < minimum_distance:
-                        minimum_distance = dist(self.l[0][n],(x2,y2))
+                    if dist(self.l[0][n],(x_position_of_intersection,y_position_of_intersection)) < minimum_distance:
+                        minimum_distance = dist(self.l[0][n],(x_position_of_intersection,y_position_of_intersection))
                         index_value_of_closest_point = n
 
 
-                (xs, ys) = self.l[0][index_value_of_closest_point-5]
-                (xs1,ys1) = self.l[0][index_value_of_closest_point-3]
-                (xs2,ys2) = self.l[0][index_value_of_closest_point+1]
+                (x_position_of_firstpoint, y_position_of_firstpoint) = self.l[0][index_value_of_closest_point-5]
+                (x_position_of_secondpoint,y_position_of_secondpoint) = self.l[0][index_value_of_closest_point-3]
+                (x_position_of_thirdpoint,y_position_of_thirdpoint) = self.l[0][index_value_of_closest_point+1]
 
-                xs = [xs, xs1, xs2, x1]
-                ys = [ys, ys1, ys2, y1]
-                lane_geometry = Curve(xs, ys, 0)
+                x_position_for_defining_curve = [x_position_of_firstpoint, x_position_of_secondpoint, x_position_of_thirdpoint, x_position_of_lane_startingpoint]
+                y_position_for_defining_curve = [y_position_of_firstpoint, y_position_of_secondpoint, y_position_of_thirdpoint, y_position_of_lane_startingpoint]
+                lane_geometry = Curve(x_position_for_defining_curve, y_position_for_defining_curve, 0)
                 points_of_the_current_lane = []
                 for (x,y) in lane_geometry:
                     points_of_the_current_lane.append([x, y])
@@ -558,15 +572,17 @@ class RoundaboutRoad(Road):
         #To find the three points used for calculating the stop line,we use the same math as we used for calculating the entry and exit lane
         #Except that we use the radius as radius of the roundabout and not substracting it from the lane width
 
-        L2 = []
-        r2 = radius
+        # First we need to find out points for an alternate lane ,with radius of the circles defining roundbout
+
+        alternate_lane = []
+        radius_for_alternate_lane = radius
         for lane_index in range(number_of_lanes):
-            l2 =Bend(origin_x0, origin_y0 - (r2), 0, 2 * np.pi, r2)
-            r2 = (r2 - lane_width)
-            Current_Lane2 = []
-            for (x,y) in l2:
-                Current_Lane2.append([x, y])
-                L2.append(Current_Lane2)
+            alternate_lane_geometry =Bend(origin_x0, origin_y0 - (radius_for_alternate_lane), 0, 2 * np.pi, radius_for_alternate_lane)
+            radius_for_alternate_lane = (radius_for_alternate_lane - lane_width)
+            current_alternate_lane = []
+            for (x,y) in alternate_lane_geometry:
+                current_alternate_lane.append([x, y])
+                alternate_lane.append(current_alternate_lane)
         for crosssection_index in range(4):
 
             road_end_marker = road_end_marker_in_crossection[crosssection_index]
@@ -575,6 +591,7 @@ class RoundaboutRoad(Road):
             number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
             fillet_radius = filletradius_of_crosssection[crosssection_index]
 
+            #We use the road_end_marker to decide whether we have to append stopline.If it is solid,append and if it is 'none',disable the stopline.
             if road_end_marker_in_crossection[crosssection_index] == "Solid":
 
                 starting_point = mid_crosssection_points[crosssection_index]       
@@ -586,27 +603,28 @@ class RoundaboutRoad(Road):
                         
                     circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
                         
-                    main_circle = [origin_x0, origin_y0, radius] 
-                    
-                    (x1,y1) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index])) # Staring point of the Lane
+                    main_circle = [origin_x0, origin_y0, radius]
                         
-                    (x2,y2) = Intersection_Circle(circle_entry_lane,main_circle)[1]         
-                    minimum_distance = 100
+                    (x_position_of_intersection,y_position_of_intersection) = Intersection_Circle(circle_entry_lane,main_circle)[1]
+
+                    minimum_distance = dist(alternate_lane[0][0],(x_position_of_intersection,y_position_of_intersection))
                     index_value_of_closest_point = 0
-                    for n in range(len(L2[0])):
-                        if dist(L2[0][n],(x2,y2)) < minimum_distance:
-                            minimum_distance = dist(L2[0][n],(x2,y2))
+                    for n in range(len(alternate_lane[0])):
+                        if dist(alternate_lane[0][n],(x_position_of_intersection,y_position_of_intersection)) < minimum_distance:
+                            minimum_distance = dist(alternate_lane[0][n],(x_position_of_intersection,y_position_of_intersection))
                             index_value_of_closest_point = n
 
-                    (a1, b1) = L2[0][index_value_of_closest_point+5]
+                    #Here we find out the three points defining the stopline
 
-                    (a2,b2) = L2[0][index_value_of_closest_point]
+                    (x_positon_first_point_of_stopline, y_position_first_point_of_stopline) = alternate_lane[0][index_value_of_closest_point+5]
+
+                    (x_position_second_point_of_stopline, y_position_second_point_of_stopline) = alternate_lane[0][index_value_of_closest_point]
                         
-                    (a3,b3)= (((a1+a2)/2),((b1+b2)/2))            
+                    (x_position_third_point_of_stopline,y_position_third_point_of_stopline)= (((x_positon_first_point_of_stopline+x_position_second_point_of_stopline)/2),((y_position_first_point_of_stopline+y_position_second_point_of_stopline)/2))
                 
-                    self.stopline.append((a1,b1,a2,b2,a3,b3,number_of_lanes,number_of_exit_lanes,lane_width))            
+                    self.stopline.append((x_positon_first_point_of_stopline,y_position_first_point_of_stopline,x_position_second_point_of_stopline,y_position_second_point_of_stopline,x_position_third_point_of_stopline,y_position_third_point_of_stopline,number_of_lanes,number_of_exit_lanes,lane_width))
                     counter +=1
-                    print(self.stopline)
+
 
 
 

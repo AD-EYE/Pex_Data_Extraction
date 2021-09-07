@@ -476,27 +476,30 @@ class RoundaboutRoad(Road):
             number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
             number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
             fillet_radius = filletradius_of_crosssection[crosssection_index]
-
+            #print(number_of_lanes)
+            #print(number_of_entry_lanes)
             # First we  calculate the starting points for both entry and exit lanes,using the midcrossection points.
 
             starting_point = mid_crosssection_points[crosssection_index]
-
+            #print(starting_point)
             starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
+            #print(starting_point_of_entry_lane)
             starting_point_of_exit_lane = (starting_point[0][0] + (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] - (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))
-
+            #print(starting_point_of_exit_lane)
 
             #  The following math is used for forming the entry lane.
 
             counter = 0
             for lane_index in range(number_of_entry_lanes):
-
+                #print(lane_index)
                 #Here we calculate the centre of the circle defining the entry lane,and then using that centre we define the circle.
                 center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
                 circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
-
+                #print(center_of_circle_of_entrylane)
+                #print(circle_entry_lane)
                 # main circle of the roundabout
                 main_circle = [origin_x0, origin_y0, (radius - lane_width / 2)]
-
+                #print(main_circle)
                 # Starting point of the entry Lane
                 (x_position_of_lane_startingpoint, y_position_of_lane_startingpoint) = (starting_point_of_entry_lane[0] + (lane_index+1+counter) * (lane_width / 2) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] - (lane_index + 1 + counter) * (lane_width / 2) * np.cos(heading_of_crosssection[crosssection_index]))
 
@@ -596,9 +599,10 @@ class RoundaboutRoad(Road):
 
                 starting_point = mid_crosssection_points[crosssection_index]       
                 starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))        
+                #print(starting_point_of_entry_lane)
                 counter = 0
                 for lane_index in range(number_of_entry_lanes):
-                        
+                    #print(lane_index)    
                     center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
                         
                     circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access
@@ -616,12 +620,12 @@ class RoundaboutRoad(Road):
 
                     #Here we find out the three points defining the stopline
 
-                    (x_positon_first_point_of_stopline, y_position_first_point_of_stopline) = alternate_lane[0][index_value_of_closest_point+5]
-
+                    (x_positon_first_point_of_stopline, y_position_first_point_of_stopline) = alternate_lane[0][index_value_of_closest_point+3]
+                    #print(x_positon_first_point_of_stopline,y_position_first_point_of_stopline)
                     (x_position_second_point_of_stopline, y_position_second_point_of_stopline) = alternate_lane[0][index_value_of_closest_point]
-                        
+                    #print(x_position_second_point_of_stopline,y_position_second_point_of_stopline)   
                     (x_position_third_point_of_stopline,y_position_third_point_of_stopline)= (((x_positon_first_point_of_stopline+x_position_second_point_of_stopline)/2),((y_position_first_point_of_stopline+y_position_second_point_of_stopline)/2))
-                
+                    #print(x_position_third_point_of_stopline,y_position_third_point_of_stopline)
                     self.stopline.append((x_positon_first_point_of_stopline,y_position_first_point_of_stopline,x_position_second_point_of_stopline,y_position_second_point_of_stopline,x_position_third_point_of_stopline,y_position_third_point_of_stopline,number_of_lanes,number_of_exit_lanes,lane_width))
                     counter +=1
 

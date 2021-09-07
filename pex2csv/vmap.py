@@ -294,19 +294,20 @@ class VectorMap:
             if self.lanes[i].FNID == PID_2:
                 self.lanes[i].FNID = PID_1
 
-    def make_Stoplines(self, Stoplines):
-        '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
+    def make_Stoplines(self, list_of_stoplines):
+        '''This method take an array of tab representing every stoplines in the simulation with 3 points and a number of lanes of the road
         where the stopline is.
         It first find the closest lane using the third point  TO WRITE
         '''
-
-        for tab in Stoplines:
-
-            for i in range(len(tab)):
-
-                Middle_Point = (tab[i][4],tab[i][5])
+            
+        for stopline in list_of_stoplines:
+            
+            for i in range(len(stopline)):
+                
+                Middle_Point = (stopline[i][4],stopline[i][5])
                 min_dist = 1000
                 for j in range(len(self.points)):
+                    
                     x = self.points[j].Ly
                     y = self.points[j].Bx
                     point_of_interest = (x,y)
@@ -317,17 +318,20 @@ class VectorMap:
                         closest_node = j
 
                 for k in range(len(self.lanes)):
+                    
                     if closest_node == self.lanes[k].FNID:
                         lane_id = self.lanes[k].BLID
 
-                        PointID1 = self.points.create(tab[i][0], tab[i][1], 0)
-                        PointID2 = self.points.create(tab[i][2], tab[i][3], 0)
+                        PointID1 = self.points.create(stopline[i][0], stopline[i][1], 0)
+                        PointID2 = self.points.create(stopline[i][2], stopline[i][3], 0)
                         LineID = self.lines.create(PointID1,PointID2)
-                        lineLength = dist( (tab[i][0],tab[i][1]) , (tab[i][2],tab[i][3]) )
+                        lineLength = dist( (stopline[i][0],stopline[i][1]) , (stopline[i][2],stopline[i][3]) )
                         signID = 1
-                        while round(lineLength,2) > tab[i][7] :
+                        
+                        
+                        while round(lineLength,2) > stopline[i][7] and stopline[i][7] > 0:
                             signID += 1
-                            lineLength -= tab[i][7]
+                            lineLength -= stopline[i][7]
                         StoplineID = self.stoplines.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
     def make_Area(self, crosswalk):

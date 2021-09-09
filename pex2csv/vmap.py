@@ -295,25 +295,28 @@ class VectorMap:
                 self.lanes[i].FNID = PID_1
 
     def make_Stoplines(self, list_of_stoplines):
-        '''This method take an array of tab representing every stoplines in the simulation with 3 points and a number of lanes of the road
-        where the stopline is.
-        It first find the closest lane using the third point  TO WRITE
+        '''This method take an array/list of stoplines representing every stoplines in the simulation.
+        Each element of the stopline array constitutes of three points which is used to make the stopline  and a number of lanes of the road, number of exit lanes and lane width
+        where the stopline is.We use the three points and also the number of exit lanes to form the vector mapper components.
+        
         '''
-            
+        # First we  find the ID of the closest lane to the stopline, using the third point which is the middle point of the stopline.    
+        # For each stopline in the list, we first take the middle point and find out the distance between the middle point and each point in self.points which constitutes the lane
+        
         for stopline in list_of_stoplines:
             
             for i in range(len(stopline)):
                 
-                Middle_Point = (stopline[i][4],stopline[i][5])
-                min_dist = 1000
+                middle_point = (stopline[i][4],stopline[i][5])
+                min_dist = 1000     # We are setting a random value as the minimum distance first.
                 for j in range(len(self.points)):
                     
                     x = self.points[j].Ly
                     y = self.points[j].Bx
                     point_of_interest = (x,y)
-                    distance = dist(point_of_interest,Middle_Point)
+                    distance = dist(point_of_interest,middle_point) # Calculating the distance
                     if min_dist > distance:
-                        min_dist = distance
+                        min_dist = distance  
                         closest_point = point_of_interest
                         closest_node = j
 
@@ -325,13 +328,14 @@ class VectorMap:
                         PointID1 = self.points.create(stopline[i][0], stopline[i][1], 0)
                         PointID2 = self.points.create(stopline[i][2], stopline[i][3], 0)
                         LineID = self.lines.create(PointID1,PointID2)
-                        lineLength = dist( (stopline[i][0],stopline[i][1]) , (stopline[i][2],stopline[i][3]) )
+                        line_length = dist( (stopline[i][0],stopline[i][1]) , (stopline[i][2],stopline[i][3]) )    # Distance between the first and the last point of the stopline
                         signID = 1
                         
-                        
-                        while round(lineLength,2) > stopline[i][7] and stopline[i][7] > 0:
+                        # The following loop  checks whether the line length is gretaer then the no of exit lanes and updates the value of linelength and signID
+                        # stopline[i][7] represets the number of exit lanes in the list.If it is zero,ie if the cross section contains only entry lane,then the while loop loops infintly.So we provide a conditional check.
+                        while round(line_length,2) > stopline[i][7] and stopline[i][7] > 0:
                             signID += 1
-                            lineLength -= stopline[i][7]
+                            line_length -= stopline[i][7]
                         StoplineID = self.stoplines.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
     def make_Area(self, crosswalk):

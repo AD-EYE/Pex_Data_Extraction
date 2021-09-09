@@ -380,29 +380,33 @@ def get_flex(s, id): # a flex road is created with several curved roads
 
         CurvedRoads[Lid[j]] = NewCurvedRoad
     return CurvedRoads
-
+# This function fetches the information related to the roundabout road type from the .pex file
 def get_roundabout(s, id, connections, path):
-    origin_x0 = float(s[0].get('X'))
-    origin_y0 = float(s[0].get('Y'))
-    Vmax = s.get('MaxSpeed')
+    origin_x0 = float(s[0].get('X'))            # Origin X
+    origin_y0 = float(s[0].get('Y'))            # Origin Y
+    Vmax = s.get('MaxSpeed')                    # Maximum speed allowed for a  particular road
     heading = float(s[1].get('Heading'))
-    radius = float(s.get('Radius'))
-    lane_width = float(s.get('LaneWidth'))
-    number_of_lanes = int(s.get('NumberOfLanes'))
+    radius = float(s.get('Radius'))             # Distance from the origin of the roundabout to the centre lane
+    lane_width = float(s.get('LaneWidth'))      # Width of the lane
+    number_of_lanes = int(s.get('NumberOfLanes')) # Number of lanes in the roundabout
+    # Roundabout has four crosssections.The following statements creates a list which has information of the road in each cross section
     RoadCrossSection = s[18]
     RoadMarking = s[16]
-    heading_of_crosssection = []
-    filletradius_of_crosssection = []
-    number_of_lanes_of_crosssection = []
-    number_of_lanes_in_xdirection_in_crosssection = []
-    road_end_marker_in_crossection = []
+    heading_of_crosssection = []                        #list of headings for each cross section
+    filletradius_of_crosssection = []                   # list of fillet radius for each cross section
+    number_of_lanes_of_crosssection = []                # list of number of lanes in each cross section
+    number_of_lanes_in_xdirection_in_crosssection = []  #List of exit lanes
+    road_end_marker_in_crosssection = []                # List of road end markings in each cross section
+    # For each cross section we append the values from the .pex files to the list
     for s in RoadCrossSection:
         heading_of_crosssection.append((float(s.get('Heading')) + heading) * np.pi / 180)
         filletradius_of_crosssection.append((float(s.get('FilletRadiusPercentage'))))
         number_of_lanes_of_crosssection.append((int(s.get('NumberOfLanes'))))
         number_of_lanes_in_xdirection_in_crosssection.append((int(s.get('DirectionChangeAfterLane'))))
-        road_end_marker_in_crossection.append((str(s.get('RoadEndMarker'))))
-        
+        road_end_marker_in_crosssection.append((str(s.get('RoadEndMarker'))))
+    # The following statements creates a pedestrian crosswalk.
+    # First it checks whether for each cross section there is a marking represented by the term 'PedestrianMarkingGeneric'.
+    # And if it is present, then it performs the math for calculating three points which represents crosswalk.  
     cross_walk = []
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
@@ -418,7 +422,7 @@ def get_roundabout(s, id, connections, path):
             x3 = origin_x0 + (xl + (cl/2)*np.sin(hw))*np.cos(heading) - (yl + (cl/2)*np.cos(hw))*np.sin(heading)
             y3 = origin_y0 + (xl + (cl/2)*np.sin(hw))*np.sin(heading) + (yl + (cl/2)*np.cos(hw))*np.cos(heading)
             cross_walk.append([x1,y1,x2,y2,x3,y3])
-
+    # Next we find out the mid cross section points for each crosssection.For that first we collect the information of the roads connected to the roundabout
     connection_roads = [0,0,0,0]
 
     for connection in connections:
@@ -433,7 +437,7 @@ def get_roundabout(s, id, connections, path):
         elif (id in id_of_Road_B):
             
             connection_roads[int(connection.get('Joint_B_Id'))] = id_of_Road_A
-
+    # Then we calculate the mid cross section points for each cross section using the following math.
     mid_crosssection_points = []
     for i in range(len(connection_roads)):
         mid_crosssection_points.append(get_links_points_roundabout(connection_roads[i],path))

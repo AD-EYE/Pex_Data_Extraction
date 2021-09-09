@@ -601,7 +601,7 @@ class RoundaboutRoad(Road):
                 
                 counter = 0
                 for lane_index in range(number_of_entry_lanes):
-                        
+                    #print(lane_index)    
                     center_of_circle_of_entrylane = (starting_point_of_entry_lane[0] - radius * (fillet_radius / 100) * np.sin(heading_of_crosssection[crosssection_index]), starting_point_of_entry_lane[1] + (radius * (fillet_radius / 100)) * np.cos(heading_of_crosssection[crosssection_index]))
                         
                     circle_entry_lane = [center_of_circle_of_entrylane[0], center_of_circle_of_entrylane[1], radius * (fillet_radius / 100) + (lane_index + 1) * lane_width] # Circle describe by the entry access

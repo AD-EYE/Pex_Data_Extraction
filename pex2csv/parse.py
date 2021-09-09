@@ -624,7 +624,8 @@ def get_adapter(s, id):
                 y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
                 cw.append([x1,y1,x2,y2,x3,y3])
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw, lane_offset)
-
+# The function get_xcross and get_ycross performs the same functionalites for the road type x-cross and y-cross
+# ie,fetches the information related to the  road type from the .pex file
 def get_xcross(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
@@ -638,7 +639,7 @@ def get_xcross(s, id):
     cs_nbr_of_lanes = []
     cs_lanes_in_x_dir = []
     cs_l = []
-    cs_road_end_marker = []
+    cs_road_end_marker = []        # List of road end markings in each cross section
     for c in cs:
         
         cs_h.append((float(c.get('Heading'))) * np.pi / 180)
@@ -646,13 +647,15 @@ def get_xcross(s, id):
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
-        cs_road_end_marker.append(str(c.get('RoadEndMarker')))
+        cs_road_end_marker.append(str(c.get('RoadEndMarker')))           # Appending the values from .pex file
         
-    Stl = []
-    cw = []
-
+    Stl = []    # List for stoplines in  each crossection
+    cw = []     # List for the crosswalks
+    # Calculation of stoplines: The following math is used for calculating the three points for a stopline. For each crossection we calculate x1,y1 and x2,y2
+    # And we take the average of these three points as the third point. And append them into the list.
+    # Before that we check whether the string value of RoadEndMArker is Solid,if it is None, then we dont need stopline for that particular crosssection.
     for i in range(4):
-       
+
         if cs_road_end_marker[i] == "Solid" :
             
             x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0

@@ -442,7 +442,7 @@ class RoundaboutRoad(Road):
     :type cross_walk:[ [x1,y1,x2,y2] ] with x and y float
 
     '''
-    def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points,road_end_marker_in_crossection, cross_walk):
+    def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points,road_end_marker_in_crosssection, cross_walk):
 
         # General Initialization
 
@@ -587,14 +587,14 @@ class RoundaboutRoad(Road):
                 alternate_lane.append(current_alternate_lane)
         for crosssection_index in range(4):
 
-            road_end_marker = road_end_marker_in_crossection[crosssection_index]
+            road_end_marker = road_end_marker_in_crosssection[crosssection_index]
             number_of_lanes = number_of_lanes_of_crossection[crosssection_index]
             number_of_exit_lanes = number_of_lanes_in_xdirection_in_crosssection[crosssection_index]
             number_of_entry_lanes = number_of_lanes - number_of_exit_lanes
             fillet_radius = filletradius_of_crosssection[crosssection_index]
 
             #We use the road_end_marker to decide whether we have to append stopline.If it is solid,append and if it is 'none',disable the stopline.
-            if road_end_marker_in_crossection[crosssection_index] == "Solid":
+            if road_end_marker_in_crosssection[crosssection_index] == "Solid":
 
                 starting_point = mid_crosssection_points[crosssection_index]       
                 starting_point_of_entry_lane = (starting_point[0][0] - (number_of_lanes/2) * lane_width * np.sin(heading_of_crosssection[crosssection_index]), starting_point[0][1] + (number_of_lanes / 2) * lane_width * np.cos(heading_of_crosssection[crosssection_index]))        

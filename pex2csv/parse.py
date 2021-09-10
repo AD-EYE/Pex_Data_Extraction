@@ -442,7 +442,7 @@ def get_roundabout(s, id, connections, path):
     for i in range(len(connection_roads)):
         mid_crosssection_points.append(get_links_points_roundabout(connection_roads[i],path))
         
-    return RoundaboutRoad(id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crosssection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, Vmax, Vmax, mid_crosssection_points,road_end_marker_in_crossection, cross_walk)
+    return RoundaboutRoad(id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crosssection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, Vmax, Vmax, mid_crosssection_points,road_end_marker_in_crosssection, cross_walk)
 
 def get_straight(s, id):
     x0 = float(s[0].get('X'))

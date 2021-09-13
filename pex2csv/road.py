@@ -1,118 +1,92 @@
-'''This module contains all of the code defining the structure of different
-road segments. By taking initial values from the parser the classes calculate a
-mathematical definition of the road type. So We use the geometry created in
-path.py to define the different roadtype (ex: we use Bend type to create Roundabout)
+##@package road
+#This module contains all of the code defining the structure of different
+#road segments. By taking initial values from the parser the classes calculate a
+#mathematical definition of the road type. So we use the geometry created in
+#path.py to define the different roadtype (ex: we use the Bend type to create a Roundabout)
 
-The road classes :class:'BendRoad', :class:'CurvedRoad', :class:'StraightRoad',
-:class:'RoundaboutRoad', and :class:'XCrossing' all have class variables that represent roads.
-
-'''
 from path import *
 import numpy as np
 from utils import *
 
-
+##This is the interface class for all the road types. 
+#Every road has certain things in common such as a center, edges, lanes and SpeedLimit/RefSpeed.
 class Road:
-    '''This is the interface class for all the road types. Every road has certain things in common such as a center, edges, lanes and SpeedLimit/RefSpeed.
 
-        :param id: represent the ID of the road (Bendroad, StraightRoad...).The exact ID can be found in the pex file.
-        :type ps: string
-
-        :param c: Tab of points defining the center of the road.
-        :type c: [(x,t)]
-
-        :param e1/e2: Tab of points defining the edges of the road.
-        :type e1/e2: [(x,t)]
-
-        :param l: Tab of points defining a lane of the road.
-        :type l: [(x,t)]
-
-        :param SpeedLimit/RefSpeed: Define the speed limit / the speed reference on the road.
-        :type SpeedLimit/RefSpeed: Float
-
-        param SpeedProfil: Tab of Float defining the speed profil (Speed Limit per RoadType)
-        :type SpeedLimit/RefSpeed: [Float]
-
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param id A string. The road type id.
     def __init__(self, id):
+        ##A string. Represent the ID of the road (Bendroad, StraightRoad...).The exact ID can be found in the pex file.
         self.id = id
+        ##A list of points (x, y) defining the center of the road
         self.c = []
+        ##A list of points (x, y) defining one edge of the road
         self.e1 = []
+        ##A list of points (x, y) defining one edge of the road
         self.e2 = []
+        ##A list of lists of points (x, y) defining the lanes of the road. Base components are floats.
         self.l = []
+        ##A list of lists of points representing the stoplines. Base components are floats.
         self.stopline = []
+        ##A list of lists of points representing the crosswalks. Base components are floats.
         self.crosswalk = []
+        ##An integer
         self.previous_road = -1
+        ##An integer
         self.next_road = -1
+        ##A Float. Defines the speed limit on the road.
         self.SpeedLimit = 1
+        ##A float. Defines the speed reference on the road.
         self.RefSpeed = 1
+        ##A list of Float defining the speed profile (Speed Limit per RoadType)
         self.SpeedProfil = self.SpeedProfil = [70,40,70,70,20,90,20,70,70,50]
 
+    ##This method returns the starting coordinates of the road's center path. 
+    #Some road segments might not have a starting point, for example the roundabout road. Those segments will have to override this function accordingly.
+    #
+    #Returns (Float, Float)
     def getstart(self):
-        '''This method returns the starting coordinates of the road's center path.
-        .. note:: Some road segments might not have a starting point, for example the roundabout road. Those segments will have to override this function accordingly.
-        :returns (Float, Float)
-        '''
         return self.c[0].getstart()
 
+    ##This method returns the last coordinates of the road's center path.
+    #Some road segments might not have an endpoint, for example the roundabout road. Those segments will have to override this function accordingly.
+    #
+    #Returns (Float, Float)
     def getend(self):
-        '''This method returns the last coordinates of the road's center path.
-        .. note:: Some road segments might not have an endpoint, for example the roundabout road. Those segments will have to override this function accordingly.
-        :returns (Float, Float)
-        '''
         return self.c[0].getend()
 
+##This a representation of the bend road in Prescan.
 class BendRoad(Road):
-    '''
-    This a representation of the bend road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the starting point of the segment
-    :type x0: Float
-
-    :param y0: The y coordinate of the starting point of the segment
-    :type y0: Float
-
-    :param h: Global heading of the segment at the starting point
-    :type h: Float
-
-    :param rh: Heading of the segment relative to its heading
-    :type rh: Float
-
-    :param clr: Center line radius.
-    :type clr: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param lanes_going_OUT: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
-    :type lanes_going_OUT: Integer
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
+    ##The constructor
+    #@param self the object pointer
+    #@param id A string. Unique id.
+    #@param x0 A float. The x coordinate of the starting point of the segment
+    #@param y0 A float. The y coordinate of the starting point of the segment
+    #@param h A float. Global heading of the segment at the starting point
+    #@param rh A float. Heading of the segment relative to its heading
+    #@param clr A float. Center line radius.
+    #@param lw A float. The lane width.
+    #@param nbr_of_lanes An integer. the nuber of lanes
+    #@param lanes_going_OUT An integer. Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk
     def __init__(self, id, x0, y0, h, rh, clr, lw, nbr_of_lanes, lanes_going_OUT, SpeedL, RefS, Stl, cw):
 
         # General Initialization
 
         Road.__init__(self, id)     #Gave the Id linked to BendRoad
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL    #Set the different speeds
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats
         self.stopline = Stl
+        ###List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats
         self.crosswalk = cw
+        ##A Float. Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[1]
 
 
@@ -144,58 +118,43 @@ class BendRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+##This is a representation of Spiral roads (Clothoïd) in Prescan. An Euler Spiral is used to represent it
 class ClothoidRoads (Road):
-    '''
-    This is a representation of Spiral roads (Clothoïd) in Prescan. An Euler Spiral is used to represent it
 
-    :param id: Unique id.
-    :type id: String
 
-    :param x0: The x coordinate of the starting point of spiral
-    :type x0: Float
+    ##The constructor
+    #@param self The object pointer
+    #@param id. Unique Id
+    #@param x0 A float. The x coordinate of the starting point of the spiral
+    #@param y0 A float. The y coordinate of the starting point of the spiral
+    #@param h A float. Global heading of the bezier curve at its starting point
+    #@param C2 A float. Constant describing the spiral. If R the radius of the spiral at the curvilinear abscissa L, R*L =C**2, and C2 = C**2
+    #@param Lstart A float. curvilinear abscissa of the start of the spiral
+    #@param Lend A float. curvilinear abscissa of the end of the spiral
+    #@param flipped A boolean. Indicates if the orientation of the spiral is flipped
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes An integer. The number of lanes
+    #@param lanes_in_x_dir An integer. The number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
+    #@param Tabpointcon A list of floats representing points. Used to check if the end of the road is connected to the start of another one
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param cw list of lists with relevant points (3 points per lists) describing a crosswalk. Base component is a Float.
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base component is a Float.
 
-    :param y0: The y coordinate of the starting point of the spiral
-    :type y0: Float
-
-    :param h: Global heading of the bezier curve at its starting point
-    :type h: Float
-
-    :param C2 : constant describing the spiral. If R the radius of the spiral at the curvilinear abscissa L, R*L =C**2, and C2 = C**2
-    :type C2 = Float
-
-    :Lstart: curvilinear abscissa of the start of the spiral
-    :type Lstart: Float
-
-    :Lstart: curvilinear abscissa of the end of the spiral
-    :type Lend: Float
-
-    :flipped: boolean that indicates if the orientation of the spiral is flipped
-    :type flipped: Boolean
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param lanes_in_x_dir: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
-    :type number_of_lanes: Integer
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs with relevant points (3 points per tab) describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-    '''
     def __init__(self, id, x0, y0, h, C2, Lstart, Lend, flipped, lw, nbr_of_lanes, lanes_in_x_dir, Tabpointcon, SpeedL, RefS, cw, Stl):
 
         # General Initialization
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base component are Floats.
         self.stopline = Stl
+        ##List of lists with relevant points (3 points per lists) describing a crosswalk. Base component are Floats.
         self.crosswalk = cw
+        ##A Float. Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[2]
 
 
@@ -313,66 +272,43 @@ class ClothoidRoads (Road):
 
 
 
-
+##This a representation of the curved road in Prescan. A bezier curve is used to represent it.
 class CurvedRoad(Road):
-    '''
-    This a representation of the curved road in Prescan. A beezier curve is used to represent it.
 
-    :param id: Unique id.
-    :type id: String
 
-    :param x0: The x coordinate of the starting point of the bezier curve
-    :type x0: Float
+    ##The constructor
+    #@param self The object pointer
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the starting point of the bezier curve
+    #@param y0 A float. The y coordinate of the starting point of the bezier curve
+    #@param h A float. Global heading of the bezier curve at its starting point
+    #@param rh A float. Heading of the bezier curve relative to its starting point
+    #@param cp1 A float. Represents the distance between the first control point and the starting point at an angle that's equal to the heading.
+    #@param cp2 A float. Represents the distance between the second control point and the endpoint at an angle that's equal to the heading plus the relative heading.
+    #@param dx A float. Relative x offset of the endpoint from the starting point
+    #@param dy A float. Relative y offset of the endpoint from the starting point
+    #@param lw A Float. Lane width
+    #@param nbr_of_lanes An integer. Number of lanes.
+    #@param lanes_going_OUT An integer. Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The speed of reference
+    #@param cw List of lists with relevant points (3 points per lists) describing a crosswalk. Base component is a Float.
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base component is a Float.
 
-    :param y0: The y coordinate of the starting point of the bezier curve
-    :type y0: Float
-
-    :param h: Global heading of the bezier curve at its starting point
-    :type h: Float
-
-    :param rh: Heading of the bezier curve relative to its starting point
-    :type rh: Float
-
-    :param cp1: Represents the distance between the first control point and the starting point at an angle that's equal to the heading.
-    :type cp1: Float
-
-    :param cp2: Represents the distance between the second control point and the endpoint at an angle that's equal to the heading plus the relative heading.
-    :type cp2: Float
-
-    :param dx: Relative x offset of the endpoint from the starting point
-    :type dx: Float
-
-    :param dy: Relative y offset of the endpoint from the starting point
-    :type dy: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param lanes_going_OUT: Number of lanes going out of the crossroad. Used to reverse the lane that goes out of the crossroad
-    :type number_of_lanes: Integer
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
     def __init__(self, id, x0, y0, h, rh, cp1, cp2, dx, dy, lw, nbr_of_lanes, lanes_going_OUT, SpeedL, RefS, Stl, cw): #Same as BendRoad
 
         # General Initialization
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The speed of reference
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base component is a Float
         self.stopline = Stl
+        ##list of lists with relevant points (3 points per lists) describing a crosswalk. Base component is a Float.
         self.crosswalk = cw
+        ##A Float. Represent the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[2]
 
         # Creation of the points needed for the Bezier Curve
@@ -410,47 +346,46 @@ class CurvedRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+
+
+##This a representation of the roundabout. Each roundabout contains road cross sections that represent the exits and entries to the segment.
 class RoundaboutRoad(Road):
-    '''
-    This a representation of the roundabout. Each roundabout contains road cross sections that represent the exits and entries to the segment.
-
-    :param id: Unique id.
-    :type id: String
-
-    :param origin_x0: The x coordinate of the center of the roundabout.
-    :type origin_x0: Float
-
-    :param origin_y0: The y coordinate of the center of the roundabout.
-    :type origin_y0: Float
-
-    :param radius: Distance from the center of the roundabout to the center lane.
-    :type radius: Float
-
-    :param lane_width: Lane width.
-    :type lane_width: Float
-
-    :param heading_of_crossection: List of headings for each road cross section (the exit and entrance of the RA).
-    :type heading_of_crossection: [Float]
-
-    :param number_of_lanes: Number of lanes.
-    :type number_of_lanes: Integer
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofile in the Road Class)
-    :type DefinedSpeed: Float
-
-    :param cross_walk: Tab of tabs containing relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cross_walk:[ [x1,y1,x2,y2] ] with x and y float
-
-    '''
+     
+    ##The constructor
+    #@param self the object pointer
+    #@param id A string. Unique id
+    #@param origin_x0 A float. The x coordinate of the center of the roundabout.
+    #@param origin_y0 A float. The y coordinate of the center of the roundabout.
+    #@param radius A float. Distance from the center of the roundabout to the center lane.
+    #@param lane_width A float. Lane width.
+    #@param heading_of_crosssection A list of float. List of headings in radians
+    #@param filletradius_of_crosssection A list of float.
+    #@param number_of_lanes_of_crossection A list of integers. List of the number of lanes of each exit
+    #@param number_of_lanes_in_xdirection_in_crosssection A list of integers. List of the new directions after each exit.
+    #@param number_of_lanes An iteger. The number of lanes
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The speed of reference
+    #@param mid_crosssection_points A list of the connecting points between roads.
+    #@param road_end_marker_in_crosssection A string. A string which shows whether stoplines are included or not
+    #@param cross_walk List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base component is a Float.
+    
     def __init__(self, id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crossection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, SpeedL, RefS, mid_crosssection_points,road_end_marker_in_crosssection, cross_walk):
+
+
 
         # General Initialization
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The speed of reference
         self.RefSpeed = RefS
+
+        ##A list of connecting points.
         self.connection_roads = mid_crosssection_points
+        ##Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[3]
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base component is a Float.
         self.crosswalk = cross_walk
         
         # Creating the lanes of roundabout using circles defining the lanes.
@@ -487,6 +422,7 @@ class RoundaboutRoad(Road):
            
 
             #  The following math is used for forming the entry lane.
+
 
             counter = 0
             for lane_index in range(number_of_entry_lanes):
@@ -630,49 +566,44 @@ class RoundaboutRoad(Road):
 
 
 
-
+##This a representation of a roundabout cross section.
 class ExitLane(Road):
-    '''
-    This a representation of a roundabout cross section.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the endpoint of the exit lane.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the endpoint of the exit lane.
-    :type y0: Float
-    :param r: Distance from the center of the roundabout to the center lane.
-    :type r: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param ch: Heading of the road end relative to the heading of the roundabout.
-    :type ch: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2] ] with x and y float
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the endpoint of the exit lane.
+    #@param y0 A float. The y coordinate of the center of the endpoint of the exit lane.
+    #@param r A float. Distance from the center of the roundabout to the center lane.
+    #@param lw A float. The lane width
+    #@param ch A Float. Heading of the road end relative to the heading of the roundabout.
+    #@param nbr_of_lanes An integer. The number of lanes
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
     def __init__(self, id, x0, y0, r, lw, ch, nbr_of_lanes, SpeedL, RefS, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##A float. The defined speed
         self.DefinedSpeed = self.SpeedProfil[4]
         r += lw
+        ##A float. The x coordinate of the center of the endpoint of the exit lane.
         self.x = x0
+        ##A float. The y coordinate of the center of the endpoint of the exit lane.
         self.y = y0
+        ##A float. Distance from the center of the roundabout to the center lane.
         self.r = r
+        ##A Float. Heading of the road end relative to the heading of the roundabout.
         self.ch = ch
+        ##A float. The lane width
         self.lw = lw
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
 
         # Get exit lanes
@@ -689,13 +620,29 @@ class ExitLane(Road):
         (x, y, h, a, rc) = self.get_exit_lane(x0, y0, lw, r, ch, -lw/2)
         self.l.append(Bend(x, y, h, a, rc))
 
+    ##This method returns the starting coordinates of the road's center path. 
+    #
+    #Returns (Float, Float)
+    #@param self The object pointer
     def getstart(self):
         return (self.x, self.y)
 
+    ##This method returns the last coordinates of the road's center path.
+    #
+    #Returns (Float, Float)
+    #@param self The object pointer
     def getend(self):
         return (self.x + (self.r + 2 * self.lw) * np.cos(self.ch),
                 self.y + (self.r + 2 * self.lw) * np.sin(self.ch))
 
+    ##This method returns the parameters needed to create the exit lane with a Bend object
+    #@param self The object pointer
+    #@param self x0 A float. The x coordinate of the center of the endpoint of the exit lane.
+    #@param self y0 A float. The y coordinate of the center of the endpoint of the exit lane.
+    #@param self lw A float. The total lane's width
+    #@param self r A float. Distance from the center of the roundabout to the center lane.
+    #@param self ch A float. Heading of the road end relative to the heading of the roundabout.
+    #@param self ld a float. The curent lane's width
     def get_exit_lane(self, x0, y0, lw, r, ch, ld):
         sign = np.sign(ld)
         ld = abs(ld)
@@ -723,50 +670,38 @@ class ExitLane(Road):
         h = np.arctan2(y - y2, x - x2) - sign * np.pi / 2
         return (x2, y2, h, sign * np.pi / 3, rc)
 
+
+##This a representation of a straight road in Prescan.
 class StraightRoad(Road):
-    '''
-    This a representation of a straight road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the start of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the start of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the start point.
-    :type h: Float
-
-    :param l: Length of the road segment
-    :type l: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param l A float. Length of the road segment
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes An integer. The number of lanes
+    #@param lanes_going_OUT An integer. The number of lanes at the end of the road.
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_going_OUT, SpeedL, RefS, Stl, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
         self.stopline = Stl
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
+        ##A float. Represents the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[0]
 
         # Edges, Center Line and Lanes
@@ -795,46 +730,35 @@ class StraightRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+##This a representation of a crosswalk road in Prescan.
 class Crosswalkr(Road):
-    '''
-    This a representation of a crosswalk road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the start of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the start of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the start point.
-    :type h: Float
-
-    :param l: Length of the road segment
-    :type l: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param l A float. Length of the road segment
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes An integer. The number of lanes
+    #@param lanes_going_OUT An integer. The number of lanes leaving the crosswalk
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base componemts are floats.
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_going_OUT, SpeedL, RefS, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
+        ##A float. Represents the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[0]
 
         # Edges, Center Line and Lanes
@@ -863,62 +787,40 @@ class Crosswalkr(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+##This a representation of an adapter road in Prescan.
 class AdapterRoad(Road):
-    '''
-    This a representation of an adapter road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the start of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the start of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the start point.
-    :type h: Float
-
-    :param l: Length of the road segment
-    :type l: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes_start: Number of lanes.
-    :type nbr_of_lanes_start: Integer
-
-    :param nbr_of_lanes_end: Number of lanes.
-    :type nbr_of_lanes_end: Integer
-
-    :param lanes_going_OUT_start: Number of lanes.
-    :type lanes_going_OUT_start: Integer
-
-    :param lanes_going_OUT_end: Number of lanes.
-    :type lanes_going_OUT_end: Integer
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    :param lane_offset: represent the lane offset of the adapter (>0 if we remove lanes, <0 if we add lanes)
-    :type lane_offset: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param l A float. Length of the road segment
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes_start An integer. The number of lanes at the start
+    #@param nbr_of_lanes_end An integer. The number of lanes at the end
+    #@param lanes_in_x_dir_start An integer.
+    #@param lanes_in_x_dir_end An integer.
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
+    #@param lane_offset An integer. Represents the lane offset of the adapter (>0 if we remove lanes, <0 if we add lanes)
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, SpeedL, RefS, Stl, cw, lane_offset):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline
         self.stopline = Stl
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base componemts are floats.
         self.crosswalk = cw
+        ##A float. Represents the speed that the road has by default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[5]
 
         # Edges, Center Line and Lanes
@@ -1751,60 +1653,40 @@ class AdapterRoad(Road):
                     k -=1
 
 
-
+##This a representation of an entry road in Prescan.
 class EntryRoad(Road):
-    '''
-    This a representation of a entry road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the start of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the start of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the start point.
-    :type h: Float
-
-    :param l: Length of the road segment
-    :type l: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param entry_road_angle: Entry Road Angle.
-    :type entry_road_angle: Float
-
-    :param apron_length: Apron Length.
-    :type apron_length: Float
-
-    :param side_road_length: Side Road Length.
-    :type side_road_length: Float
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param l A float. Length of the road segment
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes An integer. The number of lanes.
+    #@param lanes_going_OUT An integer. The number of lanes after the entry.
+    #@param entry_road_angle A float. The angle of the entry lane.
+    #@param apron_length A float. The lemgth of the apron.
+    #@param side_road_length A float. Th length of the side road.
+    #@param SpeedL A float. The speed limit.
+    #@param RefS A float. The reference speed.
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_going_OUT, entry_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
         self.stopline = Stl
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
+        ##A float. Represents the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[6]
         apron_length2=(apron_length*np.tan(entry_road_angle)+lw/2)/(np.tan(entry_road_angle))
 
@@ -1874,59 +1756,40 @@ class EntryRoad(Road):
                 l = l[::-1]
                 self.l[i] = l
 
+##This a representation of an exit road in Prescan.
 class ExitRoad(Road):
-    '''
-    This a representation of a entry road in Prescan.
 
-    :param id: Unique id.
-    :type id: String
-
-    :param x0: The x coordinate of the center of the start of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the start of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the start point.
-    :type h: Float
-
-    :param l: Length of the road segment
-    :type l: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param nbr_of_lanes: Number of lanes.
-    :type nbr_of_lanes: Integer
-
-    :param exit_road_angle: Exit Road Angle.
-    :type exit_road_angle: Float
-
-    :param apron_length: Apron Length.
-    :type apron_length: Float
-
-    :param side_road_length: Side Road Length.
-    :type side_road_length: Float
-
-    :param Stl: Tab of tabs contening relevant points (3 points per tab) describing a stopline
-    :type Stl:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    :param DefinedSpeed: Represent the speed that the road has per default (defined by the speedprofil in the Road Class)
-    :type DefinedSpeed: Float
-
-    '''
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param l A float. Length of the road segment
+    #@param lw A float. The lane width
+    #@param nbr_of_lanes An integer. The number of lanes
+    #@param lanes_going_OUT An integer. The number of lanes after the exit road
+    #@param exit_road_angle A float. The angle of the exit road
+    #@param apron_length A float. The length of the apron road
+    #@param side_road_length A float. The length of the side road.
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base componemts are floats.
     def __init__(self, id, x0, y0, h, l, lw, nbr_of_lanes, lanes_going_OUT, exit_road_angle, apron_length, side_road_length, SpeedL, RefS, Stl, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
         self.stopline = Stl
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
+        ##A float. Represents the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[7]
         apron_length2=(apron_length*np.tan(exit_road_angle)+lw/2)/(np.tan(exit_road_angle))
 
@@ -1997,53 +1860,46 @@ class ExitRoad(Road):
                 self.l[i] = l
 
 
-
+##This a representation of an xcrossing road in Prescan. Each road contains one segment for each arm of the xcrossing.
 class XCrossRoad(Road):
-    '''
-    This a representation of an xcrossing road in Prescan. Each road contains one segment for each arm of the xcrossing.
 
-    :param id: Unique id.
-    :type id: String
+ 
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param r A float. Distance from the starting point to furthest center point of one of the lanes.
+    #@param lw A float. The lane width
+    #@param cs_h List (of floats) of headings for each arm of the xcrossing.
+    #@param cs_len_till_stop A float. Distance from endpoint of the arms to the arms' stopline.
+    #@param cs_nbr_of_lanes List (of integers) of the number of lane for each arm of the xcrossing.
+    #@param cs_lanes_going_OUT List (of integers) representing the number of lines at every exit of the crossing
+    #@param cs_l List (of floats) of road length for each arm of the xcrossing.
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
 
-    :param x0: The x coordinate of the center of the road segment.
-    :type x0: Float
-
-    :param y0: The y coordinate of the center of the road segment.
-    :type y0: Float
-
-    :param h: Global heading of the road segment at the starting point.
-    :type h: Float
-
-    :param r: Distance from the starting point to furthest center point of one of the lanes.
-    :type r: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param chs: List of headings for each arm of the xcrossing.
-    :type chs: [Float]
-
-    :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
-    :type len_till_stop: Float
-
-    :param number_of_lanes: Number of lanes.
-    :type number_of_lanes: Integer
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    '''
     def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_going_OUT, cs_l, SpeedL, RefS, Stl, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##A float. The x coordinate of the center of the start of the road segment.
         self.x=x0
+        ##A float. The x coordinate of the center of the start of the road segment.
         self.y=y0
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.stopline = Stl
+        ##A float. Represents the speed that the road has per default (defined by the speedprofilw in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[8]
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
 
         # Lanes Creation
@@ -2373,60 +2229,59 @@ class XCrossRoad(Road):
 
         # TO DO
 
-
+    ##This method returns the starting coordinates of the road's center path. 
+    #
+    #Returns (Float, Float)
     def getstart(self):
         return (self.x, self.y)
 
+    ##This method returns the last coordinates of the road's center path.
+    #
+    #Returns (Float, Float)
     def getend(self):
         return (self.x, self.y)
 
-
+##This a representation of an ycrossing road in Prescan. Each road contains one segment for each arm of the ycrossing.
 class YCrossRoad(Road):
-    '''
-    This a representation of an ycrossing road in Prescan. Each road contains one segment for each arm of the ycrossing.
 
-    :param id: Unique id.
-    :type id: String
 
-    :param x0: The x coordinate of the center of the road segment.
-    :type x0: Float
 
-    :param y0: The y coordinate of the center of the road segment.
-    :type y0: Float
+    ##The constructor
+    #@param self The object pointer.
+    #@param id A string. Unique id
+    #@param x0 A float. The x coordinate of the center of the start of the road segment.
+    #@param y0 A float. The y coordinate of the center of the start of the road segment.
+    #@param h A float. Global heading of the road segment at the start point.
+    #@param r A float. Distance from the starting point to furthest center point of one of the lanes.
+    #@param lw A float. The lane width
+    #@param cs_h List (of floats) of headings for each arm of the ycrossing.
+    #@param cs_len_till_stop A float. Distance from endpoint of the arms to the arms' stopline.
+    #@param cs_nbr_of_lanes List (of integers) of the number of lane for each arm of the ycrossing.
+    #@param cs_lanes_going_OUT List (of integers) representing the number of lines at every exit of the crossing
+    #@param cs_l List (of floats) of road length for each arm of the ycrossing.
+    #@param SpeedL A float. The speed limit
+    #@param RefS A float. The reference speed
+    #@param Stl List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
+    #@param cw List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
 
-    :param h: Global heading of the road segment at the starting point.
-    :type h: Float
-
-    :param r: Distance from the starting point to furthest center point of one of the lanes.
-    :type r: Float
-
-    :param lw: Lane width.
-    :type lw: Float
-
-    :param chs: List of headings for each arm of the xcrossing.
-    :type chs: [Float]
-
-    :param len_till_stop: Distance from endpoint of the arms to the arms' stopline.
-    :type len_till_stop: Float
-
-    :param number_of_lanes: Number of lanes.
-    :type number_of_lanes: Integer
-
-    :param cw: Tab of tabs contening relevant points (3 points per tab) describing the 3 lines describing a crosswalk
-    :type cw:[ [x1,y1,x2,y2,x3,y3] ] with x and y float
-
-    '''
     def __init__(self, id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_going_OUT, cs_l, SpeedL, RefS, Stl, cw):
 
         # General Init
 
         Road.__init__(self, id)
+        ##A float. The speed limit
         self.SpeedLimit = SpeedL
+        ##A float. The reference speed
         self.RefSpeed = RefS
+        ##A float. The x coordinate of the center of the start of the road segment.
         self.x=x0
+        ##A float. The y coordinate of the center of the start of the road segment.
         self.y=y0
+        ##List of lists contening relevant points (3 points per list) describing a stopline. Base components are floats.
         self.stopline = Stl
+        ##A float. Represents the speed that the road has per default (defined by the speedprofile in the Road Class)
         self.DefinedSpeed = self.SpeedProfil[9]
+        ##List of lists contening relevant points (3 points per list) describing the 3 lines describing a crosswalk. Base components are floats.
         self.crosswalk = cw
 
         # Lanes Creation
@@ -2770,9 +2625,14 @@ class YCrossRoad(Road):
             count_lanes_going_IN += cs_nbr_of_lanes[m]
 
 
-
+    ##This method returns the starting coordinates of the road's center path. 
+    #
+    #Returns (Float, Float)
     def getstart(self):
         return (self.x, self.y)
 
+    ##This method returns the last coordinates of the road's center path.
+    #
+    #Returns (Float, Float)
     def getend(self):
         return (self.x, self.y)

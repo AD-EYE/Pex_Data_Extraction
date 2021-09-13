@@ -1,20 +1,21 @@
-'''This module contains all of the code defining the structure of the output .csv files for the vector map. The :class:`VectorMap` class is the only one which should be accessed externally. Its public methods provide the interfaces to generate a 2D vector map from (x, y) coordinate data and export the data to the appropriate files.
+##@package vmap
+#This module contains all of the code defining the structure of the output .csv files for the vector map. The `VectorMap` class is the only one which should be accessed externally. Its public methods provide the interfaces to generate a 2D vector map from (x, y) coordinate data and export the data to the appropriate files.
+#The vector map data classes `Point`, `Node`, `Line`, `Lane`, `DTLane`, `WhiteLine` and `RoadEdge` use the same private member names that are used in the vector map documentation circulated in the Autoware community. Some of these fields are given default values for unknown reasons or have a completely unknown purpose. This is because the vector map format is not officially documented.
+#
+# moduleauthor:: Samuel Lindemer <lindemer@kth.se>
 
-The vector map data classes :class:`Point`, :class:`Node`, :class:`Line`, :class:`Lane`, :class:`DTLane`, :class:`WhiteLine` and :class:`RoadEdge` use the same private member names that are used in the vector map documentation circulated in the Autoware community. Some of these fields are given default values for unknown reasons or have a completely unknown purpose. This is because the vector map format is not officially documented.
 
-.. moduleauthor:: Samuel Lindemer <lindemer@kth.se>
-
-'''
 import numpy as np
 from utils import dist
 import os
 import sys
 from progress.bar import IncrementalBar
 
+##This class is an aggregation of `VMList` objects which contain all of the data for the entire vector map.
 class VectorMap:
-    '''This class is an aggregation of :class:`VMList` objects which contain all of the data for the entire vector map.
 
-    '''
+    ##The constructor
+    #@param self The object pointer
     def __init__(self):
         self.points      = VMList(Point)
         self.nodes       = VMList(Node)
@@ -32,8 +33,11 @@ class VectorMap:
         # Mapping of (x, y) coordinate values to Node IDs.
         self.__xy_node_map = {}
 
-    # Creates a new Point with coordinates (x, y) and its corresponding Node.
+    ##Creates a new Point with coordinates (x, y) and its corresponding Node.
     # Returns the Node ID of the new Node.
+    #@param self The object pointer
+    #@param x A float. The x coordinate
+    #@param y A float. The y coordinate
     def __new_node(self, x, y):
         # Create a new Point and corresponding Node.
         point_id = self.points.create(x, y, 0.0)
@@ -42,21 +46,34 @@ class VectorMap:
         self.__xy_node_map[(x, y)] = node_id
         return node_id
 
-    # Checks if a Node already exists at (x, y). Returns Node ID if one exists,
-    # otherwise returns None.
+    ##Checks if a Node already exists at (x, y). Returns Node ID if one exists,
+    ##otherwise returns None
+    #@param self The object pointer.
+    #@param x A float. The x coordinate
+    #@param y A float. The y coordinate
     def __find_node(self, x, y):
         try: return self.__xy_node_map[(x, y)]
         except KeyError: return None
 
-    # Returns the Node ID of the Node at (x, y) if one exists, otherwise makes
-    # a new Node and returns its Node ID.
+    ##Returns the Node ID of the Node at (x, y) if one exists, otherwise makes
+    ##a new Node and returns its Node ID.
+    #@param self The object pointer
+    #@param x A float. The x coordinate
+    #@param y A float. The y coordinate
     def __get_node(self, x, y):
         node_id = self.__find_node(x, y)
         if node_id is None: node_id = self.__new_node(x, y)
         return node_id
 
-    # Creates a new Lane between the last two points. Returns ID of Lane and
-    # DTLane as a Tuple.
+    ##Creates a new Lane between the last two points. Returns ID of Lane and
+    ##DTLane as a Tuple.
+    #@param self The object pointer
+    #@param SpeedLimit A float. 
+    #@param RefSpeed A float. 
+    #@param node_start An integer. 
+    #@param node_end An integer. 
+    #@param lane_before An integer. 
+    #@param dtlane_before An integer. 
     def __new_lane(self, SpeedLimit, RefSpeed, node_start=0, node_end=0, lane_before=None,
             dtlane_before=None):
         mag, dir = self.__compute_vector(
@@ -85,7 +102,12 @@ class VectorMap:
 
         return (lane_id, dtlane_id)
 
-    # Creates a new Line between the last two points. Returns ID of new Line.
+    ##Creates a new Line between the last two points. Returns ID of new Line.
+    #@param self The object pointer
+    #@param node_start An integer. 
+    #@param node_end An integer. 
+    #@param lane_before An integer. 
+    #@param line_type A string. 
     def __new_line(self, node_start=0, node_end=0, line_before=None,
             line_type='EDGE'):
         line_id = self.lines.create(
@@ -102,7 +124,10 @@ class VectorMap:
             self.lines[line_before].set_line_after(len(self.lines))
         return line_id
 
-    # Returns the distance and direction between two Nodes.
+    ##Returns the distance and direction between two Nodes.
+    #@param self The object pointer
+    #@param node_start An integer. 
+    #@param node_end An integer. 
     def __compute_vector(self, node_start=0, node_end=0):
         point_start = self.nodes[node_start].get_point()
         point_end = self.nodes[node_end].get_point()
@@ -110,24 +135,25 @@ class VectorMap:
         direction = self.points[point_start].direction_to(self.points[point_end])
         return (magnitude, direction)
 
+    ##This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references 
+    ##required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less.
+    ##The order of the points indicates the direction of traffic flow. 
+    ##These objects are created:  `Point`, `Node`, `DTLane` and `Lane`.
+    #When this method is used multiple times to create connected drivable paths, 
+    #it is important that both path contain the exact (x, y) coordinate where the paths intersect. 
+    #Otherwise, the two paths will not be linked in the vector map.
+    #@param self The object pointer
+    #@param cross
+    #@param SpeedLimit A float.
+    #@param RefSpeed a float.
+    #@param ps An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
+    #@param junction_start The :class:`Lane` junction type at the start of the path.
+    #@param junction_end The :class:`Lane` junction type at the end of the path.
+    #@param turn_start The :class:`Lane` turn type at the start of the path.
+    #@param turn_end The :class:`Lane` turn type at the end of the path.
     def make_lane(self, cross, SpeedLimit, RefSpeed, ps, junction_start='NORMAL', junction_end='NORMAL',
             turn_start='STRAIGHT', turn_end='STRAIGHT'):
-        '''This method takes an ordered array of (x, y) coordinates defining a drivable path and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. The order of the points indicates the direction of traffic flow. These objects are created:  :class:`Point`, :class:`Node`, :class:`DTLane` and :class:`Lane`.
 
-        .. note:: When this method is used multiple times to create connected drivable paths, it is important that both paths contain the exact (x, y) coordinate where the paths intersect. Otherwise, the two paths will not be linked in the vector map.
-
-        :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
-        :type ps: array
-        :param junction_start: The :class:`Lane` junction type at the start of the path.
-        :type junction_start: string
-        :param junction_end: The :class:`Lane` junction type at the end of the path.
-        :type junction_end: string
-        :param turn_start: The :class:`Lane` turn type at the start of the path.
-        :type turn_start: string
-        :param turn_end: The :class:`Lane` turn type at the end of the path.
-        :type turn_end: string
-
-        '''
         # Warn for empty input array and return.
         if not ps.any():
             print('make_lane(): Warning - empty input array.')
@@ -167,16 +193,14 @@ class VectorMap:
         self.lanes[lane_previous].set_turn(turn_end)
 
 
-
+    ##This method takes an ordered array of (x, y) coordinates defining a road edge or a center line and generates 
+    ##the data and references required by the vector map. 
+    ##The vector map format spcifies that the distance between points must be 1 meter or less. 
+    #These objects are created: :class:`Point`, :class:`Node`, `Line`, `WhiteLine` and `RoadEdge`.
+    #@param self The object pointer
+    #@param ps An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
+    #@param line_type A string. Describes the type of lane. Cam be 'EDGE' or 'CENTER'
     def make_line(self, ps, line_type='EDGE'):
-        '''This method takes an ordered array of (x, y) coordinates defining a road edge or a center line and generates the data and references required by the vector map. The vector map format spcifies that the distance between points must be 1 meter or less. These objects are created: :class:`Point`, :class:`Node`, :class:`Line`, :class:`WhiteLine` and :class:`RoadEdge`.
-
-        :param ps: An array of coordinates [[x0, y0], [x1, y1], ...] defining a drivable path.
-        :type ps: array
-        :param line_type: EDGE or CENTER.
-        :type line_type: string
-
-        '''
 
         # Warn for empty input array.
         if not ps.any():
@@ -198,6 +222,8 @@ class VectorMap:
             node_previous = node_current
             line_previous = line_current
 
+    ##This method connects two lanes using their id.
+    #@param self The object pointer
     def rebuild_lane_conections(self):
         bar = IncrementalBar('       progress', max=2*len(self.lanes))
         for i in range(len(self.lanes)):                                 # Check every lane
@@ -223,7 +249,9 @@ class VectorMap:
                     if k == 4: self.lanes[i].BLID4 = self.lanes[j].DID
         bar.finish()
 
-    def remove_one_point_lanes(self): # to avoid having lanes having p0 - p0 as a result of merge_redundant_points
+    ##This method removes on-point-lanes to avoid having lanes having p0 - p0 as a result of `merge_redundant_points`
+    #@param self The object pointer
+    def remove_one_point_lanes(self):
         lanes_to_delete = []
         for i in range(len(self.lanes)):
             if self.lanes[i].BNID == self.lanes[i].FNID:
@@ -235,7 +263,9 @@ class VectorMap:
             self.dtlanes.remove_element(index)
             self.decrement_lane_id(index)
 
-    def decrement_lane_id(self, decrement_threshold_index): # to make sure that the lane indexes has no holes after one point lane removal
+    ##This method decrements a lane id to make sure that the lane indexes has no holes after one point lane removal
+    #@param self The object pointer
+    def decrement_lane_id(self, decrement_threshold_index):
         for lane in self.lanes:
             if lane.DID >= decrement_threshold_index:
                 lane.DID -= 1
@@ -256,6 +286,9 @@ class VectorMap:
             if lane.FLID4 >= decrement_threshold_index:
                 lane.FLID4 -= 1
 
+    ##This method merges redundant points in the list of all of the points.
+    #Two points are considered redudant if the squared distance between them is 0.0001 m²
+    #@param self The object pointer
     def merge_redundant_points(self):
         c = 0
         for i in range(len(self.lanes)):
@@ -272,9 +305,18 @@ class VectorMap:
             if self.lanes[i].BNID == self.lanes[i].FNID:
                 print("       lane " + str(self.lanes[i].DID) + " now has twice the same point (should be fixed by the one lane point removal)")
 
+    ##This method returns the euclidean distance squared between two points identified by their ID
+    #@param self The object pointer
+    #@param PID_1 An integer. The ID of the first point
+    #@param PID_2 An integer. The ID of the first point
     def square_distance(self, PID_1, PID_2):
         return ((self.points[PID_1].Bx - self.points[PID_2].Bx)**2 + (self.points[PID_1].Ly - self.points[PID_2].Ly)**2 + (self.points[PID_1].H - self.points[PID_2].H)**2)
 
+    ##This method merges two points together.
+    #The merging is done by replacing the second point's ID by the first's
+    #@param self The object pointer
+    #@param PID_1 An integer. The ID of the first point
+    #@param PID_2 An integer. The ID of the first point
     def merge_two_points(self, PID_1, PID_2):
         for i in range(len(self.dtlanes)):
             if self.dtlanes[i].PID == PID_2:
@@ -294,11 +336,11 @@ class VectorMap:
             if self.lanes[i].FNID == PID_2:
                 self.lanes[i].FNID = PID_1
 
+    ##This method creates the stop lines by adding the points given in the Stoplines argument.
+    #It first finds the closest lane using the middle point of the stopline, and then create the Stop line with the associated closest node
+    #@param self The object pointer
+    #@param Stoplines A list of lists represeting the stoplines in the simulation with 3 points and a number of lanes of the road where the stopline is.
     def make_Stoplines(self, Stoplines):
-        '''This method take an array of tab representing every stoplines in the simulation with 3 points and  a number of lanes of the road
-        where the stopline is.
-        It first find the closest lane using the third point  TO WRITE
-        '''
 
         for tab in Stoplines:
 
@@ -330,12 +372,12 @@ class VectorMap:
                             lineLength -= tab[i][7]
                         StoplineID = self.stoplines.create(LineID, 0, signID , lane_id-1) # As you can see here we pass on the nb of relevant lanes as the signID
 
+    ##This method returns an array made out of the crosswalks ID and the coordinates of the points describing them.
+    #This method is usefull to set CrossID in Lane
+    #@param self The object pointer 
+    #@param crosswalk List of List ([CrossID, Point1 x, Point1 y, Point2 x, Point2 y, Point3 x, Point3 y]) representing every 3 points for a crosswalk.
     def make_Area(self, crosswalk):
-        '''
-        This method takes an array of tab representing every 3 points for a crosswalk.
-        It returns an array of the crosswalks ID and the coordinates of the points describing them --> will be usefull to set CrossID in Lane
-        cross = [CrossID, Point1 x, Point1 y, Point2 x, Point2 y, Point3 x, Point3 y]
-        '''
+
         empty = [] #list filled with indexes k where crosswalk[k]==[]
         k=0
         for tab in crosswalk :
@@ -356,10 +398,12 @@ class VectorMap:
 
         return cross
 
+    ##This method creates the area and the crosswalks (and the corresponding points and lines)
+    #A crosswalk will be created at the altitude 0
+    #@param self The object pointer
+    #@param cross A list of lists representing the crosswalk by 3 points
     def make_crosswalk(self,cross):
-        '''
-        this method creates the area and the crosswalks (and the corresponding points and lines)
-        '''
+
         for tab in cross :
             PID1=self.points.create(tab[1],tab[2],0)
             PID2=self.points.create(tab[3],tab[4],0)
@@ -374,7 +418,10 @@ class VectorMap:
 
 
 
-
+    ##This method creates traffic lights.
+    #An error message will appear if the traffic light isn't linked to a stop line or is too far away from it
+    #@param self The object pointer
+    #@param TrafficLight A list of lists representing the Traffic light
     def make_TrafficLight(self, TrafficLightList):
 
 
@@ -441,10 +488,13 @@ class VectorMap:
             return(error)
 
 
-    # Returns the drivable lane data in the format:
-    # [ [x0, y0, mag0, dir0, edge_color0, face_color0],
+    
+    ##This method returns a list of lists representing the drivable lanes
+    #The data has the format:
+    #[ [x0, y0, mag0, dir0, edge_color0, face_color0],
     #   [x1, y1, mag1, dir1, edge_color1, face_color1], ...]
-    # Colors are used in the plot() method to generate graphical arrows.
+    #Colors are used in the plot() method to generate graphical arrows.
+    #@param self The object pointer
     def __aggregate_lanes(self):
         data = []
         for l in self.lanes:
@@ -471,8 +521,10 @@ class VectorMap:
             data.append([x, y, magnitude, direction, edge_color, face_color])
         return data
 
-    # Returns the center line data in the format:
+    ##This method returns a list of lists representing the center line
+    #The data has the format:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    #@param self The object pointer
     def __aggregate_lines(self):
         data = [[]]
         for wl in self.whitelines:
@@ -486,8 +538,11 @@ class VectorMap:
         if data != [[]]: return data
         else: return None
 
-    # Returns the road edge data in the format:
+    
+    ##This method returns a list of lists representing the road edges
+    # the data has the format:
     # [ [[x0, y0], [x1, y1], ...], [[x0, y0], [x1, y1], ...] ]
+    #@param self The object pointer
     def __aggregate_edges(self):
         data = [[]]
         for re in self.roadedges:
@@ -501,10 +556,12 @@ class VectorMap:
         if data != [[]]: return data
         else: return None
 
+    ##This method displays the vector map as a matplotlib figure. 
+    #The road edges are shown in blue, the centers in yellow and the lane vectors shown as arrows. 
+    #Right turns,  branches and merges are shown in red, and the left turns, branches and merges are shown in green. 
+    #This is a blocking function.
+    #@param self The object pointer
     def plot(self):
-        '''Displays the vector map as a matplotlib figure. The road edges are shown in blue, the centers in yellow and the lane vectors shown as arrows. Right turns,  branches and merges are shown in red, and the left turns, branches and merges are shown in green. This is a blocking function.
-
-        '''
         from matplotlib import pyplot as plt
         plt.figure('Vector Map')
         plt.grid(True)
@@ -542,13 +599,14 @@ class VectorMap:
 
         plt.show()
 
+    ##This method saves the entire vector map to the appropriate .csv files to the 
+    ##directory ./csv
+    #The method checks if the csv file exists and creates it if not
+    #
+    #Warning: This will overwrite the contents of ./csv
+    #@param self The object pointer
     def export(self, folder):
-        '''Saves the entire vector map to the appropriate .csv files to the directory ./csv.
-
-        .. warning:: This will overwrite the contents of ./csv.
-
-        '''
-        if os.path.isdir(folder) == False : # checks if the csv file exists and creates it if not
+        if os.path.isdir(folder) == False :
             os.mkdir(folder)
 
         self.points.export(folder+'point.csv')
@@ -564,10 +622,9 @@ class VectorMap:
         self.crosswalks.export(folder+'crosswalk.csv')
         self.areas.export(folder+'area.csv')
 
+    ##This method reads the .csv files. Creates nodes, points, lanes and dt_lanes
+    #@param self The object pointer
     def readfiles (self, Files):
-        '''
-        read the .csv files. Creates nodes, points, lanes and dt_lanes
-        '''
         count = 0
         l = []
         dt = []
@@ -594,61 +651,75 @@ class VectorMap:
             count += 1
 
 
-
+##This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. 
+##Element addressing may be used for getting and setting, just as with the standard Python List. 
+##This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
 class VMList:
-    '''This class is an ordered list of vector map objects with 1-based indexing to comply with the vector map format. Element addressing may be used for getting and setting, just as with the standard Python List. This class is to be used as both an Iterator and an Abstract Factory for constructing and accessing vector map data.
-
-    :param type: The class of object to be aggregated.
-    :type type: class
-
-    '''
+    
+    ##The constructor
+    #@param self The object pointer
+    #@param type the type of the stored objects
     def __init__(self, type):
+        ##The class of objects to be aggregated
         self.__type = type
+        ##The list of vector map objects
         self.__data = []
 
-    # Negative value addressing works as it does with the standard List class.
+    ##Negative value addressing works as it does with the standard List class.
+    #@param self The object pointer
+    #@param key An integer. Used to access an index in the list
     def __getitem__(self, key):
         if key >= 0: return self.__data[key - 1]
         else: return self.__data[key]
 
+    ##
+    #@param self The object pointer 
+    #@param key An integer. Used to access an index in the list
+    #@param value The value to attribute to the item.
     def __setitem__(self, key, value):
         if key >= 0: self.__data[key - 1] = value
         else: self.__data[key] = value
 
+    ##An iterator
+    #@param self The object pointer
     def __iter__(self):
         self.__idx = 0
         return self
 
+    ##The method to return the next item in the sequence
+    #@param self The object pointer
     def __next__(self):
         if self.__idx == len(self.__data): raise StopIteration
         retval = self.__data[self.__idx]
         self.__idx += 1
         return retval
 
+    ##Returns the number of objects in the __data attribute
+    #@param self The object pointer
     def __len__(self):
         return len(self.__data)
 
+    ##Removes the element at a given index from the list
+    #@param self The object pointer
+    #@param index An integer
     def remove_element(self, index):
         del self.__data[index-1]
 
 
-
+    ##Creates a new object of the class declared on this objects's construction. 
+    ##Arguments and keyword arguments passed in here will be passed directly to the new object's constructor.
+    #Returns the ID of the new vector map entry. (Integer)
     def create(self, *args, **kwargs):
-        '''Creates a new object of the class declared on this objects's construction. Arguments and keyword arguments passed in here will be passed directly to the new object's constructor.
-
-        :returns: int -- the ID of the new vector map entry.
-
-        '''
         self.__data.append(self.__type(*args, **kwargs))
         return len(self.__data)
 
+    ##Prints all data to a file in the vector map .csv format. 
+    ##Every vector map object in this file should implement __str__() override which 
+    ##returns its data in the correct comma-separated order according to the vector map format. 
+    ##Each line of a vector map .csv file starts with a unique ID. These ID values are the indicies in this `VMList` object.
+    #@param self The object pointer
+    #@param path A string. The file name to save the data to.
     def export(self, path):
-        '''Prints all data to a file in the vector map .csv format. Every vector map object in this file should implement __str__() override which returns its data in the correct comma-separated order according to the vector map format. Each line of a vector map .csv file starts with a unique ID. These ID values are the indicies in this :class:`VMList` object.
-
-        :param path: The file name to save the data to.
-        :type path: string
-
-        '''
         ofile = open(path, 'w')
         ofile.write('\n')
         for i in range(len(self.__data)):
@@ -663,178 +734,241 @@ class VMList:
 # NOTE: The attributes of these objects follow the naming conventions used by
 # the vector map format, not the standard Python conventions.
 
+
+##A class to save the vector map data to point.csv. Contains ALL of the coordinate data for the entire map.
 class Point:
-    '''Vector map data saved to point.csv. Contains ALL of the coordinate data for the entire map.
 
-    :param x: Global X coordinate.
-    :type x: float
-    :param y: Global Y coordinate.
-    :type y: float
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param x A float. Global X coordinate.
+    #@param y A float. Global Y coordinate.
+    #@param z A float. Global Z coordinate.
     def __init__(self, x, y, z):
-        self.B = 0.0        # Latitude
-        self.L = 0.0        # Longitude
-        self.H = z       # Altitude
-        self.Ly = x         # Global Y, values are swapped for Autoware, does not work swapping the lines
-        self.Bx = y         # Global X
+        ##A float. Latitude
+        self.B = 0.0     
+        ##A float. Longitude
+        self.L = 0.0
+        ##A float. Altitude        
+        self.H = z 
+        ##A float. Global Y 
+        self.Ly = x #values are swapped for Autoware, does not work swapping the lines
+        ##A float. Global X 
+        self.Bx = y #values are swapped for Autoware, does not work swapping the lines
+        ##An integer
         self.ReF = 7
+        ##An integer
         self.MCODE1 = 0
+        ##An integer
         self.MCODE2 = 0
+        ##An integer
         self.MCODE3 = 0
 
+    ##Returns the distance (float) to a given point
+    #@param self The object pointer
+    #@param p A Point
     def distance_to(self, p):
-        '''
-        :param p: The target for distance measurment.
-        :type p: Point
-        :returns: float -- The distance between this :class:`Point` and :class:`Point` p.
-
-        '''
         return np.sqrt((p.Bx - self.Bx)**2 + (p.Ly - self.Ly)**2)
 
+    ##Returns the direction in radians [-pi, pi] (float) to a given point
+    #@param self The object pointer
+    #@param p A Point
     def direction_to(self, p):
-        '''
-        :param p: The target for angle measurment.
-        :type p: Point
-        :returns: float -- The direction in radians (-pi to pi) from this :class:`Point` to :class:`Point` p.
-        '''
         return np.arctan2(p.Ly - self.Ly, p.Bx - self.Bx)
 
+    ##Returns the tuple (float, float) of global X Y coordinates
+    #@param self The object pointer
     def get_xy(self):
         return (self.Bx, self.Ly)
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.B, self.L, self.H, self.Bx, self.Ly, self.ReF,
                 self.MCODE1, self.MCODE2, self.MCODE3]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to node.csv. This class is merely a reference to a single `Point`
 class Node:
-    '''Vector map data saved to node.csv. This class is merely a reference to a single :class:`Point`.
-
-    :param point: The corresponding :class:`Point` ID.
-    :type point: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param point An Integer
     def __init__(self, point):
-        self.PID = point            # Corresponding Point ID
+        ##An Integer. The corresponding Point ID
+        self.PID = point            
 
+    ##Returns the point's ID
+    #@param self The object pointer
     def get_point(self):
         return self.PID
 
+    ##Returns the point's ID as a string
+    #@param self The object pointer
     def __str__(self):
         return str(self.PID)
 
+##A class to save the vector map data to line.csv. This class defines the edges of roads and painted lines on roads.
 class Line:
-    '''Vector map data saved to line.csv. This class defines the edges of roads and painted lines on roads.
 
-    :param point_start: The ID of the :class:`Point` that starts the line.
-    :type point_start: int
-    :param point_end: The ID of the :class:`Point` that ends the line.
-    :type point_end: int
-    :param line_before: The ID of the :class:`Line` connected to the start of this one.
-    :type line_before: int
-    :param line_afer: The ID of the :class:`Line` connected to the end of this one.
-    :type line_afer: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param point_start An integer. The ID of the `Point` that starts the line.
+    #@param point_end An integer. The ID of the `Point` that ends the line.
+    #@param line_before An integer. The ID of the `Line` connected to the start of this one.
+    #@param line_after An integer. The ID of the `Line` connected to the end of this one.
     def __init__(self, point_start=0, point_end=0, line_before=0, line_after=0):
-        self.BPID = point_start     # Starting Point ID
-        self.FPID = point_end       # Ending Point ID
-        self.BLID = line_before     # Preceding Line ID
-        self.FLID = line_after      # Following Line ID
+        ##An integer. Starting point's ID
+        self.BPID = point_start
+        ##An integer. Ending point's ID     
+        self.FPID = point_end       
+        ##An integer. Preceding line's ID
+        self.BLID = line_before     
+        ##An integer. Following line's ID
+        self.FLID = line_after      
 
+    ##Returns The ID of the starting point
+    #@param self The object pointer
     def get_point_start(self):
         return self.BPID
 
+    ##Returns The ID of the end point
+    #@param self The object pointer
     def get_point_end(self):
         return self.FPID
 
+    ##Returns the ID of the following line
+    #@param self The object pointer
+    #@param line_before An integer. Represents the previous line's id.
     def set_line_before(self, line_before):
         self.BLID = line_before
 
+    ##Returns the ID of the following line
+    #@param self The object pointer
+    #@param line_after An integer. Represents the following line's id.
     def set_line_after(self, line_after):
         self.FLID = line_after
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.BPID, self.FPID, self.BLID, self.FLID]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to lane.csv. This class partially defines the drivable paths in the world.
 class Lane:
-    '''Vector map data saved to lane.csv. This class partially defines the drivable paths in the world.
 
-    :param dtlane: The corresponding :class:`DTLane` ID.
-    :type dtlane: int
-    :param node_start: The ID of the :class:`Node` that starts the lane.
-    :type node_start: int
-    :param node_end: The ID of the :class:`Node` that ends the lane.
-    :type node_end: int
-    :param lane_before: The ID of the :class:`Lane` connected to the start of this one.
-    :type lane_before: int
-    :param lane_after: The ID of the :class:`Lane` connected to the end of this one.
-    :type lane_after: int
-    :param length: The distance between the start and end :class:`Node`.
-    :type length: float
-    :param junction: NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
-    :type junction: string
-    :param turn: STRAIGHT, LEFT_TURN, RIGHT_TURN.
-    :type turn: string
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param SpeedLimit A float. the speed limit
+    #@param RefSpeed A float. The reference speed
+    #@param dtlane An integer. The corresponding `DTLane` ID.
+    #@param node_start An integer. The ID of the `Node` that starts the lane.
+    #@param node_end An integer. The ID of the `Node` that ends the lane.
+    #@param lane_before An integer. The ID of the `Lane` connected to the start of this one.
+    #@param lane_after An integer. The ID of the `Lane` connected to the end of this one.
+    #@param length A float. The distance between the start and end.
+    #@param junction A string. Can take the values NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
+    #@param turn A string. Can take the values STRAIGHT, LEFT_TURN, RIGHT_TURN.
+    #@param cross An integer. The ID of the crosswalk crossing the lane
     def __init__(self, SpeedLimit, RefSpeed, dtlane=0, node_start=0, node_end=0, lane_before=0,
             lane_after=0, length=0.0, junction='NORMAL', turn='STRAIGHT',cross=0):
-        self.DID = dtlane           # Corresponding DTLane ID
-        self.BLID = lane_before     # Preceding Lane ID
-        self.FLID = lane_after      # Following Lane ID
-        self.BNID = node_start      # Starting Node ID
-        self.FNID = node_end        # Ending Node ID
+        ##An integer. Corresponding DTLane ID
+        self.DID = dtlane
+        ##An integer. Preceding Lane ID
+        self.BLID = lane_before    
+        ##An integer. Following Lane ID 
+        self.FLID = lane_after      
+        ##An integer. Starting Node ID
+        self.BNID = node_start   
+        ##An integer. Ending Node ID   
+        self.FNID = node_end        
+        ##An integer.
         self.BLID2 = 0
+        ##An integer.
         self.BLID3 = 0
+        ##An integer.
         self.BLID4 = 0
+        ##An integer.
         self.FLID2 = 0
+        ##An integer.
         self.FLID3 = 0
+        ##An integer.
         self.FLID4 = 0
-        self.CrossID = cross        # ID of the crosswalk crossing the lane
-        self.Span = length          # Lane lengh (between Nodes)
+        ##An integer. ID of the crosswalk crossing the lane
+        self.CrossID = cross
+        ##A float. Lane lengh (between Nodes)
+        self.Span = length          
+        ##An integer.
         self.LCnt = 1
+        ##An integer.
         self.Lno = 1
+        ##A float. The speed limit
         self.LimitVel = SpeedLimit
+        ##A float. The reference speed
         self.RefVel = RefSpeed
+        ##An integer.
         self.RoadSecID = 0
+        ##An integer.
         self.LaneChgFG = 0
 
         self.set_junction(junction)
         self.set_turn(turn)
 
+    ##Returns the corresponding Dtlane ID
+    #@param self The object pointer
     def get_dtlane(self):
         return self.DID
 
+    ##Returns the speed limit
+    #@param self The object pointer
     def get_LimitVel(self):
         return self.LimitVel
 
+    ##Returns the reference speed
+    #@param self The object pointer
     def get_RefVel(self):
         return self.RefVel
 
+    ##Returns the length of the lane
+    #@param self The object pointer
     def get_length(self):
         return self.Span
 
+    ##Returns the starting node's ID
+    #@param self The object pointer
     def get_node_start(self):
         return self.BNID
 
+    ##Returns the ending node's ID
+    #@param self The object pointer
     def get_node_end(self):
         return self.FNID
 
+    ##Sets the ID of the lane before this one.
+    #@param self The object pointer
+    #@param lane_before An integer. The ID of the lane before this one
     def set_lane_before(self, lane_before):
         self.BLID = lane_before
 
+    ##Sets the ID of the lane after this one.
+    #@param self The object pointer
+    #@param lane_after An integer. The ID of the lane after this one
     def set_lane_after(self, lane_after):
         self.FLID = lane_after
 
+    ##Sets the speed limit
+    #@param self The object pointer
+    #@param Value A float. The new speed limit
     def set_LimitVel(self, Value):
         self.LimitVel = Value
 
+    ##Sets the reference speed
+    #@param self The object pointer
+    #@param Value A float. The new reference speed
     def set_RefVel(self, Value):
         self.RefVel = Value
 
+    ##Returns the junction's type
+    #@param self The object pointer
     def get_junction(self):
         if self.JCT == 0: return 'NORMAL'
         elif self.JCT == 1: return 'LEFT_BRANCHING'
@@ -844,12 +978,17 @@ class Lane:
         elif self.JCT == 5: return 'COMPOSITION'
         else: raise ValueError('Junction ' + str(self.JCT) + ' not valid.')
 
+    ##Returns the turn's type
+    #@param self The object pointer
     def get_turn(self):
         if self.LaneType == 0: return 'STRAIGHT'
         elif self.LaneType == 1: return 'LEFT_TURN'
         elif self.LaneType == 2: return 'RIGHT_TURN'
         else: raise ValueError('Turn ' + self.LaneType + ' not valid.')
 
+    ##Sets the junction's type
+    #@param self The object pointer
+    #@param type A string. Can take the values NORMAL, LEFT_BRANCHING, LEFT_MERGING, RIGHT_BRANCHING, RIGHT_MERGING, COMPOSITION.
     def set_junction(self, type):
         if type == 'NORMAL':                self.JCT = 0
         elif type == 'LEFT_BRANCHING':      self.JCT = 1
@@ -859,12 +998,17 @@ class Lane:
         elif type == 'COMPOSITION':         self.JCT = 5
         else: raise ValueError('Junction type ' + type + ' not valid.')
 
+    ##Sets the junction's type
+    #@param self The object pointer
+    #@param type A string. Can take the values STRAIGHT, LEFT_TURN, RIGHT_TURN.
     def set_turn(self, type):
         if type == 'STRAIGHT':              self.LaneType = 0
         elif type == 'LEFT_TURN':           self.LaneType = 1
         elif type == 'RIGHT_TURN':          self.LaneType = 2
         else: raise ValueError('Turn type ' + type + ' not valid.')
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.DID, self.BLID, self.FLID, self.BNID, self.FNID,
                 self.JCT, self.BLID2, self.BLID3, self.BLID4, self.FLID2,
@@ -873,36 +1017,46 @@ class Lane:
                 self.RoadSecID, self.LaneChgFG]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to dtlane.csv. This class partially defines the drivable paths in the world.
 class DTLane:
-    '''Vector map data saved to dtlane.csv. This class partially defines the drivable paths in the world.
 
-    :param point: The corresponding :class:`Point` ID.
-    :type point: int
-    :param length: The distance from the very start of the entire drivable path to here. NOT the same as length as defined in :class:`Lane`.
-    :type length: float
-    :param direction: The direction, in radians, from this :class:`DTLane` to the next one.
-    :type direction: float
-
-    '''
+    ##The constructor
+    #@param self The object pointer 
+    #@param point An integer. The corresponding `Point` ID.
+    #@param length A float. The distance from the very start of the entire drivable path to here. NOT the same as length as defined in `Lane`.
+    #@param direction A float. The direction, in radians, from this `DTLane` to the next one.
     def __init__(self, point=0, length=0.0, direction=0.0):
-        self.PID = point             # Corresponding Point ID
-        self.Dist = length           # TOTAL distance to path start
-        self.Dir = direction         # Direction in radians
+        ##An integer. Corresponding Point ID
+        self.PID = point             
+        ##A float. TOTAL distance to the path's start
+        self.Dist = length           
+        ##A float. Direction in radians
+        self.Dir = direction   
+        ##A float.       
         self.Apara = 0.0
+        ##A float. 
         self.r = 90000000000.0
+        ##A float. 
         self.slope = 0.0
+        ##A float. 
         self.cant = 0.0
+        ##A float. 
         self.LW = 1.75
+        ##A float. 
         self.RW = 1.75
 
-    # DTLane records the cumulative distance to the start of the lane, so each
-    # new DTLane must check the previous.
+    ##Returns the total distance from the path's start
+    #@param self The object pointer
     def get_length(self):
         return self.Dist
 
+    ##Returns the direction
+    #@param self The object pointer
     def get_direction(self):
         return self.Dir
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.Dist, self.PID, self.Dir, self.Apara, self.r, self.slope,
                 self.cant, self.LW, self.RW]
@@ -910,160 +1064,199 @@ class DTLane:
 
 # NOTE: It is not clear whether the Node associated with the following two
 # classes is the start or the end of the WhiteLine/RoadEdge segment.
+
+##A class to save the vector map data to whiteline.csv. 
+##This class is merely a reference to a single `Node` and a single `Line`, and a color option.
 class WhiteLine:
-    '''Vector map data saved to whiteline.csv. This class is merely a reference to a single :class:`Node` and a single :class:`Line`, and a color option.
 
-    :param line: The corresponding :class:`Line` ID.
-    :type line: int
-    :param node: The corresponding :class:`Node` ID.
-    :type node: int
-    :param color: 'W' for white, 'Y' for yellow.
-    :type color: char
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param line An integer. The corresponding `Line` ID.
+    #@param node An integer. The corresponding `Node` ID.
+    #@param color A char. 'W' for white, 'Y' for yellow.
     def __init__(self, line=0, node=0, color='W'):
-        self.LID = line          # Corresponding Line ID
+        #An integer. Corresponding Line ID
+        self.LID = line    
+        ##A float      
         self.Width = 0.2
-        self.Color = color       # 'W' for white, 'Y' for yellow
+        ##A char. 'W' for white, 'Y' for yellow
+        self.Color = color    
+        ##An integer   
         self.type = 0
-        self.LinkID = node       # Corresponding Node ID
+        ##An integer Corresponding Node ID
+        self.LinkID = node       
 
+    ##Returns the line's ID
+    #@param self The object pointer
     def get_line(self):
         return self.LID
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.LID, self.Width, self.Color, self.type, self.LinkID]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to roadedge.csv. This class is merely a reference to a single :class:`Node` and a single :class:`Line`.
 class RoadEdge:
-    '''Vector map data saved to roadedge.csv. This class is merely a reference to a single :class:`Node` and a single :class:`Line`.
 
-    :param line: The corresponding :class:`Line` ID.
-    :type line: int
-    :param node: The corresponding :class:`Node` ID.
-    :type node: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param line An integer. The corresponding `Line` ID.
+    #@param node An integer. The corresponding `Node` ID.
     def __init__(self, line=0, node=0):
-        self.LID = line          # Corresponding Line ID
-        self.LinkID = node       # Corresponding Node ID
+        ##An integer. Corresponding Line ID
+        self.LID = line          
+        ##An integer. Corresponding Node ID
+        self.LinkID = node       
 
+    ##Returns the line's ID
+    #@param self The object pointer
     def get_line(self):
         return self.LID
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.LID, self.LinkID]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to vector.csv. This class is especially usefull for the definition of Traffic Light.
 class Vector:
-    '''Vector map data saved to vector.csv. This class especially usefull for the definition of Traffic Light.
 
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param point An integer. The point ID
+    #@param Heading A float. The heading of the vector
     def __init__(self, point, Heading):
-        self.pid = point       # Corresponding point ID
-        self.hang = Heading    # Heading
+        ##An integer. Corresponding point ID
+        self.pid = point       
+        ##A float. Heading
+        self.hang = Heading   
+        ##A float. The vector's angle in degrees 
         self.Vang = 90         # cf slide
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.pid, self.hang, self.Vang]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to signaldata.csv. This class especially usefull for the definition of Traffic Light.
 class SignalData:
-    '''Vector map data saved to signaldata.csv. This class especially usefull for the definition of Traffic Light.
 
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param vector An integer. The ID of the vector
+    #@param plid An integer.
+    #@param type An integer.
+    #@param LinkID An integer. The link's ID
     def __init__(self, vector, plid, type, LinkID):
-        self.VID = vector      # Corresponding Vector ID
+        ##An integer. Corresponding Vector ID
+        self.VID = vector 
+        ##An integer.     
         self.plid = plid
+        ##An integer. The type of 
         self.type = type
+        ##An integer. The link's ID
         self.LinkID = LinkID       # cf slide
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.VID, self.plid, self.type, self.LinkID]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to stopline.csv. This class especially usefull for the definition of Traffic Light.
 class Stopline:
-    '''Vector map data saved to stopline.csv. This class especially usefull for the definition of Traffic Light.
 
-    :param line: The corresponding :class:`Vector` ID.
-    :type line: int
-
-    :param node: The corresponding :class:`Node` ID.            ########### update this !!
-    :type node: int
-
-    '''
+    ##The constructor
+    #@param self The object pointer
+    #@param LID An integer.
+    #@param TLID An integer.
+    #@param SignID An integer.
+    #@param LinkID An integer.
     def __init__(self, LID, TLID, SignID, LinkID):
-        self.LID = LID      # Corresponding Vector ID
+        ##An integer. The line's ID
+        self.LID = LID
+        ##An integer.
         self.TLID = TLID
+        ##An integer. The sign's ID
         self.SignID = SignID
+        ##An integer. the link's ID
         self.LinkID = LinkID       # cf slide
 
+    ##Sets the Sign's ID
+    #@param self The object pointer
     def set_SignID(self, SignID):
         self.SignID = SignID
 
+    ##Sets the TLID value
+    #@param self The object pointer
     def set_TLID(self, TLID):
         self.TLID = TLID
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.LID, self.TLID, self.SignID, self.LinkID]
         return ','.join(map(str, data))
+
+##A class to save the vector map data to area.csv.
 class Area:
-    '''Vector map data saved to area.csv.
 
-    :param line: the corresponding "class line" ID
-    :type line: int
+    ##The constructor
+    #@param self The object pointer
+    #@param SLID An integer. ID of the first (start) line of the Area
+    #@param ELID An integer. ID of the last (end) line of the Area
+    def __init__(self,SLID,ELID):                
+        ##An integer. ID of the first (start) line of the Area
+        self.SLID = SLID                
+        ##An integer. ID of the last (end) line of the Area
+        self.ELID = ELID                
 
-    :param area: the Area ID
-    :type area: int
-
-    '''
-
-    def __init__(self,SLID,ELID):                # Area ID
-        self.SLID = SLID                # ID of the first (start) line of the Area
-        self.ELID = ELID                # ID of the last (end) line of the Area
-
+    ##Sets the start line's ID
+    #@param self The object pointer
+    #@param line An integer. The first line's ID
     def set_SLID(self,line):
         self.SLID = line
 
+    ##Sets the end line's ID
+    #@param self The object pointer
+    #@param line An integer. The end line's ID
     def set_ELID(self,line):
         self.ELID = line
 
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
     def __str__(self):
         data = [self.SLID, self.ELID]
         return ','.join(map(str, data))
 
+##A class to save the vector map data to crosswalk.csv
 class Crosswalk:
-        '''Vector map data saved to crosswalk.csv
 
-        :param cw: the crosswalk ID
-        :type cw: int
+    ##The constructor
+    #@param self The object pointer
+    #@param AID An integer. The area's ID
+    def __init__(self,AID):
+        ##An integer. The area id
+        self.AID = AID
+        ##An integer.
+        self.Type = 1
+        ##An integer.
+        self.BdID = 0
+        ##An integer.
+        self.LinkID = 0
 
-        :param area: the corresponding "class area" ID
-        :type area: int
+    ##Sets the area's ID
+    #@param self The object pointer
+    #@param area An integer. The area's ID
+    def set_AID(self,area):
+        self.AID = area
 
-        '''
-
-        def __init__(self,AID):
-            self.AID = AID
-            self.Type = 1
-            self.BdID = 0
-            self.LinkID = 0
-
-        def set_AID(self,area):
-            self.AID = area
-
-        def __str__(self):
-            data = [self.AID, self.Type, self.BdID, self.LinkID]
-            return ','.join(map(str,data))
+    ##Returns a string with the attributes separated by ',' so that it can be written in a CSV file
+    #@param self The object pointer
+    def __str__(self):
+        data = [self.AID, self.Type, self.BdID, self.LinkID]
+        return ','.join(map(str,data))

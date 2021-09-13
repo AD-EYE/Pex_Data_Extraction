@@ -148,6 +148,7 @@ class RoadProcessor(object):
     def __create_roundabouts(self, roads):
         roundabouts = self.__get_roundabouts()
         for roundabout in roundabouts:
+            self.stoplines.append(roundabout.stopline)
             self.crosswalks.append(roundabout.crosswalk)
             self.__add_roundabout(roundabout)
             roads.pop(roundabout.id, None)

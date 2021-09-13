@@ -384,32 +384,41 @@ def get_flex(s, id):
         CurvedRoads[Lid[j]] = NewCurvedRoad
     return CurvedRoads
 
+
+
 ##This function returns the RoundaboutRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
 #@param connections The list of connections to other roads
 #@param path The path to the .pex file
-def get_roundabout(s, id, connections, path):
-    x0 = float(s[0].get('X'))
-    y0 = float(s[0].get('Y'))
-    Vmax = s.get('MaxSpeed')
-    h = float(s[1].get('Heading'))
-    r = float(s.get('Radius'))
-    lw = float(s.get('LaneWidth'))
-    nbr_of_lanes = int(s.get('NumberOfLanes'))
-    cs = s[18]
-    RoadMarking = s[16]
-    cs_h = []
-    cs_filletradius = []
-    cs_nb_of_lanes = []
-    cs_nb_of_lane_x_direction = []
-    for s in cs:
-        cs_h.append((float(s.get('Heading')) + h) * np.pi / 180)
-        cs_filletradius.append((float(s.get('FilletRadiusPercentage'))))
-        cs_nb_of_lanes.append((int(s.get('NumberOfLanes'))))
-        cs_nb_of_lane_x_direction.append((int(s.get('DirectionChangeAfterLane'))))
 
-    cw = []
+def get_roundabout(s, id, connections, path):
+    origin_x0 = float(s[0].get('X'))            # Origin X
+    origin_y0 = float(s[0].get('Y'))            # Origin Y
+    Vmax = s.get('MaxSpeed')                    # Maximum speed allowed for a  particular road
+    heading = float(s[1].get('Heading'))
+    radius = float(s.get('Radius'))             # Distance from the origin of the roundabout to the centre lane
+    lane_width = float(s.get('LaneWidth'))      # Width of the lane
+    number_of_lanes = int(s.get('NumberOfLanes')) # Number of lanes in the roundabout
+    # Roundabout has four crosssections.The following statements creates a list which has information of the road in each cross section
+    RoadCrossSection = s[18]
+    RoadMarking = s[16]
+    heading_of_crosssection = []                        #list of headings for each cross section
+    filletradius_of_crosssection = []                   # list of fillet radius for each cross section
+    number_of_lanes_of_crosssection = []                # list of number of lanes in each cross section
+    number_of_lanes_in_xdirection_in_crosssection = []  #List of exit lanes
+    road_end_marker_in_crosssection = []                # List of road end markings in each cross section
+    # For each cross section we append the values from the .pex files to the list
+    for s in RoadCrossSection:
+        heading_of_crosssection.append((float(s.get('Heading')) + heading) * np.pi / 180)
+        filletradius_of_crosssection.append((float(s.get('FilletRadiusPercentage'))))
+        number_of_lanes_of_crosssection.append((int(s.get('NumberOfLanes'))))
+        number_of_lanes_in_xdirection_in_crosssection.append((int(s.get('DirectionChangeAfterLane'))))
+        road_end_marker_in_crosssection.append((str(s.get('RoadEndMarker'))))
+    # The following statements creates a pedestrian crosswalk.
+    # First it checks whether for each cross section there is a marking represented by the term 'PedestrianMarkingGeneric'.
+    # And if it is present, then it performs the math for calculating three points which represents crosswalk.  
+    cross_walk = []
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
             hw = float(R[1].get('Heading'))*np.pi/180
@@ -417,29 +426,34 @@ def get_roundabout(s, id, connections, path):
             cwh = float(R.get('CrossingWidth'))
             xl = float(R[0].get('X'))
             yl = float(R[0].get('Y'))
-            x1 = x0 + (xl - (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-            y1 = y0 + (xl - (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-            x2 = x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(h) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(h)
-            y2 = y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(h) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(h)
-            x3 = x0 + (xl + (cl/2)*np.sin(hw))*np.cos(h) - (yl + (cl/2)*np.cos(hw))*np.sin(h)
-            y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
-            cw.append([x1,y1,x2,y2,x3,y3])
+            x1 = origin_x0 + (xl - (cl/2)*np.sin(hw))*np.cos(heading) - (yl + (cl/2)*np.cos(hw))*np.sin(heading)
+            y1 = origin_y0 + (xl - (cl/2)*np.sin(hw))*np.sin(heading) + (yl + (cl/2)*np.cos(hw))*np.cos(heading)
+            x2 = origin_x0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.cos(heading) - (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.sin(heading)
+            y2 = origin_y0 + (xl + cwh*np.cos(hw) -(cl/2)*np.sin(hw))*np.sin(heading) + (yl + cwh*np.sin(hw) + (cl/2)*np.cos(hw))*np.cos(heading)
+            x3 = origin_x0 + (xl + (cl/2)*np.sin(hw))*np.cos(heading) - (yl + (cl/2)*np.cos(hw))*np.sin(heading)
+            y3 = origin_y0 + (xl + (cl/2)*np.sin(hw))*np.sin(heading) + (yl + (cl/2)*np.cos(hw))*np.cos(heading)
+            cross_walk.append([x1,y1,x2,y2,x3,y3])
+    # Next we find out the mid cross section points for each crosssection.For that first we collect the information of the roads connected to the roundabout
+    connection_roads = [0,0,0,0]
 
-    TabConnect = [0,0,0,0]
     for connection in connections:
-        idA = connection.get('Road_A_UniqueId')
-        idB = connection.get('Road_B_UniqueId')
-        if (id in idA):
-
-            TabConnect[int(connection.get('Joint_A_Id'))] = idB
-        elif (id in idB):
-
-            TabConnect[int(connection.get('Joint_B_Id'))] = idA
-    Tabpointcon = []
-    for i in range(len(TabConnect)):
-        Tabpointcon.append(get_links_points_roundabout(TabConnect[i],path))
-
-    return RoundaboutRoad(id, x0, y0, r, lw, cs_h, cs_filletradius, cs_nb_of_lanes, cs_nb_of_lane_x_direction, nbr_of_lanes, Vmax, Vmax, Tabpointcon, cw)
+        
+        id_of_Road_A = connection.get('Road_A_UniqueId')
+        id_of_Road_B = connection.get('Road_B_UniqueId')
+        
+        if (id in id_of_Road_A):
+            
+            connection_roads[int(connection.get('Joint_A_Id'))] = id_of_Road_B
+            
+        elif (id in id_of_Road_B):
+            
+            connection_roads[int(connection.get('Joint_B_Id'))] = id_of_Road_A
+    # Then we calculate the mid cross section points for each cross section using the following math.
+    mid_crosssection_points = []
+    for i in range(len(connection_roads)):
+        mid_crosssection_points.append(get_links_points_roundabout(connection_roads[i],path))
+        
+    return RoundaboutRoad(id, origin_x0, origin_y0, radius, lane_width, heading_of_crosssection, filletradius_of_crosssection, number_of_lanes_of_crosssection, number_of_lanes_in_xdirection_in_crosssection, number_of_lanes, Vmax, Vmax, mid_crosssection_points,road_end_marker_in_crosssection, cross_walk)
 
 ##This function returns the StraightRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
@@ -637,9 +651,13 @@ def get_adapter(s, id):
                 cw.append([x1,y1,x2,y2,x3,y3])
     return AdapterRoad(id, x0, y0, h, l, lw, nbr_of_lanes_start, nbr_of_lanes_end, lanes_in_x_dir_start, lanes_in_x_dir_end, Vmax, Vmax, Stl, cw, lane_offset)
 
+
+
+
 ##This function returns the XCrossRoad object defined in the Road file corresponding to the id in the input.
 #@param s A Road Segment
 #@param id A string indicating the type of road studied
+
 def get_xcross(s, id):
     x0 = float(s[0].get('X'))
     y0 = float(s[0].get('Y'))
@@ -653,22 +671,35 @@ def get_xcross(s, id):
     cs_nbr_of_lanes = []
     cs_lanes_in_x_dir = []
     cs_l = []
+    cs_road_end_marker = []        # List of road end markings in each cross section
     for c in cs:
+        
         cs_h.append((float(c.get('Heading'))) * np.pi / 180)
         cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
-    Stl = []
-    cw = []
+        cs_road_end_marker.append(str(c.get('RoadEndMarker')))           # Appending the values from .pex file
+        
+    Stl = []    # List for stoplines in  each crossection
+    cw = []     # List for the crosswalks
+    # Calculation of stoplines: The following math is used for calculating the three points for a stopline. For each crossection we calculate x1,y1 and x2,y2
+    # And we take the average of these three points as the third point. And append them into the list.
+    # Before that we check whether the string value of RoadEndMArker is Solid,if it is None, then we dont need stopline for that particular crosssection.
     for i in range(4):
-        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x3 = (x1+x2)/2
-        y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+
+        if cs_road_end_marker[i] == "Solid" :
+            
+            x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x3 = (x1+x2)/2
+            y3 = (y1+y2)/2
+            
+            Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+               
+                        #
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
@@ -685,6 +716,7 @@ def get_xcross(s, id):
             y3 = y0 + (xl + (cl/2)*np.sin(hw))*np.sin(h) + (yl + (cl/2)*np.cos(hw))*np.cos(h)
             cw.append([x1,y1,x2,y2,x3,y3])
 
+     
     return XCrossRoad(id, x0, y0, h, lw, cs_h, cs_len_till_stop, cs_nbr_of_lanes, cs_lanes_in_x_dir, cs_l, Vmax, Vmax, Stl, cw)
 
 ##This function returns the YCrossRoad object defined in the Road file corresponding to the id in the input.
@@ -703,24 +735,27 @@ def get_ycross(s, id):
     cs_nbr_of_lanes = []
     cs_lanes_in_x_dir = []
     cs_l = []
+    cs_road_end_marker = []
     for c in cs:
         cs_h.append((float(c.get('Heading'))) * np.pi / 180)
         cs_len_till_stop.append(float(c.get('RoadLengthTillStopMarker')))
         cs_nbr_of_lanes.append(int(c.get('NumberOfLanes')))
         cs_lanes_in_x_dir.append(int(c.get('DirectionChangeAfterLane')))
         cs_l.append(float(c.get('RoadEndLength')))
+        cs_road_end_marker.append(str(c.get('RoadEndMarker')))
 
     Stl = []
     cw = []
 
     for i in range(3):
-        x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
-        y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
-        x3 = (x1+x2)/2
-        y3 = (y1+y2)/2
-        Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
+        if cs_road_end_marker[i] == "Solid" :
+            x1 = -lw*(cs_nbr_of_lanes[i]/2)*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y1 = lw*(cs_nbr_of_lanes[i]/2)*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x2 = lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.sin(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.cos(h+cs_h[i])  + x0
+            y2 = -lw*((cs_nbr_of_lanes[i]/2)-cs_lanes_in_x_dir[i])*np.cos(h+cs_h[i]) + (cs_l[i]-cs_len_till_stop[i])*np.sin(h+cs_h[i]) +y0
+            x3 = (x1+x2)/2
+            y3 = (y1+y2)/2
+            Stl.append((x1, y1, x2, y2, x3, y3,cs_nbr_of_lanes[i]-cs_lanes_in_x_dir[i],lw))
 
     for R in RoadMarking:
         if "PedestrianMarkingGeneric" in str(R.get('id')) :
